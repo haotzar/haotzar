@@ -1,0 +1,430 @@
+.library-sidebar {
+  width: 240px;
+  height: 100%;
+  background: var(--appBackgroundColorSecondary);
+  border-left: 2px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.library-sidebar.collapsed {
+  width: 0;
+  opacity: 0;
+  border-left-width: 0;
+  pointer-events: none;
+}
+
+.library-sidebar-header {
+  position: relative;
+  padding: 0 16px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  direction: ltr;
+  box-sizing: border-box;
+  height: 64px;
+  min-height: 64px;
+}
+
+/* פס הפרדה */
+.library-sidebar-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(212, 175, 55, 0.25);
+  flex-shrink: 0;
+}
+
+/* חיצי ניווט */
+.library-sidebar-navigation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.library-sidebar-nav-btn {
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8b6f47;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+}
+
+.library-sidebar-nav-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+}
+
+.library-sidebar-nav-btn:active:not(:disabled) {
+  background: rgba(212, 175, 55, 0.2);
+  transform: translateY(1px);
+}
+
+.library-sidebar-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* כפתור בית - עיצוב זהה לחיצים */
+.library-sidebar-home-btn {
+  /* יורש את כל הסגנונות מ-library-sidebar-nav-btn */
+}
+
+.library-sidebar-close {
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(42, 24, 16, 0.65);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  margin-right: auto;
+}
+
+.library-sidebar-close:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: #8b6f47;
+}
+
+/* כפתור תצוגה מקדימה - בצד שמאל */
+.sidebar-preview-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+.library-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.library-sidebar-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* צומת בעץ */
+.sidebar-tree-node {
+  user-select: none;
+}
+
+/* פריט בעץ */
+.sidebar-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  color: #2a1810;
+  font-size: 14px;
+  direction: rtl;
+  position: relative;
+}
+
+.sidebar-tree-item:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.sidebar-tree-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.sidebar-tree-item.folder {
+  font-weight: 500;
+}
+
+.sidebar-tree-item.file:hover {
+  background: rgba(139, 111, 71, 0.15);
+}
+
+/* אייקונים */
+.sidebar-tree-chevron {
+  display: flex;
+  align-items: center;
+  color: #8b6f47;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  order: 1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.sidebar-tree-chevron:hover {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+}
+
+.sidebar-tree-icon {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  color: #d4af37;
+  order: 2;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.sidebar-tree-icon:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.sidebar-tree-item.file .sidebar-tree-icon {
+  color: #8b6f47;
+}
+
+/* תווית */
+.sidebar-tree-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  order: 3;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: -4px 0;
+}
+
+.sidebar-tree-label:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+/* מונה פריטים */
+.sidebar-tree-count {
+  font-size: 12px;
+  color: rgba(42, 24, 16, 0.5);
+  font-weight: normal;
+  order: 4;
+  margin-left: auto;
+}
+
+/* ילדים */
+.sidebar-tree-children {
+  margin-left: 0;
+}
+
+.library-sidebar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(42, 24, 16, 0.5);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ספרים מוצמדים */
+.pinned-books-section {
+  margin-bottom: 8px;
+}
+
+.pinned-books-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(42, 24, 16, 0.6);
+  direction: rtl;
+  margin-bottom: 4px;
+}
+
+.pinned-book-item {
+  position: relative;
+}
+
+.pinned-book-item .sidebar-tree-icon {
+  order: 2;
+}
+
+.pinned-book-item .sidebar-tree-label {
+  order: 3;
+}
+
+.pinned-icon {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #d4af37;
+  order: 1;
+  margin-left: 4px;
+}
+
+.unpin-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #8b6f47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  margin-left: auto;
+  opacity: 0;
+  order: 4;
+}
+
+.pinned-book-item:hover .unpin-btn {
+  opacity: 1;
+}
+
+.pinned-book-item:hover .pinned-icon {
+  opacity: 0;
+}
+
+.unpin-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}
+
+.pinned-books-divider {
+  height: 1px;
+  background: rgba(212, 175, 55, 0.15);
+  margin: 8px 12px;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .library-sidebar {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .library-sidebar-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .library-sidebar-divider {
+  background: rgba(196, 165, 116, 0.25);
+}
+
+[data-theme="dark"] .library-sidebar-nav-btn {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .library-sidebar-nav-btn:hover:not(:disabled) {
+  background: rgba(196, 165, 116, 0.12);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .library-sidebar-nav-btn:active:not(:disabled) {
+  background: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .library-sidebar-nav-btn:disabled {
+  opacity: 0.25;
+}
+
+[data-theme="dark"] .library-sidebar-close {
+  background: transparent;
+  color: rgba(232, 220, 196, 0.65);
+}
+
+[data-theme="dark"] .library-sidebar-close:hover {
+  background: rgba(196, 165, 116, 0.08);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .sidebar-tree-item {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .sidebar-tree-item:hover {
+  background: rgba(196, 165, 116, 0.08);
+}
+
+[data-theme="dark"] .sidebar-tree-item:hover {
+  background: rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .sidebar-tree-item.file:hover {
+  background: rgba(166, 138, 92, 0.15);
+}
+
+[data-theme="dark"] .sidebar-tree-chevron {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .sidebar-tree-chevron:hover {
+  background: rgba(196, 165, 116, 0.15);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .sidebar-tree-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .sidebar-tree-icon:hover {
+  background: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .sidebar-tree-item.file .sidebar-tree-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .sidebar-tree-label:hover {
+  background: rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .sidebar-tree-count {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .library-sidebar-empty {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+/* מצב כהה - ספרים מוצמדים */
+[data-theme="dark"] .pinned-books-header {
+  color: rgba(232, 220, 196, 0.6);
+}
+
+[data-theme="dark"] .pinned-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .unpin-btn {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .unpin-btn:hover {
+  background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .pinned-books-divider {
+  background: rgba(196, 165, 116, 0.15);
+}

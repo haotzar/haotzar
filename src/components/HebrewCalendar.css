@@ -1,0 +1,702 @@
+.hebrew-calendar-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--surface-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hebrew-calendar-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Header */
+.calendar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: var(--button-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.nav-btn:hover {
+  background: var(--button-hover-bg);
+  transform: scale(1.05);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-title {
+  text-align: center;
+  min-width: 200px;
+}
+
+.hebrew-date {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-color);
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  margin-bottom: 0;
+  padding: 24px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+  direction: rtl;
+}
+
+.weekday-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #8b6914;
+  padding: 10px;
+  font-size: 15px;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  background: #f4e4c1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(139, 105, 20, 0.1);
+  border: 1px solid #d4c5a0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  direction: rtl;
+}
+
+.calendar-day {
+  aspect-ratio: 1.3;
+  border: 1px solid #d4c5a0;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--surface-color);
+}
+
+.calendar-day:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  z-index: 1;
+}
+
+.calendar-day.other-month {
+  opacity: 0.3;
+  border-style: dashed;
+}
+
+.calendar-day.today {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.calendar-day.selected {
+  background: #f4e4c1;
+  color: var(--text-color);
+  border-color: #8b6914;
+  border-width: 2px;
+}
+
+.calendar-day.selected .gregorian-day-small {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.calendar-day.selected .hebrew-day-main {
+  color: var(--text-color);
+}
+
+.calendar-day.has-holiday {
+  background: linear-gradient(135deg, var(--surface-color) 0%, var(--accent-light) 100%);
+  border-color: #8b6914;
+  border-width: 2px;
+}
+
+.calendar-day.has-holiday.selected {
+  background: #f4e4c1;
+  border-color: #8b6914;
+}
+
+.day-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.hebrew-day-main {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  color: var(--text-color);
+  line-height: 1;
+}
+
+.calendar-day.selected .hebrew-day-main {
+  color: var(--text-color);
+}
+
+.gregorian-day-small {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.holiday-indicator {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: var(--accent-color);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.calendar-day.selected .holiday-indicator {
+  color: #8b6914;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hebrew-calendar-container {
+    padding: 16px;
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hebrew-day-main {
+    font-size: 16px;
+  }
+
+  .gregorian-day-small {
+    font-size: 9px;
+  }
+
+  .calendar-day {
+    padding: 8px;
+  }
+
+  .calendar-days {
+    gap: 6px;
+  }
+
+  .calendar-weekdays {
+    gap: 6px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .calendar-day:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .calendar-day.today {
+    background: rgba(var(--primary-rgb, 59, 130, 246), 0.2);
+  }
+
+  .calendar-day.has-holiday {
+    background: linear-gradient(135deg, var(--surface-color) 0%, rgba(var(--accent-rgb, 168, 85, 247), 0.15) 100%);
+  }
+}
+
+/* Zmanim Icon Button */
+.zmanim-icon-btn {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: rgba(139, 105, 20, 0.1);
+  color: #8b6914;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  font-size: 10px;
+  opacity: 0.6;
+  z-index: 2;
+}
+
+.zmanim-icon-btn:hover {
+  background: rgba(139, 105, 20, 0.2);
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.zmanim-icon-btn:active {
+  transform: scale(0.9);
+}
+
+.calendar-day:hover .zmanim-icon-btn {
+  opacity: 1;
+}
+
+/* Zmanim Dialog Overlay */
+.zmanim-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Zmanim Dialog */
+.zmanim-dialog {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  direction: rtl;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.zmanim-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f4e4c1 0%, #e8d5a8 100%);
+  border-radius: 16px 16px 0 0;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.header-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zmanim-dialog-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #8b6914;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hebrew-date-inline {
+  font-size: 16px;
+  font-weight: 600;
+  color: #8b6914;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+}
+
+.date-separator {
+  color: #8b6914;
+  opacity: 0.5;
+}
+
+.gregorian-date-inline {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.city-selector-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.city-icon-inline {
+  color: #8b6914;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.city-selector-inline:hover .city-icon-inline {
+  transform: scale(1.1);
+}
+
+.city-select-inline {
+  padding: 4px 12px;
+  font-size: 14px;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  color: #8b6914;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #d4c5a0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+  font-weight: 600;
+  direction: rtl;
+}
+
+.city-select-inline:hover {
+  border-color: #8b6914;
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(139, 105, 20, 0.1);
+}
+
+.city-select-inline:focus {
+  border-color: #8b6914;
+  box-shadow: 0 0 0 2px rgba(139, 105, 20, 0.1);
+}
+
+.city-select-inline option {
+  padding: 6px;
+  background: #ffffff;
+  color: #8b6914;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  font-weight: 600;
+}
+
+.parsha-info-inline {
+  font-size: 15px;
+  font-weight: 600;
+  color: #8b6914;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  padding-top: 4px;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(139, 105, 20, 0.1);
+  color: #8b6914;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: rgba(139, 105, 20, 0.2);
+  transform: rotate(90deg);
+}
+
+.zmanim-dialog-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeInContent 0.3s ease-out;
+  overflow-y: auto;
+  flex: 1;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #d4c5a0 transparent;
+}
+
+.zmanim-dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.zmanim-dialog-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.zmanim-dialog-content::-webkit-scrollbar-thumb {
+  background: #d4c5a0;
+  border-radius: 4px;
+}
+
+.zmanim-dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #8b6914;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.zmanim-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zmanim-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b6914;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #d4c5a0;
+  text-align: right;
+}
+
+.zman-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #faf7f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.zman-item:hover {
+  background: #f4e4c1;
+  transform: translateX(-2px);
+}
+
+.zman-item.highlight {
+  background: #f4e4c1;
+  border: 1px solid #d4c5a0;
+  font-weight: 600;
+}
+
+.zman-item.highlight:hover {
+  background: #ead5a8;
+}
+
+.zman-label {
+  font-size: 16px;
+  color: var(--text-color);
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+}
+
+.zman-time {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8b6914;
+  font-family: 'Courier New', monospace;
+  direction: ltr;
+}
+
+.zmanim-dialog-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #d4c5a0;
+  background: #faf7f0;
+  border-radius: 0 0 16px 16px;
+  flex-shrink: 0;
+}
+
+.location-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Responsive for Zmanim Dialog */
+@media (max-width: 768px) {
+  .zmanim-dialog {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .zmanim-dialog-header {
+    padding: 16px 20px;
+  }
+
+  .zmanim-dialog-header h3 {
+    font-size: 18px;
+  }
+
+  .header-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .hebrew-date-inline {
+    font-size: 14px;
+  }
+
+  .gregorian-date-inline {
+    font-size: 13px;
+  }
+
+  .city-select-inline {
+    font-size: 13px;
+    padding: 3px 10px;
+  }
+
+  .parsha-info-inline {
+    font-size: 14px;
+  }
+
+  .zmanim-dialog-content {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .zmanim-section h4 {
+    font-size: 16px;
+  }
+
+  .zman-item {
+    padding: 8px 12px;
+  }
+
+  .zman-label {
+    font-size: 14px;
+  }
+
+  .zman-time {
+    font-size: 16px;
+  }
+}
+
+/* Dark mode for Zmanim Dialog */
+@media (prefers-color-scheme: dark) {
+  .zmanim-dialog-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .zmanim-dialog-header {
+    background: linear-gradient(135deg, rgba(139, 105, 20, 0.2) 0%, rgba(139, 105, 20, 0.15) 100%);
+  }
+
+  .city-select-inline {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(212, 197, 160, 0.3);
+    color: var(--text-color);
+  }
+
+  .city-select-inline:hover {
+    background: rgba(139, 105, 20, 0.2);
+    border-color: #8b6914;
+  }
+
+  .city-select-inline option {
+    background: var(--surface-color);
+    color: var(--text-color);
+  }
+
+  .zman-item {
+    background: rgba(139, 105, 20, 0.1);
+  }
+
+  .zman-item:hover {
+    background: rgba(139, 105, 20, 0.15);
+  }
+
+  .zman-item.highlight {
+    background: rgba(139, 105, 20, 0.2);
+    border-color: rgba(212, 197, 160, 0.3);
+  }
+
+  .zman-item.highlight:hover {
+    background: rgba(139, 105, 20, 0.25);
+  }
+
+  .zmanim-dialog-footer {
+    background: rgba(139, 105, 20, 0.1);
+    border-top-color: rgba(212, 197, 160, 0.3);
+  }
+}

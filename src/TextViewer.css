@@ -1,0 +1,812 @@
+/* הגדרת הפונט המותאם אישית */
+@font-face {
+  font-family: 'FrankRuehlCLM';
+  src: url('/fonts/FrankRuehlCLM-Medium.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DrugulinCLM';
+  src: url('/fonts/DrugulinCLM-Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+.text-viewer-container {
+  width: 100%;
+  height: 100%;
+  background: #525659;
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* מיכל ראשי לתצוגה */
+.text-viewer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+}
+
+/* מיכל הפריסה - סיידבר + תוכן */
+.text-viewer-layout {
+  display: flex;
+  flex-direction: row-reverse;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* מיכל הטקסט */
+.text-viewer {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--colorNeutralBackground1);
+  min-height: 0;
+}
+
+.text-viewer-loading,
+.text-viewer-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-viewer-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+  background: var(--colorNeutralBackground2);
+}
+
+.page-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  direction: rtl;
+}
+
+.page-info {
+  min-width: 120px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.text-content-scroll {
+  flex: 1;
+  padding: 20px;
+  direction: rtl;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--colorNeutralBackground3);
+  min-height: 0; /* חשוב! מאפשר גלילה */
+}
+
+.text-content-scroll.wide-view {
+  padding: 0; /* הסר רווח אפור במצב מורחב */
+}
+
+.page-container {
+  background: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  margin-top: 20px;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: visible;
+  width: 100%;
+  border-bottom: 3px solid #333;
+  padding-bottom: 20px;
+}
+
+/* מיכל לתצוגה רציפה */
+.continuous-text-container {
+  background: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 900px;
+  padding: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+/* כותרת עליונה עם שם הספר */
+.page-header {
+  padding: 20px 60px 10px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 0;
+}
+
+.book-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #000000;
+  margin: 0;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  direction: rtl;
+}
+
+.page-container:first-child {
+  margin-top: 0; /* העמוד הראשון ללא רווח עליון */
+}
+
+.page-content {
+  padding: 40px 60px;
+  padding-bottom: 60px;
+  min-height: auto;
+}
+
+/* תוכן רציף - ללא טורים */
+.text-content-continuous {
+  font-family: 'FrankRuehlCLM', 'Times New Roman', serif;
+  font-size: 24px;
+  line-height: 1.8;
+  text-align: justify;
+  text-align-last: right;
+  direction: rtl;
+  color: #000000;
+  word-wrap: break-word;
+  hyphens: auto;
+  white-space: normal;
+}
+
+/* צבע בחירת טקסט - אפור במקום כחול */
+.text-content-continuous ::selection,
+.text-content-columns ::selection,
+.page-content ::selection {
+  background-color: rgba(128, 128, 128, 0.3);
+  color: inherit;
+}
+
+.text-content-continuous ::-moz-selection,
+.text-content-columns ::-moz-selection,
+.page-content ::-moz-selection {
+  background-color: rgba(128, 128, 128, 0.3);
+  color: inherit;
+}
+
+.text-content-continuous > div {
+  text-align: right;
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+}
+
+/* שורות בספרי אוצריא - ניתנות ללחיצה */
+.text-content-continuous .text-line {
+  transition: background-color 0.2s ease;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 3px;
+  text-align: justify;
+  text-align-last: right;
+}
+
+.text-content-continuous .text-line:hover {
+  background-color: rgba(243, 243, 243, 0.15);
+}
+
+.text-content-continuous .text-line:active {
+  background-color: rgba(248, 248, 246, 0.25);
+}
+
+.text-content-columns {
+  column-count: 2; /* שני טורים */
+  column-gap: 60px; /* רווח בין הטורים */
+  column-rule: none; /* ללא קו מפריד */
+  font-family: 'FrankRuehlCLM', 'Times New Roman', serif;
+  font-size: 24px;
+  line-height: 1.4;
+  text-align: justify;
+  text-align-last: center; /* מרכז את השורה האחרונה בכל פסקה */
+  direction: rtl;
+  color: #000000;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* עיצוב לתוכן בתוך הטורים */
+.text-content-columns h1,
+.text-content-columns h2,
+.text-content-columns h3,
+.text-content-columns h4,
+.text-content-columns h5,
+.text-content-columns h6,
+.text-content-continuous h1,
+.text-content-continuous h2,
+.text-content-continuous h3,
+.text-content-continuous h4,
+.text-content-continuous h5,
+.text-content-continuous h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+  color: #000000;
+  line-height: 1.2;
+  break-after: avoid;
+  text-align: right; /* יישור לימין */
+  direction: rtl;
+}
+
+.text-content-columns h1,
+.text-content-continuous h1 {
+  font-size: 1.4em;
+  text-align: right; /* שינוי ממרכז לימין */
+  column-span: all;
+}
+
+.text-content-columns h2,
+.text-content-continuous h2 {
+  font-size: 1.3em;
+  text-align: right; /* שינוי ממרכז לימין */
+}
+
+.text-content-columns h3,
+.text-content-continuous h3 {
+  font-size: 1.2em;
+  text-align: right;
+}
+
+.text-content-columns br,
+.text-content-continuous br {
+  display: block;
+  margin: 0;
+  line-height: 1.8;
+}
+
+/* שימוש בפונט דרוגלין לטקסט מודגש */
+.text-content-columns strong,
+.text-content-columns b,
+.text-content-continuous strong,
+.text-content-continuous b {
+  font-family: 'DrugulinCLM', 'FrankRuehlCLM', 'Times New Roman', serif;
+  font-weight: bold;
+}
+
+/* עיצוב מילה ראשונה של מקטע - "חלון" */
+.text-content-columns .first-word,
+.text-content-continuous .first-word {
+  font-size: 1.3em;
+  font-weight: bold;
+  line-height: 1;
+  margin-left: 0.2em; /* רווח קטן מימין */
+}
+
+.text-content-columns mark.search-highlight,
+.text-content-continuous mark.search-highlight {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 2px 0;
+  font-weight: bold;
+  border-radius: 2px;
+}
+
+/* אינדיקטור טעינה */
+.loading-more {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-family: 'FrankRuehlCLM', 'Times New Roman', serif;
+  font-size: 18px;
+}
+
+/* Skeleton Loading Animation */
+.text-viewer-skeleton {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  background: var(--colorNeutralBackground3);
+  overflow-y: auto;
+}
+
+.skeleton-page {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 900px;
+  width: 100%;
+  padding: 40px 60px;
+}
+
+.skeleton-header {
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 40px;
+}
+
+.skeleton-title {
+  height: 32px;
+  width: 60%;
+  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #e0e0e0 20%,
+    #f0f0f0 40%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  direction: rtl;
+}
+
+.skeleton-line {
+  height: 20px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #e0e0e0 20%,
+    #f0f0f0 40%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-right: auto;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Dark mode skeleton */
+[data-theme="dark"] .skeleton-page {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] .skeleton-header {
+  border-bottom-color: #3a3a3a;
+}
+
+[data-theme="dark"] .skeleton-title,
+[data-theme="dark"] .skeleton-line {
+  background: linear-gradient(
+    90deg,
+    #3a3a3a 0%,
+    #4a4a4a 20%,
+    #3a3a3a 40%,
+    #3a3a3a 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 768px) {
+  .text-content-columns {
+    column-count: 1; /* טור אחד במסכים קטנים */
+  }
+  
+  .page-content {
+    padding: 16px;
+  }
+}
+
+/* עיצוב גלילה */
+.text-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.text-content::-webkit-scrollbar-track {
+  background: var(--colorNeutralBackground3);
+}
+
+.text-content::-webkit-scrollbar-thumb {
+  background: var(--colorNeutralStroke2);
+  border-radius: 4px;
+}
+
+.text-content::-webkit-scrollbar-thumb:hover {
+  background: var(--colorNeutralStroke1);
+}
+
+/* הדגשת חיפוש */
+.search-highlight {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 2px 0;
+  font-weight: bold;
+  border-radius: 2px;
+}
+
+.text-search-highlight {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 2px 0;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* מיכל ראשי לתצוגה */
+.text-viewer-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+/* מיכל הפריסה - סיידבר + תוכן */
+.text-viewer-layout {
+  display: flex;
+  flex-direction: row-reverse; /* סיידבר מימין, תוכן משמאל */
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* חלונית תוכן עניינים - העתקה מדויקת מ-PDF.js */
+.text-outline-sidebar {
+  width: 240px;
+  height: 100%;
+  background: var(--appBackgroundColorSecondary);
+  border-left: 2px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  direction: rtl;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.outline-toolbar {
+  padding: 10px 12px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.outline-search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  background: white;
+  color: #2a1810;
+  font-size: 14px;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  direction: rtl;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.outline-search-input:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.outline-search-input::placeholder {
+  color: rgba(42, 24, 16, 0.5);
+  text-align: right;
+}
+
+.outline-expand-all-btn {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #8b6f47;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.outline-expand-all-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.outline-expand-all-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: #f0e3b7;
+  color: #f0e4bd;
+}
+
+.outline-header {
+  padding: 4px 8px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+  background: #f5f5f5;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.outline-header .fui-Text {
+  display: none;
+}
+
+.outline-header button {
+  color: #666;
+  background: transparent;
+  border: 1px solid #999;
+  transition: background-color 0.2s;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 4px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outline-header button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.outline-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  background: transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.outline-content::-webkit-scrollbar {
+  display: none;
+}
+
+.outline-item {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  margin-bottom: 2px;
+  padding: 6px 12px;
+  color: #2a1810;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  font-size: 14px;
+  line-height: 1.4;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: right;
+  direction: rtl;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.outline-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.outline-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  color: #999;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.outline-item-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.outline-expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #8b6f47;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.outline-expand-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.outline-expand-btn:hover {
+  background: rgba(247, 238, 208, 0.15);
+  color: #f3ebd1;
+}
+
+.outline-item-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.outline-item.outline-match {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.outline-item.outline-match:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.outline-children {
+  /* קונטיינר לילדים */
+}
+
+.outline-item.selected {
+  border: 1px solid #f1e9cc;
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+/* רמות כותרות */
+.outline-level-1 {
+  font-weight: 600;
+}
+
+.outline-level-2 {
+  font-weight: 500;
+}
+
+.outline-level-3,
+.outline-level-4,
+.outline-level-5,
+.outline-level-6 {
+  font-weight: normal;
+}
+
+/* גלילה */
+.outline-content::-webkit-scrollbar {
+  width: 14px;
+}
+
+.outline-content::-webkit-scrollbar-track {
+  background-color: #d0d0d0;
+}
+
+.outline-content::-webkit-scrollbar-thumb {
+  background-color: #a0a0a0;
+  border-radius: 7px;
+  border: 3px solid #d0d0d0;
+  background-clip: content-box;
+}
+
+.outline-content::-webkit-scrollbar-thumb:hover {
+  background-color: #808080;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .text-outline-sidebar {
+  background: #1a1a1a;
+  border-left-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .outline-toolbar {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .outline-search-input {
+  background: rgba(232, 220, 196, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .outline-search-input:focus {
+  border-color: #c4a574;
+  box-shadow: 0 0 0 3px rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .outline-search-input::placeholder {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .outline-expand-all-btn {
+  background: rgba(232, 220, 196, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .outline-expand-all-btn:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: #c4a574;
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .outline-item {
+  background: transparent;
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .outline-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .outline-item-icon {
+  color: #888;
+}
+
+[data-theme="dark"] .outline-expand-btn {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .outline-expand-btn:hover {
+  background: rgba(196, 165, 116, 0.15);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .outline-item.outline-match {
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .outline-item.outline-match:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .text-content-continuous .text-line:hover {
+  background-color: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .text-content-continuous .text-line:active {
+  background-color: rgba(196, 165, 116, 0.25);
+}
+
+/* צבע בחירת טקסט במצב כהה - אפור בהיר */
+[data-theme="dark"] .text-content-continuous ::selection,
+[data-theme="dark"] .text-content-columns ::selection,
+[data-theme="dark"] .page-content ::selection {
+  background-color: rgba(180, 180, 180, 0.3);
+  color: inherit;
+}
+
+[data-theme="dark"] .text-content-continuous ::-moz-selection,
+[data-theme="dark"] .text-content-columns ::-moz-selection,
+[data-theme="dark"] .page-content ::-moz-selection {
+  background-color: rgba(180, 180, 180, 0.3);
+  color: inherit;
+}

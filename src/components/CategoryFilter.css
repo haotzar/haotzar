@@ -1,0 +1,146 @@
+/* מיכל הקטגוריות */
+.category-filter {
+  width: 100%;
+  background: transparent;
+  border-bottom: none;
+  position: relative;
+  z-index: 10;
+}
+
+/* שורת הטאבים */
+.category-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 40px 16px 40px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  direction: rtl;
+  justify-content: flex-start;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* שורה שנייה */
+.category-tabs-secondary {
+  padding-top: 0;
+  border-top: 1px solid rgba(92, 61, 46, 0.08);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* כפתור קטגוריה */
+.category-tab {
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #8b6f47;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  opacity: 0.7;
+}
+
+.category-tab:hover {
+  opacity: 1;
+  color: #5c3d2e;
+}
+
+/* קטגוריה פעילה */
+.category-tab.active {
+  color: #5c3d2e;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.category-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #5c3d2e;
+  border-radius: 2px;
+}
+
+/* כפתור "עוד" */
+.more-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.more-btn:hover {
+  opacity: 1;
+}
+
+.more-btn.active {
+  opacity: 1;
+}
+
+/* הסרת dropdown הישן */
+.category-more {
+  display: none;
+}
+
+.category-dropdown {
+  display: none;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .category-filter {
+  background: transparent;
+}
+
+[data-theme="dark"] .category-tabs-secondary {
+  border-top-color: rgba(92, 61, 46, 0.2);
+}
+
+[data-theme="dark"] .category-tab {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .category-tab:hover {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .category-tab.active {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .category-tab.active::after {
+  background: #8b6f47;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .category-tabs {
+    padding: 12px 20px;
+    justify-content: flex-start;
+  }
+
+  .category-tab {
+    padding: 5px 14px;
+    font-size: 14px;
+  }
+}

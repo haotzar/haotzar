@@ -1,0 +1,125 @@
+/* מיכל תצוגה מקדימה */
+.book-preview-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--appBackgroundColorSecondary);
+  border-radius: 12px;
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  overflow: hidden;
+  position: relative;
+  z-index: 1; /* וודא שזה מעל כל דבר אחר */
+  pointer-events: auto !important; /* כפה אינטראקציה */
+}
+
+.book-preview-container.empty {
+  justify-content: center;
+  align-items: center;
+}
+
+/* מצב ריק */
+.preview-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(42, 24, 16, 0.5);
+  font-size: 16px;
+}
+
+/* כותרת */
+.preview-header {
+  padding: 20px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+}
+
+.preview-title {
+  flex: 1;
+  margin: 0;
+  color: #2a1810;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: right;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-close-btn {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: #8b6f47;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.preview-close-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}
+
+/* תוכן */
+.preview-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0; /* חשוב ל-flexbox */
+  pointer-events: auto; /* אפשר אינטראקציה */
+}
+
+/* מצב כהה */
+[data-theme="dark"] .book-preview-container {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .preview-empty-state {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .preview-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .preview-title {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .preview-close-btn {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .preview-close-btn:hover {
+  background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .preview-header {
+    padding: 15px;
+  }
+  
+  .preview-title {
+    font-size: 18px;
+  }
+  
+  .preview-close-btn {
+    font-size: 18px;
+  }
+  
+  .preview-empty-state {
+    font-size: 14px;
+    padding: 30px 15px;
+  }
+}

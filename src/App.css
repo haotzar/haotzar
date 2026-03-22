@@ -1,0 +1,2813 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  background-color: var(--appBackgroundColor);
+}
+
+/* Overlay גלובלי שמכסה הכל כשההשלמה פתוחה */
+.global-autocomplete-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: transparent;
+  cursor: default;
+}
+
+/* מצב כהה - רקע כהה */
+[data-theme="dark"] body {
+  background-color: #1a1a1a;
+}
+
+/****** Scroll Bar - עיצוב פס גלילה *********/
+/* פס גלילה מותאם אישית רק כשיש רקע */
+body.with-background ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.with-background ::-webkit-scrollbar-track {
+  background: #f7ead8;
+  box-shadow: inset 0 0 6px rgba(92, 61, 46, 0.15);
+  border-radius: 10px;
+}
+
+body.with-background ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b6f47 0%, #5c3d2e 100%);
+  border-radius: 10px;
+  border: 2px solid #f7ead8;
+}
+
+body.with-background ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #5c3d2e 0%, #4a3124 100%);
+}
+
+body.with-background ::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Firefox - פס גלילה מותאם אישית רק כשיש רקע */
+body.with-background * {
+  scrollbar-width: thin;
+  scrollbar-color: #8b6f47 #f7ead8;
+}
+
+@font-face {
+  font-family: 'DrugulinCLM-Bold';
+  src: url('/fonts/DrugulinCLM-Bold.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* עקיפת צבעי Fluent UI - ערכת צבעים חום-שחור */
+:root {
+  --colorBrandBackground: #5c3d2e;
+  --colorBrandBackgroundHover: #4a3124;
+  --colorBrandBackgroundPressed: #3d2817;
+  --colorBrandBackground2: #8b6f47;
+  --colorBrandForeground1: #5c3d2e;
+  --colorBrandForeground2: #4a3124;
+  --colorBrandStroke1: #5c3d2e;
+  --colorBrandStroke2: #8b6f47;
+  --appBackgroundColor: #f7ead8; /* הצבע מפס הגלילה */
+  --appBackgroundColorSecondary: #f0e3d0; /* גוון כהה יותר מעט לאלמנטים משניים */
+  --show-background-image: block; /* שליטה בתצוגת תמונת הרקע */
+}
+
+/* משתנים למצב כהה */
+[data-theme="dark"] {
+  --appBackgroundColor: #1a1a1a;
+  --appBackgroundColorSecondary: #2d2d2d;
+}
+
+/* משתנים למצב כהה עם רקע לבן */
+[data-theme="dark"][data-background="none"] {
+  --appBackgroundColor: #2d2d2d;
+  --appBackgroundColorSecondary: #3d3d3d;
+}
+
+/* כפתורים ראשיים */
+.fui-Button.fui-Button__primary {
+  background-color: #5c3d2e !important;
+  border-color: #5c3d2e !important;
+  color: white !important;
+}
+
+.fui-Button.fui-Button__primary:hover {
+  background-color: #4a3124 !important;
+  border-color: #4a3124 !important;
+}
+
+.fui-Button.fui-Button__primary:active {
+  background-color: #3d2817 !important;
+  border-color: #3d2817 !important;
+}
+
+/* כפתורים עם מסגרת */
+.fui-Button.fui-Button__outline {
+  border-color: #5c3d2e !important;
+  color: #5c3d2e !important;
+}
+
+.fui-Button.fui-Button__outline:hover {
+  background-color: rgba(92, 61, 46, 0.1) !important;
+  border-color: #4a3124 !important;
+}
+
+/* כפתורים עדינים */
+.fui-Button.fui-Button__subtle:hover {
+  background-color: rgba(92, 61, 46, 0.1) !important;
+  color: #5c3d2e !important;
+}
+
+/* שדות קלט */
+.fui-Input:focus-within {
+  border-color: #5c3d2e !important;
+  outline-color: #5c3d2e !important;
+}
+
+/* כרטיסיות פעילות */
+.tab-item.active {
+  /* הסרת כל border-bottom */
+  border-bottom: none;
+}
+
+/* פריטים נבחרים ברשימה */
+.pdf-list-item.selected {
+  background: rgba(92, 61, 46, 0.12) !important;
+  border: 1px solid rgba(92, 61, 46, 0.3) !important;
+}
+
+.pdf-list-item.selected:hover {
+  background: rgba(92, 61, 46, 0.18) !important;
+}
+
+.app-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--appBackgroundColor);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .app-layout {
+  background-color: #1a1a1a;
+}
+
+/* Custom Title Bar */
+.custom-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 32px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  user-select: none;
+  direction: rtl;
+  flex-shrink: 0;
+}
+
+.title-bar-drag-region {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  -webkit-app-region: drag;
+  height: 100%;
+}
+
+.title-bar-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.title-bar-title {
+  font-family: 'DrugulinCLM-Bold', 'Frank Ruhl Libre', 'David Libre', 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #2a1810;
+}
+
+.title-bar-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag;
+  direction: ltr;
+}
+
+.title-bar-button {
+  width: 46px;
+  height: 32px;
+  border: none;
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s ease;
+  font-size: 10px;
+  padding: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.title-bar-button svg {
+  width: 10px;
+  height: 10px;
+}
+
+.title-bar-button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.title-bar-button.close:hover {
+  background: #c42b1c;
+  color: white;
+}
+
+.title-bar-button:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.title-bar-button.close:active {
+  background: #c42b1c;
+  opacity: 0.9;
+}
+
+/* מצב כהה - Title Bar נשאר לבן */
+[data-theme="dark"] .custom-title-bar {
+  background: #ffffff;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .title-bar-title {
+  color: #2a1810;
+}
+
+[data-theme="dark"] .title-bar-button {
+  color: #000000;
+  background: #ffffff;
+  border-left-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .title-bar-button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .title-bar-button.close:hover {
+  background: #c42b1c;
+  color: white;
+}
+
+[data-theme="dark"] .title-bar-button:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .title-bar-button.close:active {
+  background: #c42b1c;
+  opacity: 0.9;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--appBackgroundColor);
+  gap: 20px;
+  position: relative;
+  z-index: 500;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .app-header {
+  background-color: #1a1a1a;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* שורת חיפוש מרכזית בסרגל העליון */
+.header-search-container {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.header-search-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.header-search-wrapper {
+  position: relative;
+  background: white;
+  border: 2px solid rgba(92, 61, 46, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(92, 61, 46, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  min-height: 48px;
+  transition: all 0.2s ease;
+}
+
+.header-search-wrapper:focus-within {
+  border-color: #5c3d2e;
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.12);
+}
+
+.header-search-wrapper input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 0;
+  font-size: 14px;
+  color: #5c3d2e;
+  background: transparent;
+  text-align: right;
+  direction: rtl;
+}
+
+.header-search-wrapper input::placeholder {
+  color: #8b6f47;
+  opacity: 0.6;
+}
+
+.header-search-icon {
+  font-size: 18px;
+  color: #8b6f47;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.header-clear-search {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #8b6f47;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.header-clear-search:hover {
+  background: rgba(92, 61, 46, 0.1);
+  color: #5c3d2e;
+}
+
+.header-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20000;
+  background: white;
+  border: 2px solid rgba(92, 61, 46, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.15);
+  max-height: 448px; /* גובה של כ-8 פריטים (56px כל אחד) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* הסתרת סרגל הגלילה */
+.header-autocomplete-dropdown::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* מצב כהה */
+[data-theme="dark"] .header-search-wrapper {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(92, 61, 46, 0.4);
+}
+
+[data-theme="dark"] .header-search-wrapper:focus-within {
+  border-color: #8b6f47;
+  box-shadow: 0 12px 40px rgba(139, 111, 71, 0.3);
+}
+
+[data-theme="dark"] .header-search-wrapper input {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .header-search-wrapper input::placeholder {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .header-search-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .header-clear-search {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .header-clear-search:hover {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .header-autocomplete-dropdown {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(92, 61, 46, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions-right {
+  order: 1; /* מימין */
+}
+
+.header-actions-left {
+  order: 3; /* משמאל */
+}
+
+.header-search-container {
+  order: 2; /* באמצע */
+}
+
+/* עוקף את כל הסגנונות של Fluent UI */
+.app-header .header-actions button {
+  all: unset;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  background: transparent;
+  color: #5c3d2e;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.app-header .header-actions button:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+}
+
+/* כפתור פעיל */
+.app-header .header-actions button[data-active="true"] {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+}
+
+.app-header .header-actions button[data-active="true"]:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--appBackgroundColor);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .app-body {
+  background-color: #1a1a1a;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row; /* שינוי לשורה כדי לתמוך בסיידבר */
+  overflow: hidden;
+  background-color: var(--appBackgroundColor);
+}
+
+/* מיכל התוכן המרכזי */
+.main-content-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--appBackgroundColor);
+  position: relative; /* חשוב למיקום הפאנל */
+}
+
+/* מצב כהה */
+[data-theme="dark"] .main-content {
+  background-color: #1a1a1a;
+}
+
+[data-theme="dark"] .main-content-center {
+  background-color: #1a1a1a;
+}
+
+.tabs-container {
+  background: var(--appBackgroundColorSecondary);
+  padding: 0 8px 0 8px; /* רק padding צדדי */
+  display: flex;
+  gap: 0; /* ללא רווח בין אלמנטים */
+  overflow-x: hidden;
+  overflow-y: hidden; /* מונע פס גלילה אנכי */
+  border-bottom: 1px solid white;
+  direction: rtl;
+  justify-content: flex-start;
+  align-items: flex-end;
+  position: relative; /* חשוב למיקום הפאנל */
+  flex-wrap: nowrap;
+  min-height: 36px; /* גובה מינימלי */
+  max-height: 36px; /* גובה מקסימלי */
+}
+
+/* כפתור חיפוש כרטיסיות */
+.tabs-container .search-tabs-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #5f6368;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.tabs-container .search-tabs-btn:hover {
+  background: rgba(60, 64, 67, 0.08);
+}
+
+.tabs-container .search-tabs-btn:active {
+  background: rgba(60, 64, 67, 0.12);
+}
+
+.tabs-container .search-tabs-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  min-width: 80px; /* הקטנת הרוחב המינימלי */
+  max-width: 240px;
+  width: auto; /* רוחב דינמי */
+  flex: 0 1 auto; /* מאפשר התכווצות */
+  height: 28px;
+  font-size: 13px;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  direction: rtl;
+  position: relative;
+  box-shadow: none;
+  margin: 0 -2px;
+  z-index: 1;
+  user-select: none; /* מניעת בחירת טקסט בגרירה */
+}
+
+/* אפקט גרירה */
+.tab-item.drag-over {
+  border-left: 3px solid #5c3d2e;
+  padding-left: 13px;
+}
+
+.tab-item:active {
+  cursor: grabbing;
+}
+
+/* קו מפריד בין כרטיסיות - כמו בכרום */
+/* הקו יוצג רק כשהכרטיסייה לא בהובר ולא פעילה */
+.tab-item:not(:last-child):not(.active):not(:hover) {
+  position: relative;
+}
+
+.tab-item:not(:last-child):not(.active):not(:hover)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: rgba(92, 61, 46, 0.25);
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+/* הסתרת הקו של הכרטיסייה הבאה כשעוברים עם העכבר */
+.tab-item:hover + .tab-item:not(.active)::before {
+  opacity: 0;
+}
+
+.tab-item.active {
+  background: white;
+  box-shadow: none;
+  height: 28px;
+  z-index: 2;
+}
+
+/* עיגולים בצדדים של הכרטיסייה הפעילה - כמו בגוגל כרום */
+.tab-item.active::before,
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  z-index: 5;
+}
+
+.tab-item.active::before {
+  right: -8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: -4px 4px 0 4px white;
+}
+
+.tab-item.active::after {
+  left: -8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 4px 4px 0 4px white;
+}
+
+.tab-item-content {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 400;
+  order: 2;
+  color: #5f6368;
+}
+
+.tab-item.active .tab-item-content {
+  font-weight: 500;
+  color: #202124;
+}
+
+.tab-close-btn {
+  opacity: 0;
+  padding: 0;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 3;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #5f6368;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.tab-item:hover .tab-close-btn {
+  opacity: 1;
+}
+
+.tab-close-btn:hover {
+  background: rgba(60, 64, 67, 0.08);
+  color: #202124;
+}
+
+.tab-close-btn:active {
+  background: rgba(60, 64, 67, 0.12);
+}
+
+.tab-icon {
+  font-size: 16px;
+  opacity: 0.7;
+  order: 1;
+  color: #5f6368;
+}
+
+.tab-item.active .tab-icon {
+  opacity: 1;
+  color: #202124;
+}
+
+/* כפתור + לכרטיסייה חדשה */
+.new-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 400;
+  color: #5f6368;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  flex-shrink: 0;
+  margin: 0 4px;
+  align-self: center;
+}
+
+.new-tab-btn:hover {
+  background: rgba(60, 64, 67, 0.08);
+  color: #202124;
+}
+
+.new-tab-btn:active {
+  background: rgba(60, 64, 67, 0.12);
+}
+
+[data-theme="dark"] .new-tab-btn {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .new-tab-btn:hover {
+  background: rgba(232, 234, 237, 0.08);
+  color: #e8eaed;
+}
+
+
+.pdf-toolbar {
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdf-viewer,
+.file-viewer {
+  flex: 1;
+  overflow: hidden;
+  background: var(--appBackgroundColor);
+  position: relative;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .pdf-viewer,
+[data-theme="dark"] .file-viewer {
+  background-color: #1a1a1a;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  background-color: var(--appBackgroundColor);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .empty-state {
+  background-color: #1a1a1a;
+}
+
+/* דף בית חדש - פשוט וקלין */
+.home-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/home-background.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.1;
+  z-index: 0;
+  display: var(--show-background-image, block);
+}
+
+.home-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px; /* הקטנת הרווח */
+  position: relative;
+  z-index: 1;
+  direction: rtl;
+  overflow-y: auto; /* הוספת גלילה אנכית */
+  max-height: 100%; /* הגבלת גובה */
+}
+
+.home-header {
+  text-align: right;
+  margin-bottom: 40px; /* הקטנת הרווח */
+}
+
+.home-title {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 60px; /* הקטנת הכותרת */
+  font-weight: bold;
+  color: #5c3d2e;
+  margin-bottom: 6px; /* הקטנת הרווח */
+  line-height: 1;
+}
+
+
+.home-desc {
+  font-size: 18px; /* הקטנת התיאור */
+  color: #8b6f47;
+  opacity: 0.8;
+}
+
+.recent-section, .times-section {
+  max-width: 1200px;
+  margin: 0 auto 20px auto; /* הקטנת הרווח התחתון */
+  width: 100%;
+  text-align: right; /* יישור לימין */
+  direction: rtl; /* כיוון עברי */
+}
+
+.times-section {
+  margin-bottom: 40px; /* מרווח נוסף לסקשן האחרון */
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px; /* הקטנת הרווח */
+  font-size: 16px; /* הקטנת הפונט */
+  font-weight: 600;
+  color: #5c3d2e;
+  justify-content: flex-start; /* הצמדה לתחילה */
+  text-align: right; /* יישור טקסט לימין */
+  padding: 0 20px; /* מרווח בצדדים לכותרת */
+}
+
+.section-icon {
+  font-size: 20px;
+}
+
+.books-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.book-card {
+  width: 120px;
+  height: 160px;
+  background: white;
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.1);
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.2);
+}
+
+.book-preview {
+  height: 120px;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.book-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+  transform: scale(0.7);
+  transform-origin: center;
+}
+
+.text-icon {
+  font-size: 32px;
+  color: #5c3d2e;
+  opacity: 0.6;
+}
+
+.book-title {
+  padding: 8px;
+  font-size: 12px;
+  text-align: center;
+  color: #5c3d2e;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(92, 61, 46, 0.05);
+}
+
+.no-books {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: #8b6f47;
+  opacity: 0.6;
+  font-size: 16px;
+}
+
+.no-books svg {
+  font-size: 48px;
+}
+
+.times-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 עמודות קבועות */
+  gap: 16px; /* רווח גדול יותר כמו בספרים */
+  max-width: 100%;
+  padding: 0 20px; /* מרווח בצדדים */
+}
+
+.time-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px; /* רווח גדול יותר כמו בספרים */
+  background: white;
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.1);
+  transition: all 0.3s ease;
+  margin: 0; /* ללא מרווח חיצוני */
+}
+
+.time-item:hover {
+  transform: translateY(-4px); /* הרמה גדולה יותר כמו בספרים */
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.2);
+}
+
+.time-label {
+  font-size: 12px; /* חזרה לגודל נורמלי */
+  color: #8b6f47;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.home-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/home-background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(1px); /* פחות טשטוש */
+  opacity: 0.08; /* שקיפות נמוכה יותר */
+  z-index: 0;
+  display: var(--show-background-image, block);
+}
+
+.home-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1400px;
+  padding: 20px 40px 0 40px; /* חזרה לרווח ללא תחתון */
+  direction: rtl;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* תופס את כל המקום הזמין */
+  justify-content: flex-start;
+}
+
+.home-hero {
+  text-align: right; /* יישור לימין (שמאל בעברית) */
+  margin-bottom: 16px; /* הקטנת הרווח */
+  animation: fadeInDown 0.8s ease-out;
+  padding: 8px 0; /* הקטנת הרווח הפנימי */
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-title-main {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif !important;
+  font-size: 60px !important; /* הקטנה משמעותית */
+  font-weight: bold !important;
+  display: block;
+  margin-bottom: 8px; /* הקטנת הרווח */
+  background: linear-gradient(135deg, #2c1810 0%, #5c3d2e 50%, #8b6f47 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  text-shadow: 0 4px 8px rgba(92, 61, 46, 0.3);
+}
+
+.home-subtitle {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif !important;
+  font-size: 18px !important; /* הקטנה נוספת */
+  opacity: 0.8;
+  display: block;
+  font-weight: 400 !important;
+  color: #5c3d2e;
+  margin-bottom: 4px; /* הקטנת הרווח */
+}
+
+.home-grid {
+  display: block; /* פריסה פשוטה ללא grid */
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  margin-bottom: 16px; /* הקטנת הרווח */
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* זמני היום בתחתית הדף */
+.zmanim-bottom {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+  padding: 0 40px 20px 40px; /* רווח צדדים ותחתון */
+  flex-shrink: 0; /* לא מתכווץ */
+}
+
+/* עיצוב חסכני לזמני היום */
+.zmanim-compact {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.15);
+  height: 40px; /* גובה קבוע של 40 פיקסלים */
+  display: flex;
+  align-items: center;
+  padding: 0 16px; /* הקטנת הרווח */
+  gap: 16px; /* הקטנת הרווח */
+  overflow: hidden;
+}
+
+.zmanim-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(92, 61, 46, 0.2);
+  padding-left: 16px; /* הקטנת הרווח */
+  margin-left: 0;
+}
+
+.zmanim-icon {
+  font-size: 16px;
+  color: #5c3d2e;
+}
+
+.zmanim-row {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* הקטנת הרווח */
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.zmanim-row::-webkit-scrollbar {
+  display: none;
+}
+
+.zman-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: rgba(92, 61, 46, 0.05);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.zman-compact:hover {
+  background: rgba(92, 61, 46, 0.1);
+}
+
+.zman-label-compact {
+  opacity: 0.7;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.zman-time-compact {
+  color: #5c3d2e;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stats-column {
+  gap: 12px; /* רווח קטן יותר */
+}
+
+.home-card {
+  background: rgba(255, 255, 255, 0.95); /* רקע לבן יותר אטום */
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(92, 61, 46, 0.2); /* מסגרת חזקה יותר */
+  box-shadow: 0 12px 40px rgba(92, 61, 46, 0.15); /* צל חזק יותר */
+  border-radius: 16px !important; /* פינות מעוגלות יותר - חשוב ה-!important */
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.home-card:hover {
+  transform: translateY(-4px); /* הרמה בהובר */
+  box-shadow: 0 16px 48px rgba(92, 61, 46, 0.2);
+  border-color: rgba(92, 61, 46, 0.3);
+}
+
+.recent-card {
+  height: auto !important;
+  min-height: 100px !important; /* הקטנה נוספת של הגובה */
+  max-height: 100px !important; /* הגבלת גובה מקסימלי */
+  border-radius: 16px !important;
+  padding: 0 !important;
+  overflow: hidden !important; /* חיתוך התוכן שחורג */
+}
+
+.datetime-card {
+  height: 100%;
+  min-height: 500px;
+}
+
+.zmanim-content {
+  padding: 16px 20px;
+  height: calc(100% - 64px);
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.zmanim-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.zmanim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.zman-item {
+  padding: 12px;
+  background: rgba(92, 61, 46, 0.05);
+  border: 1px solid rgba(92, 61, 46, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.zman-item:hover {
+  background: rgba(92, 61, 46, 0.1);
+  border-color: rgba(92, 61, 46, 0.2);
+}
+
+.zman-label {
+  display: block;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.zman-time {
+  display: block;
+  color: #5c3d2e;
+  font-size: 18px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* הקטנת הרווח */
+  padding: 8px 12px 6px 12px; /* הקטנת הרווח משמעותית */
+  border-bottom: 1px solid rgba(92, 61, 46, 0.15);
+  background: linear-gradient(135deg, rgba(92, 61, 46, 0.12) 0%, rgba(92, 61, 46, 0.06) 100%);
+  position: relative;
+  border-radius: 16px 16px 0 0;
+  font-size: 14px; /* הקטנת הפונט */
+}
+
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px; /* הקטנת עובי הקו */
+  background: linear-gradient(90deg, transparent 0%, #5c3d2e 50%, transparent 100%);
+}
+
+.card-icon {
+  font-size: 24px;
+  color: #5c3d2e;
+}
+
+.card-content {
+  padding: 8px 12px !important; /* הקטנת הרווח משמעותית */
+  height: auto !important;
+  overflow: hidden !important; /* חיתוך התוכן */
+  border-radius: 0 0 16px 16px;
+}
+
+.card-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.recent-books-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* רשת ספרים עם תצוגה מקדימה */
+.recent-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 12px;
+  padding: 2px;
+}
+
+.book-preview-card {
+  background: linear-gradient(180deg, 
+    #8b6f47 0%, 
+    #8b6f47 8%, 
+    #5c3d2e 8%, 
+    #5c3d2e 15%, 
+    #4a3124 15%, 
+    #4a3124 85%, 
+    #5c3d2e 85%, 
+    #5c3d2e 92%, 
+    #8b6f47 92%, 
+    #8b6f47 100%
+  );
+  border: 1px solid rgba(92, 61, 46, 0.4);
+  border-radius: 4px;
+  overflow: visible;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 12px rgba(92, 61, 46, 0.3),
+    inset 0 0 0 1px rgba(139, 111, 71, 0.3);
+  aspect-ratio: 1/6;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.book-preview-card::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 175, 55, 0.6) 50%, 
+    transparent 100%
+  );
+}
+
+.book-preview-card::after {
+  content: '';
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 175, 55, 0.6) 50%, 
+    transparent 100%
+  );
+}
+
+.book-preview-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 
+    0 12px 28px rgba(92, 61, 46, 0.4),
+    inset 0 0 0 1px rgba(139, 111, 71, 0.5);
+  border-color: rgba(92, 61, 46, 0.6);
+}
+
+.book-preview-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 8px;
+}
+
+.book-preview-iframe {
+  display: none;
+}
+
+/* תצוגה מקדימה לקבצי טקסט */
+.text-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.text-preview-icon {
+  display: none;
+}
+
+.text-preview-lines {
+  display: none;
+}
+
+.preview-line {
+  display: none;
+}
+
+.preview-line.short {
+  display: none;
+}
+
+.book-preview-title {
+  padding: 0;
+  background: transparent;
+  border: none;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.book-title-text {
+  font-weight: 600;
+  color: #d4af37;
+  font-size: 14px;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(212, 175, 55, 0.4);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-height: 100%;
+}
+
+/* דריסת סגנונות Fluent UI Card */
+.recent-card.fui-Card {
+  border-radius: 16px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.recent-card .fui-Card {
+  border-radius: 16px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* הסרת גלילה מכל הרכיבים הפנימיים */
+.recent-card * {
+  overflow: visible !important;
+}
+
+.recent-book-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(92, 61, 46, 0.05);
+  border: 1px solid rgba(92, 61, 46, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recent-book-item:hover {
+  background: rgba(92, 61, 46, 0.12);
+  border-color: rgba(92, 61, 46, 0.25);
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.2);
+}
+
+.book-icon {
+  font-size: 28px;
+  color: #5c3d2e;
+  flex-shrink: 0;
+}
+
+.book-name {
+  flex: 1;
+  text-align: right;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* הסרת stats-grid - לא בשימוש יותר */
+
+.stat-card-modern {
+  padding: 20px 16px; /* רווח קטן יותר */
+  text-align: center;
+  background: linear-gradient(135deg, rgba(92, 61, 46, 0.12) 0%, rgba(92, 61, 46, 0.06) 100%);
+  border: 1px solid rgba(92, 61, 46, 0.25);
+  border-radius: 16px; /* פינות מעוגלות */
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 100px; /* גובה קטן הרבה יותר */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px; /* עובי גדול יותר */
+  background: linear-gradient(90deg, #5c3d2e 0%, #8b6f47 50%, #5c3d2e 100%);
+}
+
+.stat-card-modern:hover {
+  transform: translateY(-6px); /* הרמה גדולה יותר */
+  box-shadow: 0 12px 32px rgba(92, 61, 46, 0.25);
+  border-color: rgba(92, 61, 46, 0.4);
+}
+
+.stat-icon {
+  font-size: 24px; /* אייקון קטן יותר */
+  color: #5c3d2e;
+  margin-bottom: 6px; /* רווח קטן יותר */
+}
+
+.stat-number {
+  display: block;
+  font-size: 32px; /* מספר קטן יותר */
+  margin-bottom: 2px; /* רווח קטן יותר */
+  background: linear-gradient(135deg, #2c1810 0%, #5c3d2e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  opacity: 0.7;
+  display: block;
+}
+
+/* תמיכה במצב כהה - רק עבור גבולות וטקסט */
+[data-theme="dark"] .app-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .app-header .header-actions button {
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .app-header .header-actions button:hover {
+  background: rgba(196, 165, 116, 0.2);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .app-header .header-actions button[data-active="true"] {
+  background: rgba(196, 165, 116, 0.2);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .app-header .header-actions button[data-active="true"]:hover {
+  background: rgba(196, 165, 116, 0.2);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-container {
+  background: linear-gradient(180deg, #2a1f16 0%, #1f1812 100%);
+  border-bottom: 1px solid #202124;
+}
+
+/* כפתור חיפוש כרטיסיות במצב כהה */
+[data-theme="dark"] .tabs-container .search-tabs-btn {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tabs-container .search-tabs-btn:hover {
+  background: rgba(232, 234, 237, 0.08);
+}
+
+[data-theme="dark"] .tabs-container .search-tabs-btn:active {
+  background: rgba(232, 234, 237, 0.12);
+}
+
+[data-theme="dark"] .tab-item {
+  background: transparent;
+  color: #a68a5c;
+}
+
+/* קו מפריד במצב כהה */
+[data-theme="dark"] .tab-item:not(:last-child):not(.active):not(:hover)::before {
+  background: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .tab-item.active {
+  background: #202124;
+  box-shadow: none;
+}
+
+/* עיגולים במצב כהה */
+[data-theme="dark"] .tab-item.active::before {
+  box-shadow: -4px 4px 0 4px #202124;
+}
+
+[data-theme="dark"] .tab-item.active::after {
+  box-shadow: 4px 4px 0 4px #202124;
+}
+
+[data-theme="dark"] .tab-item-content {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tab-item.active .tab-item-content {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .tab-icon {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tab-item.active .tab-icon {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .tab-close-btn {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tab-close-btn:hover {
+  background: rgba(232, 234, 237, 0.08);
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .tab-close-btn:active {
+  background: rgba(232, 234, 237, 0.12);
+}
+
+[data-theme="dark"] .home-card {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .app-main-title {
+  background: linear-gradient(135deg, #c4a574 0%, #8b6f47 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .card-header {
+  background: linear-gradient(135deg, rgba(92, 61, 46, 0.2) 0%, rgba(92, 61, 46, 0.08) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .recent-book-item {
+  background: rgba(92, 61, 46, 0.15);
+  border-color: rgba(92, 61, 46, 0.3);
+}
+
+[data-theme="dark"] .recent-book-item:hover {
+  background: rgba(92, 61, 46, 0.25);
+  border-color: rgba(92, 61, 46, 0.4);
+}
+
+[data-theme="dark"] .book-preview-card {
+  background: linear-gradient(180deg, 
+    #a68a5c 0%, 
+    #a68a5c 8%, 
+    #6b5437 8%, 
+    #6b5437 15%, 
+    #5c3d2e 15%, 
+    #5c3d2e 85%, 
+    #6b5437 85%, 
+    #6b5437 92%, 
+    #a68a5c 92%, 
+    #a68a5c 100%
+  );
+  border-color: rgba(92, 61, 46, 0.6);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .book-preview-card::before,
+[data-theme="dark"] .book-preview-card::after {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 175, 55, 0.8) 50%, 
+    transparent 100%
+  );
+}
+
+[data-theme="dark"] .book-preview-card:hover {
+  box-shadow: 
+    0 12px 28px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(196, 165, 116, 0.5);
+  border-color: rgba(92, 61, 46, 0.8);
+}
+
+[data-theme="dark"] .book-title-text {
+  color: #c4a574;
+}
+
+/* תמיכה במצב כהה לזמני היום החסכניים */
+[data-theme="dark"] .zmanim-compact {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(92, 61, 46, 0.4);
+}
+
+[data-theme="dark"] .zmanim-header {
+  border-left-color: rgba(92, 61, 46, 0.4);
+}
+
+[data-theme="dark"] .zmanim-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .zman-compact {
+  background: rgba(92, 61, 46, 0.2);
+}
+
+[data-theme="dark"] .zman-compact:hover {
+  background: rgba(92, 61, 46, 0.3);
+}
+
+[data-theme="dark"] .zman-time-compact {
+  color: #c4a574;
+}
+
+.home-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 60px 80px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.home-title {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif !important;
+  font-weight: normal !important;
+}
+
+/* תמיכה במצב כהה */
+[data-theme="dark"] .home-content {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.context-menu {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 4px 0;
+  min-width: 220px;
+  max-width: 220px;
+  direction: rtl;
+  text-align: right;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  direction: rtl;
+  font-size: 13px;
+  color: #2a1810;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.context-menu-item svg {
+  font-size: 14px;
+  flex-shrink: 0;
+  order: 1;
+}
+
+.context-menu-item span:first-of-type {
+  flex: 1;
+  order: 2;
+  text-align: right;
+}
+
+.context-menu-shortcut {
+  font-size: 11px;
+  color: #5f6368;
+  opacity: 0.7;
+  order: 3;
+  padding-right: 16px;
+}
+
+.context-menu-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.context-menu-item-disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+.context-menu-item-danger {
+  color: #d13438;
+}
+
+.context-menu-item-danger:hover {
+  background: rgba(209, 52, 56, 0.1);
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 4px 0;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .context-menu {
+  background: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .context-menu-item {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .context-menu-shortcut {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .context-menu-item:hover {
+  background: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .context-menu-item-danger {
+  color: #ff6b6b;
+}
+
+[data-theme="dark"] .context-menu-item-danger:hover {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+[data-theme="dark"] .context-menu-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* אנימציה לספינר האינדקס */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.indexing-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Empty State - כרטיסים עגולים */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background: var(--appBackgroundColor);
+}
+
+.empty-state-cards {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-card {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid rgba(212, 175, 55, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.1);
+}
+
+.empty-state-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  border-color: #d4af37;
+  box-shadow: 
+    0 8px 30px rgba(212, 175, 55, 0.3),
+    0 0 0 2px rgba(212, 175, 55, 0.4);
+  background: rgba(255, 255, 255, 1);
+}
+
+.empty-state-card:active {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.empty-state-card-icon {
+  width: 36px;
+  height: 36px;
+  color: #d4af37;
+}
+
+.empty-state-card-title {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #2a1810;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .empty-state {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .empty-state-card {
+  background: rgba(42, 24, 16, 0.95);
+  border-color: rgba(196, 165, 116, 0.3);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .empty-state-card:hover {
+  border-color: #c4a574;
+  box-shadow: 
+    0 8px 30px rgba(196, 165, 116, 0.4),
+    0 0 0 2px rgba(196, 165, 116, 0.5);
+  background: rgba(42, 24, 16, 1);
+}
+
+[data-theme="dark"] .empty-state-card-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .empty-state-card-title {
+  color: #e8dcc4;
+}
+
+/* דיאלוג ספרייה */
+.library-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.library-dialog {
+  background: var(--appBackgroundColor);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 1000px;
+  height: 80vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.library-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+  direction: rtl;
+}
+
+.library-dialog-header h2 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2a1810;
+  order: 1;
+}
+
+.library-dialog-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #d4af37;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  order: 2;
+}
+
+.library-dialog-close:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.library-dialog-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* מצב כהה - דיאלוג */
+[data-theme="dark"] .library-dialog {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .library-dialog-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .library-dialog-header h2 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .library-dialog-close {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .library-dialog-close:hover {
+  background: rgba(196, 165, 116, 0.25);
+  border-color: #c4a574;
+}
+
+/* דיאלוג כרטיסיות פתוחות */
+.tabs-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.tabs-dialog {
+  background: var(--appBackgroundColor);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.tabs-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+  direction: rtl;
+}
+
+.tabs-dialog-header h2 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2a1810;
+  order: 1;
+}
+
+.tabs-dialog-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #d4af37;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  order: 2;
+}
+
+.tabs-dialog-close:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.tabs-dialog-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.tabs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tabs-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  direction: rtl;
+}
+
+.tabs-list-item:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.tabs-list-item.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-right: 3px solid #d4af37;
+}
+
+.tabs-list-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #5c3d2e;
+  flex-shrink: 0;
+}
+
+.tabs-list-item.active .tabs-list-item-icon {
+  color: #d4af37;
+}
+
+.tabs-list-item-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabs-list-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a1810;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tabs-list-item.active .tabs-list-item-title {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.tabs-list-item-path {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
+}
+
+.tabs-list-item-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.tabs-list-item:hover .tabs-list-item-close {
+  opacity: 1;
+}
+
+.tabs-list-item-close:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}
+
+/* מצב כהה - דיאלוג כרטיסיות */
+[data-theme="dark"] .tabs-dialog {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .tabs-dialog-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .tabs-dialog-header h2 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .tabs-dialog-close {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-dialog-close:hover {
+  background: rgba(196, 165, 116, 0.25);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-list-item {
+  border-bottom-color: rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .tabs-list-item:hover {
+  background: rgba(196, 165, 116, 0.08);
+}
+
+[data-theme="dark"] .tabs-list-item.active {
+  background: rgba(196, 165, 116, 0.15);
+  border-right-color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-list-item-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .tabs-list-item.active .tabs-list-item-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-list-item-title {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .tabs-list-item.active .tabs-list-item-title {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-list-item-path {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tabs-list-item-close {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tabs-list-item-close:hover {
+   background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+/* Split View - תצוגה מפוצלת */
+.split-view-pane {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.split-view-divider {
+  width: 4px;
+  background: rgba(92, 61, 46, 0.2);
+  cursor: col-resize;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.split-view-divider:hover {
+  background: rgba(92, 61, 46, 0.4);
+}
+
+.split-view-divider:active {
+  background: #5c3d2e;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .split-view-divider {
+  background: rgba(139, 111, 71, 0.3);
+}
+
+[data-theme="dark"] .split-view-divider:hover {
+  background: rgba(139, 111, 71, 0.5);
+}
+
+[data-theme="dark"] .split-view-divider:active {
+  background: #8b6f47;
+}
+
+/* בורר כרטיסייה שנייה - בתוך החלונית */
+.split-view-selector-in-pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--appBackgroundColor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 40px;
+}
+
+.split-view-selector-in-pane .split-view-selector {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(92, 61, 46, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .split-view-selector-in-pane .split-view-selector {
+  background: rgba(45, 45, 45, 0.98);
+  border-color: rgba(232, 220, 196, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* בורר כרטיסייה שנייה - עיצוב מינימליסטי */
+.split-view-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 50%; /* מתחיל מאמצע המסך */
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
+}
+
+.split-view-selector {
+  background: transparent;
+  max-width: 500px;
+  width: 90%;
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.split-view-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  direction: rtl;
+  border-bottom: 2px solid rgba(92, 61, 46, 0.15);
+  background: rgba(92, 61, 46, 0.05);
+}
+
+.split-view-selector-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #5c3d2e;
+}
+
+[data-theme="dark"] .split-view-selector-header {
+  border-bottom-color: rgba(232, 220, 196, 0.15);
+  background: rgba(232, 220, 196, 0.05);
+}
+
+[data-theme="dark"] .split-view-selector-header h3 {
+  color: #e8dcc4;
+}
+
+.split-view-selector-header button {
+  background: rgba(92, 61, 46, 0.1);
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 6px;
+  font-size: 18px;
+  color: #5c3d2e;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.split-view-selector-header button:hover {
+  background: rgba(92, 61, 46, 0.2);
+  border-color: rgba(92, 61, 46, 0.4);
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .split-view-selector-header button {
+  background: rgba(232, 220, 196, 0.1);
+  border-color: rgba(232, 220, 196, 0.2);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .split-view-selector-header button:hover {
+  background: rgba(232, 220, 196, 0.2);
+  border-color: rgba(232, 220, 196, 0.4);
+}
+
+.split-view-selector-tabs {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(70vh - 100px);
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.split-view-selector-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(92, 61, 46, 0.08);
+  border: 2px solid rgba(92, 61, 46, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.split-view-selector-tab:hover {
+  background: rgba(92, 61, 46, 0.15);
+  border-color: rgba(92, 61, 46, 0.3);
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.15);
+}
+
+.split-view-selector-tab svg {
+  font-size: 24px;
+  color: #5c3d2e;
+  flex-shrink: 0;
+}
+
+.split-view-selector-tab span {
+  flex: 1;
+  font-size: 16px;
+  color: #5c3d2e;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .split-view-selector-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .split-view-selector-tab {
+  background: rgba(232, 220, 196, 0.08);
+  border-color: rgba(232, 220, 196, 0.15);
+}
+
+[data-theme="dark"] .split-view-selector-tab:hover {
+  background: rgba(232, 220, 196, 0.15);
+  border-color: rgba(232, 220, 196, 0.3);
+  box-shadow: 0 4px 12px rgba(232, 220, 196, 0.15);
+}
+
+[data-theme="dark"] .split-view-selector-tab svg {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .split-view-selector-tab span {
+  color: #e8dcc4;
+}
+
+/* מצב מסך מלא ל-PDF */
+.app-container.pdf-fullscreen > *:not(.pdf-viewer-container) {
+  display: none !important;
+}
+
+.app-container.pdf-fullscreen {
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.app-container.pdf-fullscreen .pdf-viewer-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+}
+
+/* תיקון להשלמה אוטומטית בתוך header - מעל סרגל PDF */
+.header-search-wrapper .search-autocomplete {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 20000 !important;
+  margin-top: 4px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(92, 61, 46, 0.15) !important;
+  border: 2px solid rgba(92, 61, 46, 0.1) !important;
+}
+
+/* פאנל כרטיסיות פתוחות */
+.tabs-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 1100; /* מעל הכל */
+}
+
+.tabs-dropdown {
+  position: absolute; /* יחסית ל-main-content-center */
+  top: calc(36px + 4px); /* גובה tabs-container + רווח */
+  right: 5px; /* 5 פיקסל מהצד */
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-width: 400px;
+  max-height: calc(100vh - 32px - 72px - 36px - 20px); /* גובה מקסימלי */
+  overflow: hidden;
+  z-index: 1101; /* מעל ה-overlay */
+  direction: rtl;
+}
+
+.tabs-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(92, 61, 46, 0.05);
+  font-weight: 600;
+  color: #2a1810;
+  direction: rtl;
+  text-align: right;
+}
+
+.tabs-dropdown-count {
+  background: rgba(92, 61, 46, 0.15);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #5c3d2e;
+  margin-left: 8px; /* רווח משמאל */
+}
+
+.tabs-dropdown-list {
+  overflow-y: auto;
+  max-height: calc(100vh - 32px - 72px - 36px - 60px); /* גובה מקסימלי בניכוי הכותרת */
+  direction: rtl;
+}
+
+.tabs-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  direction: rtl;
+  text-align: right;
+}
+
+.tabs-dropdown-item:hover {
+  background: rgba(92, 61, 46, 0.08);
+}
+
+.tabs-dropdown-item.active {
+  background: rgba(92, 61, 46, 0.12);
+  border-right: 3px solid #5c3d2e;
+  padding-right: 13px; /* פיצוי על הבורדר */
+}
+
+.tabs-dropdown-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #5c3d2e;
+  flex-shrink: 0;
+  order: 1; /* אייקון ראשון מימין */
+}
+
+.tabs-dropdown-item.active .tabs-dropdown-item-icon {
+  color: #d4af37;
+}
+
+.tabs-dropdown-item-content {
+  flex: 1;
+  min-width: 0;
+  order: 2; /* תוכן באמצע */
+  text-align: right;
+  direction: rtl;
+}
+
+.tabs-dropdown-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a1810;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: right;
+}
+
+.tabs-dropdown-item.active .tabs-dropdown-item-title {
+  color: #5c3d2e;
+  font-weight: 600;
+}
+
+.tabs-dropdown-item-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  opacity: 0;
+  order: 3; /* כפתור סגירה אחרון משמאל */
+}
+
+.tabs-dropdown-item:hover .tabs-dropdown-item-close {
+  opacity: 1;
+}
+
+.tabs-dropdown-item-close:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}
+
+/* מצב כהה - פאנל כרטיסיות */
+[data-theme="dark"] .tabs-dropdown {
+  background: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .tabs-dropdown-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(92, 61, 46, 0.15);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .tabs-dropdown-count {
+  background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-dropdown-item {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .tabs-dropdown-item:hover {
+  background: rgba(196, 165, 116, 0.08);
+}
+
+[data-theme="dark"] .tabs-dropdown-item.active {
+  background: rgba(196, 165, 116, 0.15);
+  border-right-color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-dropdown-item-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .tabs-dropdown-item.active .tabs-dropdown-item-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-dropdown-item-title {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .tabs-dropdown-item.active .tabs-dropdown-item-title {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tabs-dropdown-item-close {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .tabs-dropdown-item-close:hover {
+  background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+/* תצוגה מקדימה של ספר בספרייה הצדדית */
+.sidebar-book-preview-container {
+  position: fixed;
+  top: 60px;
+  right: 320px; /* רוחב הספרייה הצדדית + מרווח */
+  bottom: 0;
+  width: 400px;
+  background: var(--sidebarBackground);
+  border-left: 1px solid var(--borderColor);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="dark"] .sidebar-book-preview-container {
+  background: #2a2a2a;
+  border-left-color: #444;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 1200px) {
+  .sidebar-book-preview-container {
+    width: 350px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar-book-preview-container {
+    display: none; /* הסתר תצוגה מקדימה במסכים קטנים */
+  }
+}

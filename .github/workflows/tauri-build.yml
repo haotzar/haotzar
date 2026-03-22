@@ -1,0 +1,222 @@
+name: Tauri Build (Multi-Platform)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/tauri-build.yml'
+    tags:
+      - 'tauri-v*'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'src-tauri/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+        # אפשר להוסיף בעתיד: macos-latest, ubuntu-20.04
+
+    runs-on: ${{ matrix.platform }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src-tauri -> target'
+
+    - name: Install dependencies (Ubuntu only)
+      if: matrix.platform == 'ubuntu-20.04'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Create required directories and download Meilisearch
+      run: |
+        # Create directories if they don't exist
+        if (-not (Test-Path "books")) { New-Item -ItemType Directory -Path "books" }
+        if (-not (Test-Path "resources/meilisearch")) { New-Item -ItemType Directory -Path "resources/meilisearch" -Force }
+        "Placeholder for books directory" | Out-File -FilePath "books/README.txt"
+        
+        # Download Meilisearch directly
+        $version = "v1.5.1"
+        $url = "https://github.com/meilisearch/meilisearch/releases/download/$version/meilisearch-windows-amd64.exe"
+        $output = "resources/meilisearch/meilisearch.exe"
+        
+        Write-Host "Downloading Meilisearch $version..."
+        Invoke-WebRequest -Uri $url -OutFile $output
+        Write-Host "Meilisearch downloaded successfully"
+      shell: pwsh
+
+    - name: Install npm dependencies
+      run: npm install
+
+    - name: Generate Tauri icons
+      run: node scripts/generate-tauri-icons.js
+      shell: pwsh
+      continue-on-error: false
+
+    - name: Build Tauri app
+      run: npm run tauri:build
+      env:
+        TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+        TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+    - name: Upload artifacts (Windows)
+      uses: actions/upload-artifact@v4
+      if: matrix.platform == 'windows-latest'
+      with:
+        name: tauri-windows-${{ github.sha }}
+        path: |
+          src-tauri/target/release/bundle/msi/*.msi
+          src-tauri/target/release/bundle/nsis/*.exe
+        retention-days: 7
+
+    - name: Upload artifacts (macOS)
+      uses: actions/upload-artifact@v4
+      if: matrix.platform == 'macos-latest'
+      with:
+        name: tauri-macos-${{ github.sha }}
+        path: |
+          src-tauri/target/release/bundle/dmg/*.dmg
+          src-tauri/target/release/bundle/macos/*.app
+        retention-days: 7
+
+    - name: Upload artifacts (Linux)
+      uses: actions/upload-artifact@v4
+      if: matrix.platform == 'ubuntu-20.04'
+      with:
+        name: tauri-linux-${{ github.sha }}
+        path: |
+          src-tauri/target/release/bundle/deb/*.deb
+          src-tauri/target/release/bundle/appimage/*.AppImage
+        retention-days: 7
+
+    - name: Create Release (for tags)
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/tauri-v')
+      with:
+        files: |
+          src-tauri/target/release/bundle/**/*.msi
+          src-tauri/target/release/bundle/**/*.exe
+          src-tauri/target/release/bundle/**/*.dmg
+          src-tauri/target/release/bundle/**/*.deb
+          src-tauri/target/release/bundle/**/*.AppImage
+        draft: true
+        prerelease: false
+        name: 'האויצר (Tauri) ${{ github.ref_name }}'
+        body: |
+          ## האויצר - אפליקציית ספרייה תורנית (Tauri)
+          
+          ### קבצים להורדה:
+          - **Windows**: הורד את קובץ ה-`.exe` (NSIS installer) או `.msi`
+          - **macOS**: הורד את קובץ ה-`.dmg`
+          - **Linux**: הורד את קובץ ה-`.deb` (Debian/Ubuntu) או `.AppImage`
+          
+          ### יתרונות גרסת Tauri:
+          ✨ גודל קובץ קטן משמעותית (~10MB במקום ~100MB)
+          ⚡ צריכת זיכרון נמוכה יותר
+          🚀 ביצועים משופרים
+          🔒 אבטחה מוגברת
+          
+          ### דרישות מערכת:
+          - **Windows**: Windows 10/11 (64-bit)
+          - **macOS**: macOS 10.15 (Catalina) ומעלה
+          - **Linux**: Ubuntu 20.04+ או מערכת תואמת
+          - 2GB RAM מומלץ
+          - 100GB שטח פנוי (לספרים)
+          
+          ### תכונות:
+          - חיפוש מהיר עם Meilisearch
+          - תמיכה בקבצי PDF ו-TXT
+          - ממשק בעברית
+          - תמיכה בתיקיות חיצוניות
+          - עורך מטא-דאטה
+          
+          ### התקנה:
+          
+          #### Windows:
+          1. הורד את קובץ ה-`.exe`
+          2. הפעל את הקובץ ועקוב אחר ההוראות
+          
+          #### macOS:
+          1. הורד את קובץ ה-`.dmg`
+          2. פתח את הקובץ וגרור את האפליקציה ל-Applications
+          
+          #### Linux:
+          ```bash
+          # Debian/Ubuntu (.deb)
+          sudo dpkg -i haotzer_*.deb
+          
+          # AppImage
+          chmod +x haotzer_*.AppImage
+          ./haotzer_*.AppImage
+          ```
+          
+          ### שינויים בגרסה זו:
+          - ראה את רשימת השינויים המלאה בדף הפרויקט
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  check-build-size:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: tauri-*
+        merge-multiple: true
+        
+    - name: Check bundle sizes
+      run: |
+        echo "## 📦 Bundle Sizes" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Platform | File | Size |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|------|------|" >> $GITHUB_STEP_SUMMARY
+        
+        for file in **/*.{exe,msi,dmg,deb,AppImage}; do
+          if [ -f "$file" ]; then
+            size=$(du -h "$file" | cut -f1)
+            platform=$(echo "$file" | cut -d'/' -f1)
+            filename=$(basename "$file")
+            echo "| $platform | $filename | $size |" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+      shell: bash

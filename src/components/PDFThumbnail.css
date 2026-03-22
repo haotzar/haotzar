@@ -1,0 +1,27 @@
+.pdf-thumbnail {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #525659;
+  overflow: auto;
+  padding: 20px;
+}
+
+.pdf-thumbnail canvas {
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: white;
+}
+
+.pdf-thumbnail.loading,
+.pdf-thumbnail.error {
+  color: #e8dcc4;
+  font-size: 14px;
+}
+
+.pdf-thumbnail.error {
+  color: #ff6b6b;
+}

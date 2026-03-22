@@ -1,0 +1,2166 @@
+/* דף בית הספרייה */
+.library-home {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* רקע */
+.library-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/home-background.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.05;
+  z-index: 0;
+  display: var(--show-background-image, block);
+}
+
+/* סמלים מרחפים ברקע */
+.floating-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.floating-icon {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  opacity: 0.08;
+  animation: float linear infinite;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-50px) rotate(15deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* גדלים שונים לסמלים */
+.floating-icon:nth-child(3n) {
+  width: 60px;
+  height: 60px;
+  opacity: 0.1;
+}
+
+.floating-icon:nth-child(5n) {
+  width: 100px;
+  height: 100px;
+  opacity: 0.06;
+}
+
+.floating-icon:nth-child(7n) {
+  width: 50px;
+  height: 50px;
+  opacity: 0.12;
+}
+
+/* מצב כהה - סמלים מעט יותר בולטים */
+[data-theme="dark"] .floating-icon {
+  opacity: 0.1;
+}
+
+[data-theme="dark"] .floating-icon:nth-child(3n) {
+  opacity: 0.12;
+}
+
+[data-theme="dark"] .floating-icon:nth-child(5n) {
+  opacity: 0.08;
+}
+
+[data-theme="dark"] .floating-icon:nth-child(7n) {
+  opacity: 0.14;
+}
+
+/* תוכן */
+.library-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr minmax(0, 240px);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "zmanim header workspaces"
+    "zmanim center workspaces";
+  align-items: stretch;
+  padding: 0 40px;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* אזור מרכזי */
+.library-center-content {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* מעטפת לאזור מרכזי + שולחנות עבודה */
+.library-center-wrapper {
+  display: none;
+}
+
+/* טור עזרה - צד שמאל */
+.help-sidebar {
+  grid-area: zmanim;
+  width: 100%;
+  max-width: 240px;
+  background: transparent;
+  border-right: none;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 10px;
+  padding-top: 140px;
+  padding-bottom: 40px;
+  gap: 16px;
+  justify-content: space-between;
+  overflow: visible;
+  min-width: 0;
+}
+
+.help-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  flex-direction: row-reverse;
+  flex: 0 0 auto;
+}
+
+.help-sidebar-icon {
+  width: 20px;
+  height: 20px;
+  color: #d4af37;
+}
+
+.help-sidebar-header h3 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2a1810;
+  text-align: right;
+  flex: 1;
+}
+
+.help-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* מעטפת לכרטיסי העזרה */
+.help-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+.help-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  direction: rtl;
+  cursor: pointer;
+}
+
+.help-card:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateX(2px);
+}
+
+.help-card-icon {
+  width: 20px;
+  height: 20px;
+  color: #d4af37;
+  flex-shrink: 0;
+  order: 1;
+}
+
+.help-card-title {
+  font-size: 13px;
+  color: #2a1810;
+  font-weight: 600;
+  text-align: right;
+  order: 2;
+  flex: 1;
+}
+
+/* מצב כהה - עזרה */
+[data-theme="dark"] .help-sidebar {
+  background: transparent;
+}
+
+[data-theme="dark"] .help-sidebar-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .help-sidebar-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .help-sidebar-header h3 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .help-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .help-card:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .help-card-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .help-card-title {
+  color: #e8dcc4;
+}
+
+/* טור זמני היום - צד שמאל (מוסתר כעת) */
+.zmanim-sidebar {
+  display: none;
+}
+
+/* טור שולחנות עבודה - צד ימין */
+.workspaces-sidebar {
+  grid-area: workspaces;
+  width: 100%;
+  max-width: 240px;
+  background: transparent;
+  border-left: none;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 10px;
+  padding-top: 140px;
+  gap: 16px;
+  justify-content: flex-start;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* התאמת האזור המרכזי בתוך ה-wrapper */
+.library-center-wrapper .library-center-content {
+  display: none;
+}
+
+.zmanim-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  flex-direction: row-reverse;
+  flex: 0 0 auto;
+}
+
+.zmanim-sidebar-icon {
+  width: 20px;
+  height: 20px;
+  color: #d4af37;
+}
+
+.zmanim-sidebar-header h3 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2a1810;
+  text-align: right;
+  flex: 1;
+}
+
+.zmanim-location {
+  text-align: right;
+  padding: 6px 10px;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 6px;
+  color: #d4af37;
+  font-size: 13px;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.zmanim-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.zman-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  direction: rtl;
+}
+
+.zman-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateX(2px);
+}
+
+.zman-icon {
+  width: 18px;
+  height: 18px;
+  color: #d4af37;
+  flex-shrink: 0;
+  order: 1;
+}
+
+.zman-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  order: 2;
+}
+
+.zman-label {
+  font-size: 12px;
+  color: #2a1810;
+  font-weight: 500;
+  text-align: right;
+}
+
+.zman-time {
+  font-size: 14px;
+  font-weight: bold;
+  color: #d4af37;
+  font-family: 'Arial', sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+.zmanim-footer-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 8px;
+  margin-top: auto;
+  direction: rtl;
+  flex: 0 0 auto;
+  transition: all 0.2s ease;
+}
+
+.zmanim-footer-info:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateX(2px);
+}
+
+.footer-icon {
+  width: 18px;
+  height: 18px;
+  color: #d4af37;
+  flex-shrink: 0;
+  order: 1;
+}
+
+.footer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(42, 24, 16, 0.7);
+  line-height: 1.3;
+  order: 2;
+  flex: 1;
+}
+
+.footer-text span {
+  text-align: right;
+}
+
+.footer-text span {
+  text-align: right;
+}
+
+/* כותרת שולחנות עבודה */
+.workspaces-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  flex-direction: row-reverse;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.workspaces-sidebar-icon {
+  width: 20px;
+  height: 20px;
+  color: #d4af37;
+}
+
+.workspaces-sidebar-header h3 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2a1810;
+  text-align: right;
+  flex: 1;
+}
+
+.workspace-add-sidebar-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  color: #d4af37;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  left: 0;
+}
+
+.workspace-add-sidebar-btn:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.workspace-add-sidebar-btn:active {
+  transform: scale(0.95);
+}
+
+/* תוכן שולחנות עבודה */
+.workspaces-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* הסתרת סרגל גלילה */
+.workspaces-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workspaces-sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workspaces-sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 3px;
+}
+
+.workspaces-sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.3);
+}
+
+/* התאמת רשימת שולחנות עבודה לסיידבר */
+.workspaces-sidebar .workspaces-container {
+  padding: 0;
+  gap: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspaces-sidebar .workspaces-list {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.workspaces-sidebar .workspace-item {
+  min-height: 70px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.workspaces-sidebar .workspace-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateX(-2px);
+}
+
+.workspaces-sidebar .workspace-item.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: #d4af37;
+}
+
+/* מצב כהה - שולחנות עבודה */
+[data-theme="dark"] .workspaces-sidebar-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .workspaces-sidebar-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .workspaces-sidebar-header h3 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .workspace-add-sidebar-btn {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .workspace-add-sidebar-btn:hover {
+  background: rgba(196, 165, 116, 0.25);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .workspaces-sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .workspaces-sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .workspaces-sidebar .workspace-item {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .workspaces-sidebar .workspace-item:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .workspaces-sidebar .workspace-item.active {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: #c4a574;
+}
+
+/* מצב כהה - זמני היום */
+[data-theme="dark"] .zmanim-sidebar {
+  background: transparent;
+}
+
+[data-theme="dark"] .zmanim-sidebar-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .zmanim-sidebar-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .zmanim-sidebar-header h3 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .zmanim-location {
+  background: rgba(196, 165, 116, 0.1);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .zman-item {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .zman-item:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .zman-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .zman-label {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .zman-time {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .zmanim-footer-info {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(196, 165, 116, 0.15);
+}
+
+[data-theme="dark"] .zmanim-footer-info:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .footer-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .footer-text {
+  color: rgba(232, 220, 196, 0.7);
+}
+
+/* מיכל ראשי לספרייה ותצוגה מקדימה */
+.library-main-container {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 40px;
+}
+
+/* עמודה שמאלית */
+.library-left-column {
+  flex: 1;
+  max-width: 50%;
+  margin: 0;
+  margin-right: auto;
+  margin-left: 0;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* מיכל תצוגה מקדימה */
+.library-preview-wrapper {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+/* מיכלי placeholder */
+.library-placeholder-top,
+.library-placeholder-bottom {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--appBackgroundColorSecondary);
+  border-radius: 12px;
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* כותרת placeholder */
+.placeholder-header {
+  padding: 20px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  background: transparent;
+}
+
+.placeholder-header.workspaces-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workspace-add-header-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #d4af37;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.workspace-add-header-btn:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.workspace-add-header-btn:active {
+  transform: scale(0.95);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .workspace-add-header-btn {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .workspace-add-header-btn:hover {
+  background: rgba(196, 165, 116, 0.25);
+  border-color: #c4a574;
+}
+
+.placeholder-header h3 {
+  margin: 0;
+  color: #2a1810;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: right;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+}
+
+.placeholder-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(42, 24, 16, 0.5);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+.placeholder-content.workspaces-content {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* הסתרת פס גלילה */
+.placeholder-content.workspaces-content::-webkit-scrollbar {
+  display: none;
+}
+
+.placeholder-content.workspaces-content {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.placeholder-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* הסתרת פס גלילה */
+.placeholder-content-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.placeholder-content-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* מיכל עץ הקבצים */
+.library-tree-wrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 300px;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+/* כותרת */
+.library-header {
+  grid-area: header;
+  text-align: center;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  margin-top: 80px;
+  width: 100%;
+  z-index: 10;
+}
+
+/* כרטיסי פעולות */
+.action-cards-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding: 0 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.action-card {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid rgba(212, 175, 55, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(212, 175, 55, 0.1);
+  flex-shrink: 0;
+}
+
+/* אנימציית הבהוב לכל כרטיס בנפרד - מהצד ההפוך */
+.action-card:nth-child(4) {
+  animation: highlight 0.8s ease-in-out 5s;
+}
+
+.action-card:nth-child(3) {
+  animation: highlight 0.8s ease-in-out 5.4s;
+}
+
+.action-card:nth-child(2) {
+  animation: highlight 0.8s ease-in-out 5.8s;
+}
+
+.action-card:nth-child(1) {
+  animation: highlight 0.8s ease-in-out 6.2s;
+}
+
+@keyframes highlight {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(212, 175, 55, 0.1);
+    border-color: rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 
+      0 8px 35px rgba(212, 175, 55, 0.5),
+      0 0 0 3px rgba(212, 175, 55, 0.6),
+      0 0 30px rgba(212, 175, 55, 0.4);
+    border-color: #d4af37;
+  }
+}
+
+.action-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  border-color: #d4af37;
+  box-shadow: 
+    0 8px 30px rgba(212, 175, 55, 0.3),
+    0 0 0 2px rgba(212, 175, 55, 0.4);
+  background: rgba(255, 255, 255, 1);
+}
+
+.action-card:active {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.action-card-icon {
+  width: 36px;
+  height: 36px;
+  color: #d4af37;
+}
+
+[data-theme="dark"] .action-card-icon {
+  color: #c4a574;
+}
+
+.action-card-title {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #2a1810;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .action-card {
+  background: rgba(42, 24, 16, 0.95);
+  border-color: rgba(196, 165, 116, 0.3);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(196, 165, 116, 0.1);
+}
+
+[data-theme="dark"] .action-card:hover {
+  border-color: #c4a574;
+  box-shadow: 
+    0 8px 30px rgba(196, 165, 116, 0.4),
+    0 0 0 2px rgba(196, 165, 116, 0.5);
+  background: rgba(42, 24, 16, 1);
+}
+
+[data-theme="dark"] .action-card-title {
+  color: #e8dcc4;
+}
+
+/* אנימציית הבהוב במצב כהה - מהצד ההפוך */
+[data-theme="dark"] .action-card:nth-child(4) {
+  animation: highlightDark 0.8s ease-in-out 5s;
+}
+
+[data-theme="dark"] .action-card:nth-child(3) {
+  animation: highlightDark 0.8s ease-in-out 5.4s;
+}
+
+[data-theme="dark"] .action-card:nth-child(2) {
+  animation: highlightDark 0.8s ease-in-out 5.8s;
+}
+
+[data-theme="dark"] .action-card:nth-child(1) {
+  animation: highlightDark 0.8s ease-in-out 6.2s;
+}
+
+@keyframes highlightDark {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(196, 165, 116, 0.1);
+    border-color: rgba(196, 165, 116, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 
+      0 8px 35px rgba(196, 165, 116, 0.6),
+      0 0 0 3px rgba(196, 165, 116, 0.7),
+      0 0 30px rgba(196, 165, 116, 0.5);
+    border-color: #c4a574;
+  }
+}
+
+/* אנימציית ספרים */
+.books-animation-container {
+  width: 100%;
+  max-width: 700px;
+  height: 120px;
+  overflow: hidden;
+  position: relative;
+  margin: 40px auto 0;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 85%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 85%,
+    transparent 100%
+  );
+}
+
+.books-track {
+  display: flex;
+  gap: 100px;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: scrollBooks 25s linear infinite;
+}
+
+.animated-book {
+  width: 70px;
+  height: 70px;
+  color: #d4af37;
+  opacity: 0.6;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.3));
+}
+
+/* אנימציה של תנועה - מימין לשמאל */
+@keyframes scrollBooks {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+/* דחיסה במרכז - כל ספר בנפרד */
+.animated-book:nth-child(1) { animation: squeeze1 25s linear infinite; }
+.animated-book:nth-child(2) { animation: squeeze2 25s linear infinite; }
+.animated-book:nth-child(3) { animation: squeeze3 25s linear infinite; }
+.animated-book:nth-child(4) { animation: squeeze4 25s linear infinite; }
+.animated-book:nth-child(5) { animation: squeeze5 25s linear infinite; }
+.animated-book:nth-child(6) { animation: squeeze6 25s linear infinite; }
+.animated-book:nth-child(7) { animation: squeeze7 25s linear infinite; }
+.animated-book:nth-child(8) { animation: squeeze8 25s linear infinite; }
+.animated-book:nth-child(9) { animation: squeeze9 25s linear infinite; }
+.animated-book:nth-child(10) { animation: squeeze10 25s linear infinite; }
+
+@keyframes squeeze1 {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  48%, 52% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze2 {
+  0%, 10%, 100% { transform: scale(1); opacity: 0.6; }
+  58%, 62% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze3 {
+  0%, 20%, 100% { transform: scale(1); opacity: 0.6; }
+  68%, 72% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze4 {
+  0%, 30%, 100% { transform: scale(1); opacity: 0.6; }
+  78%, 82% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze5 {
+  0%, 40%, 100% { transform: scale(1); opacity: 0.6; }
+  88%, 92% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze6 {
+  0%, 50%, 100% { transform: scale(1); opacity: 0.6; }
+  2%, 6% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze7 {
+  0%, 60%, 100% { transform: scale(1); opacity: 0.6; }
+  12%, 16% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze8 {
+  0%, 70%, 100% { transform: scale(1); opacity: 0.6; }
+  22%, 26% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze9 {
+  0%, 80%, 100% { transform: scale(1); opacity: 0.6; }
+  32%, 36% { transform: scale(0.5); opacity: 0.25; }
+}
+
+@keyframes squeeze10 {
+  0%, 90%, 100% { transform: scale(1); opacity: 0.6; }
+  42%, 46% { transform: scale(0.5); opacity: 0.25; }
+}
+
+/* מצב כהה */
+[data-theme="dark"] .animated-book {
+  color: #c4a574;
+  filter: drop-shadow(0 2px 8px rgba(196, 165, 116, 0.2));
+}
+
+.library-title {
+  font-family: 'DrugulinCLM-Bold', 'Frank Ruhl Libre', 'David Libre', 'Arial', sans-serif;
+  font-size: 96px;
+  font-weight: bold;
+  
+  /* גרדיאנט זהב עדין */
+  background: linear-gradient(
+    135deg,
+    #f4e4a6 0%,
+    #d4af37 20%,
+    #f4d03f 40%,
+    #d4af37 60%,
+    #c4a574 80%,
+    #d4af37 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* אנימציה עדינה של הגרדיאנט */
+  animation: fadeInDown 1s ease-out, gradientShift 8s ease infinite;
+  
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 8px;
+  
+  /* קו מתאר זהב כהה */
+  -webkit-text-stroke: 2.5px rgba(139, 111, 55, 0.7);
+  text-stroke: 2.5px rgba(139, 111, 55, 0.7);
+  paint-order: stroke fill;
+  
+  /* צל עדין */
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.library-subtitle {
+  font-family: 'DrugulinCLM-Bold', 'Frank Ruhl Libre', 'David Libre', 'Arial', sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: #c4a574;
+  margin: 12px 0 0 0;
+  letter-spacing: 3px;
+  
+  /* קו מתאר עדין */
+  -webkit-text-stroke: 0.5px rgba(139, 111, 71, 0.6);
+  text-stroke: 0.5px rgba(139, 111, 71, 0.6);
+  
+  text-shadow: 
+    0 0 15px rgba(196, 165, 116, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.7);
+  
+  /* אנימציית כניסה - מעט מאוחרת */
+  animation: fadeInDown 1s ease-out 0.3s both;
+}
+
+.library-description {
+  font-family: 'DrugulinCLM-Bold', 'Frank Ruhl Libre', 'David Libre', 'Arial', sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: rgba(139, 111, 71, 0.9);
+  margin: 20px 0 0 0;
+  letter-spacing: 1.5px;
+  direction: rtl;
+  
+  /* אנימציית הופעת אותיות משמאל לימין */
+  animation: revealText 3.5s steps(50) 1.5s both;
+}
+
+@keyframes revealText {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* תיבת חיפוש */
+.library-search-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.library-search-wrapper {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+
+.library-search-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(212, 175, 55, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.library-search-box.has-autocomplete {
+  border-radius: 12px 12px 0 0;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 2px rgba(212, 175, 55, 0.4);
+}
+
+.library-search-input-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.library-search-icon {
+  color: #d4af37;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.library-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #2a1810;
+  outline: none;
+  font-family: inherit;
+}
+
+.library-search-input::placeholder {
+  color: rgba(42, 24, 16, 0.5);
+}
+
+.library-clear-search {
+  background: none;
+  border: none;
+  color: rgba(42, 24, 16, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.library-clear-search:hover {
+  color: #d4af37;
+}
+
+/* התאמת SearchAutocomplete לספרייה */
+.library-search-box .search-autocomplete {
+  border-radius: 0 0 12px 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.library-search-box .search-autocomplete::-webkit-scrollbar {
+  width: 8px;
+}
+
+.library-search-box .search-autocomplete::-webkit-scrollbar-track {
+  background: rgba(92, 61, 46, 0.05);
+  border-radius: 0 0 12px 0;
+}
+
+.library-search-box .search-autocomplete::-webkit-scrollbar-thumb {
+  background: rgba(139, 111, 71, 0.3);
+  border-radius: 4px;
+}
+
+.library-search-box .search-autocomplete::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 111, 71, 0.5);
+}
+
+/* מיכל המדפים */
+.shelves-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  padding: 0;
+  width: 100%;
+  max-width: 700px;
+  margin: 40px auto 0;
+  overflow: visible;
+}
+
+/* Scrollbar מותאם אישית למדפים */
+.shelves-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.shelves-container::-webkit-scrollbar-track {
+  background: rgba(42, 24, 16, 0.3);
+  border-radius: 5px;
+}
+
+.shelves-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #8b6f47, #5c3d2e);
+  border-radius: 5px;
+  border: 2px solid rgba(42, 24, 16, 0.3);
+}
+
+.shelves-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #a68a5c, #6b5437);
+}
+
+/* Scrollbar מותאם אישית */
+.library-home::-webkit-scrollbar {
+  width: 12px;
+}
+
+.library-home::-webkit-scrollbar-track {
+  background: rgba(42, 24, 16, 0.5);
+  border-radius: 6px;
+}
+
+.library-home::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #8b6f47, #5c3d2e);
+  border-radius: 6px;
+  border: 2px solid rgba(42, 24, 16, 0.5);
+}
+
+.library-home::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #a68a5c, #6b5437);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .library-title {
+  /* גרדיאנט זהב עדין במצב כהה */
+  background: linear-gradient(
+    135deg,
+    #e8d4a0 0%,
+    #d4af37 20%,
+    #f4d03f 40%,
+    #d4af37 60%,
+    #c4a574 80%,
+    #d4af37 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* אנימציה עדינה של הגרדיאנט */
+  animation: fadeInDown 1s ease-out, gradientShift 8s ease infinite;
+  
+  /* קו מתאר זהב כהה */
+  -webkit-text-stroke: 2.5px rgba(100, 80, 40, 0.8);
+  text-stroke: 2.5px rgba(100, 80, 40, 0.8);
+  paint-order: stroke fill;
+  
+  /* צל עדין */
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.8))
+          drop-shadow(0 0 30px rgba(212, 175, 55, 0.5));
+}
+
+[data-theme="dark"] .library-subtitle {
+  color: #a68a5c;
+  
+  /* קו מתאר עדין במצב כהה */
+  -webkit-text-stroke: 0.5px rgba(92, 61, 46, 0.8);
+  text-stroke: 0.5px rgba(92, 61, 46, 0.8);
+  
+  text-shadow: 
+    0 0 15px rgba(166, 138, 92, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.9);
+  
+  /* אנימציה גם במצב כהה */
+  animation: fadeInDown 1s ease-out 0.3s both;
+}
+
+[data-theme="dark"] .library-description {
+  color: rgba(196, 165, 116, 0.9);
+  animation: revealText 3.5s steps(50) 1.5s both;
+}
+
+[data-theme="dark"] .library-placeholder-top,
+[data-theme="dark"] .library-placeholder-bottom {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .placeholder-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .placeholder-header h3 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .placeholder-content {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .library-search-box {
+  background: rgba(42, 24, 16, 0.95);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .library-search-box.has-autocomplete {
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(196, 165, 116, 0.5);
+}
+
+[data-theme="dark"] .library-search-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .library-search-input {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .library-search-input::placeholder {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .library-clear-search {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .library-clear-search:hover {
+  color: #c4a574;
+}
+
+/* התאמת SearchAutocomplete למצב כהה */
+[data-theme="dark"] .library-search-box .search-autocomplete::-webkit-scrollbar-track {
+  background: rgba(92, 61, 46, 0.15);
+}
+
+[data-theme="dark"] .library-search-box .search-autocomplete::-webkit-scrollbar-thumb {
+  background: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .library-search-box .search-autocomplete::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 165, 116, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .library-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "header"
+      "zmanim"
+      "center"
+      "workspaces";
+  }
+  
+  .help-sidebar,
+  .workspaces-sidebar {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+    border-right: none;
+    border-left: none;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    margin: 0;
+    height: auto;
+  }
+  
+  .library-center-content {
+    padding: 20px 10px 40px;
+  }
+  
+  .library-header {
+    margin-bottom: 40px;
+    padding: 20px 10px;
+  }
+  
+  .library-title {
+    font-size: 50px;
+    letter-spacing: 2px;
+  }
+  
+  .library-subtitle {
+    font-size: 16px;
+  }
+  
+  .library-main-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .library-left-column,
+  .library-tree-wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  .library-search-wrapper {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+  
+  .library-search-input {
+    font-size: 14px;
+  }
+  
+  .shelves-container {
+    gap: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .library-title {
+    font-size: 40px;
+  }
+  
+  .library-subtitle {
+    font-size: 14px;
+  }
+  
+  .library-search-input-row {
+    padding: 10px 12px;
+  }
+  
+  .library-search-icon {
+    font-size: 18px;
+  }
+}
+
+/* דיאלוג ספרייה */
+.library-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.library-dialog {
+  background: var(--appBackgroundColor);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 1000px;
+  height: 80vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.library-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+  direction: rtl;
+}
+
+.library-dialog-header h2 {
+  margin: 0;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2a1810;
+  order: 1;
+}
+
+.library-dialog-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #d4af37;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  order: 2;
+}
+
+.library-dialog-close:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+  transform: scale(1.05);
+}
+
+.library-dialog-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* מצב כהה - דיאלוג */
+[data-theme="dark"] .library-dialog {
+  background: #1a1a1a;
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .library-dialog-header {
+  border-bottom-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .library-dialog-header h2 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .library-dialog-close {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .library-dialog-close:hover {
+  background: rgba(196, 165, 116, 0.25);
+  border-color: #c4a574;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+  color: rgba(42, 24, 16, 0.5);
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  color: rgba(212, 175, 55, 0.3);
+}
+
+.empty-state-text {
+  font-size: 18px;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  margin: 0;
+}
+
+/* מצב כהה - Empty State */
+[data-theme="dark"] .empty-state {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .empty-state-icon {
+  color: rgba(196, 165, 116, 0.3);
+}
+
+/* תוכן עזרה */
+.help-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  direction: rtl;
+  text-align: right;
+}
+
+.help-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.help-section h3 {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #d4af37;
+  margin: 0 0 20px 0;
+}
+
+.help-section h4 {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2a1810;
+  margin: 24px 0 12px 0;
+}
+
+.help-section p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #2a1810;
+  margin: 0 0 16px 0;
+}
+
+.help-section ul,
+.help-section ol {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #2a1810;
+  margin: 0 0 16px 0;
+  padding-right: 24px;
+}
+
+.help-section li {
+  margin-bottom: 8px;
+}
+
+.help-section strong {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+/* Scrollbar לתוכן עזרה */
+.help-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.help-content::-webkit-scrollbar-track {
+  background: rgba(212, 175, 55, 0.05);
+  border-radius: 4px;
+}
+
+.help-content::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
+
+.help-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.5);
+}
+
+/* מצב כהה - תוכן עזרה */
+[data-theme="dark"] .help-section h3 {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .help-section h4 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .help-section p,
+[data-theme="dark"] .help-section ul,
+[data-theme="dark"] .help-section ol,
+[data-theme="dark"] .help-section li {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .help-section strong {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .help-content::-webkit-scrollbar-track {
+  background: rgba(196, 165, 116, 0.05);
+}
+
+[data-theme="dark"] .help-content::-webkit-scrollbar-thumb {
+  background: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .help-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 165, 116, 0.5);
+}
+
+/* אנימציית ספרים על מדף */
+.books-shelf-animation {
+  width: 100%;
+  max-width: 500px;
+  height: 80px;
+  position: relative;
+  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.book-item {
+  position: absolute;
+  width: 18px;
+  height: 60px;
+  opacity: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* ציור קו מתאר של ספר */
+  background: transparent;
+  border: 2px solid #d4af37;
+  border-radius: 2px 4px 4px 2px;
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.2);
+  
+  /* קו בגב הספר */
+  position: relative;
+}
+
+.book-item::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #d4af37;
+  opacity: 0.6;
+}
+
+/* אנימציות לכל ספר - נכנס, נשאר במקום שלו, יוצא */
+.book-1 {
+  animation: bookEnterStayLeave1 16s ease-in-out infinite;
+}
+
+.book-2 {
+  animation: bookEnterStayLeave2 16s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.book-3 {
+  animation: bookEnterStayLeave3 16s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.book-4 {
+  animation: bookEnterStayLeave4 16s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.book-5 {
+  animation: bookEnterStayLeave5 16s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.book-6 {
+  animation: bookEnterStayLeave6 16s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+.book-7 {
+  animation: bookEnterStayLeave7 16s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.book-8 {
+  animation: bookEnterStayLeave8 16s ease-in-out infinite;
+  animation-delay: 3.5s;
+}
+
+/* אנימציה לספר 1 - מרכז */
+@keyframes bookEnterStayLeave1 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% - 0px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% - 0px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% - 0px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 2 - שמאל למרכז */
+@keyframes bookEnterStayLeave2 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% - 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% - 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% - 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 3 */
+@keyframes bookEnterStayLeave3 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% - 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% - 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% - 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 4 */
+@keyframes bookEnterStayLeave4 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% - 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% - 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% - 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 5 - ימין למרכז */
+@keyframes bookEnterStayLeave5 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% + 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% + 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% + 22px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 6 */
+@keyframes bookEnterStayLeave6 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% + 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% + 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% + 44px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 7 */
+@keyframes bookEnterStayLeave7 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% + 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% + 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% + 66px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* אנימציה לספר 8 */
+@keyframes bookEnterStayLeave8 {
+  0% {
+    left: -10%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(-8deg);
+  }
+  12.5% {
+    left: calc(50% + 88px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  50% {
+    left: calc(50% + 88px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  62.5% {
+    left: calc(50% + 88px);
+    opacity: 1;
+    transform: translate(-50%, -50%) skewY(0deg);
+  }
+  75% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+    transform: translate(-50%, -50%) skewY(8deg);
+  }
+}
+
+/* מצב כהה */
+[data-theme="dark"] .book-item {
+  border-color: #c4a574;
+  box-shadow: 0 2px 6px rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .book-item::before {
+  background: #c4a574;
+}

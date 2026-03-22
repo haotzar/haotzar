@@ -1,0 +1,171 @@
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #f7ead8 0%, #e8dcc4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.splash-screen.fade-out {
+  animation: fadeOut 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.splash-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px;
+}
+
+.splash-logo {
+  margin-bottom: 40px;
+  font-family: 'DrugulinCLM-Bold', 'Frank Ruhl Libre', 'David Libre', 'Arial', sans-serif;
+  color: #d4af37;
+  animation: pulse 1.5s ease-in-out infinite;
+  will-change: transform, opacity;
+  
+  /* קו מתאר מתקדם */
+  -webkit-text-stroke: 2px rgba(139, 111, 71, 0.8);
+  text-stroke: 2px rgba(139, 111, 71, 0.8);
+  paint-order: stroke fill;
+  
+  /* צללים מרובדים */
+  text-shadow: 
+    /* קו מתאר חיצוני */
+    -1px -1px 0 rgba(139, 111, 71, 0.9),
+    1px -1px 0 rgba(139, 111, 71, 0.9),
+    -1px 1px 0 rgba(139, 111, 71, 0.9),
+    1px 1px 0 rgba(139, 111, 71, 0.9),
+    
+    /* הזוהר הפנימי */
+    0 0 25px rgba(212, 175, 55, 0.6),
+    0 0 45px rgba(212, 175, 55, 0.4),
+    
+    /* צל עומק */
+    3px 3px 8px rgba(0, 0, 0, 0.7),
+    5px 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.splash-progress-container {
+  margin-bottom: 24px;
+}
+
+.splash-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(92, 61, 46, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.splash-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5c3d2e 0%, #8b6f47 100%);
+  border-radius: 4px;
+  transition: width 0.2s ease-out;
+  box-shadow: 0 0 10px rgba(92, 61, 46, 0.3);
+  will-change: width;
+}
+
+.splash-progress-text {
+  color: #5c3d2e;
+  font-weight: 600;
+}
+
+.splash-stage {
+  color: #2c1810;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.splash-message {
+  color: rgba(44, 24, 16, 0.7);
+  display: block;
+  margin-top: 8px;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .splash-screen {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+[data-theme="dark"] .splash-logo {
+  color: #c4a574;
+  
+  /* קו מתאר במצב כהה */
+  -webkit-text-stroke: 2px rgba(92, 61, 46, 0.9);
+  text-stroke: 2px rgba(92, 61, 46, 0.9);
+  
+  text-shadow: 
+    /* קו מתאר חיצוני */
+    -1px -1px 0 rgba(92, 61, 46, 1),
+    1px -1px 0 rgba(92, 61, 46, 1),
+    -1px 1px 0 rgba(92, 61, 46, 1),
+    1px 1px 0 rgba(92, 61, 46, 1),
+    
+    /* הזוהר הפנימי */
+    0 0 25px rgba(196, 165, 116, 0.7),
+    0 0 45px rgba(196, 165, 116, 0.5),
+    
+    /* צל עומק */
+    3px 3px 8px rgba(0, 0, 0, 0.9),
+    5px 5px 15px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .splash-progress-bar {
+  background: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .splash-progress-fill {
+  background: linear-gradient(90deg, #c4a574 0%, #d4af37 100%);
+}
+
+[data-theme="dark"] .splash-progress-text {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .splash-stage {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .splash-message {
+  color: rgba(255, 255, 255, 0.7);
+}

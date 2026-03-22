@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Mozilla Foundation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Adobe CMap resources are covered by their own copyright but the same license:
+
+    Copyright 1990-2015 Adobe Systems Incorporated.
+
+See https://github.com/adobe-type-tools/cmap-resources
+-->
+<html dir="ltr" mozdisallowselectionprint>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="google" content="notranslate">
+    <title>PDF.js viewer</title>
+
+<!-- This snippet is used in production (included from viewer.html) -->
+<link rel="resource" type="application/l10n" href="locale/locale.json">
+<script src="../build/pdf.mjs" type="module"></script>
+
+    <link rel="stylesheet" href="viewer.css">
+    <link rel="stylesheet" href="custom-outline-style.css">
+
+  <script src="viewer.mjs" type="module"></script>
+  <script src="custom-search.js"></script>
+  
+  <!-- Fluent UI Icons -->
+  <style>
+    /* Change background to very light gray */
+    html, body {
+      background-color: #f5f5f5 !important;
+    }
+    
+    #outerContainer {
+      background-color: #f5f5f5 !important;
+    }
+    
+    #mainContainer {
+      background-color: #f5f5f5 !important;
+    }
+    
+    #viewerContainer {
+      background-color: #f5f5f5 !important;
+    }
+    
+    #sidebarContainer {
+      background-color: #f5f5f5 !important;
+    }
+    
+    .toolbar {
+      background-color: #ebebeb !important;
+    }
+    
+    /* Toolbar styling */
+    .toolbar {
+      height: 32px !important;
+      min-height: 32px !important;
+    }
+    
+    #toolbarContainer {
+      height: 32px !important;
+    }
+    
+    #toolbarViewer {
+      height: 32px !important;
+      min-height: 32px !important;
+    }
+    
+    .toolbarButton {
+      min-width: 32px !important;
+      height: 32px !important;
+      padding: 4px !important;
+    }
+    
+    .toolbarButton::before {
+      width: 20px !important;
+      height: 20px !important;
+      top: 6px !important;
+    }
+    
+    #pageNumber {
+      height: 24px !important;
+      font-size: 13px !important;
+      padding: 3px 5px !important;
+      line-height: 18px !important;
+      vertical-align: middle !important;
+      margin-top: 4px !important;
+      width: 60px !important;
+      max-width: 60px !important;
+      text-align: center !important;
+      box-sizing: border-box !important;
+    }
+    
+    .loadingInput {
+      display: inline-flex !important;
+      align-items: center !important;
+    }
+    
+    #scaleSelect {
+      height: 24px !important;
+      font-size: 12px !important;
+      padding: 2px 6px !important;
+    }
+    
+    #numPages {
+      font-size: 13px !important;
+      line-height: 32px !important;
+      vertical-align: middle !important;
+      display: inline-block !important;
+      margin-top: 0 !important;
+    }
+    
+    .splitToolbarButton {
+      min-height: 32px !important;
+    }
+    
+    .splitToolbarButton > .toolbarButton {
+      min-height: 32px !important;
+    }
+    
+    /* Override PDF.js icons with Fluent UI SVG icons */
+    .toolbarButton::before,
+    .secondaryToolbarButton::before {
+      background-color: var(--toolbar-icon-bg-color, currentColor);
+      -webkit-mask-size: cover !important;
+      mask-size: cover !important;
+    }
+    
+    /* Main toolbar icons - Fluent UI style */
+    #sidebarToggle::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H3Zm0 1h4v12H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm5 0h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H8V4Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H3Zm0 1h4v12H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm5 0h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H8V4Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #viewFind::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M8.5 3a5.5 5.5 0 0 1 4.38 8.82l4.15 4.15a.75.75 0 0 1-.98 1.13l-.08-.07-4.15-4.15A5.5 5.5 0 1 1 8.5 3Zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M8.5 3a5.5 5.5 0 0 1 4.38 8.82l4.15 4.15a.75.75 0 0 1-.98 1.13l-.08-.07-4.15-4.15A5.5 5.5 0 1 1 8.5 3Zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #previous::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 14.5a.75.75 0 0 1-.53-.22l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L6.56 9.25H14.5a.75.75 0 0 1 0 1.5H6.56l3.97 3.97c.3.3.3.77 0 1.06-.14.15-.34.22-.53.22Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 14.5a.75.75 0 0 1-.53-.22l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L6.56 9.25H14.5a.75.75 0 0 1 0 1.5H6.56l3.97 3.97c.3.3.3.77 0 1.06-.14.15-.34.22-.53.22Z'/%3E%3C/svg%3E") !important;
+      transform: rotate(90deg);
+    }
+    
+    #next::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 14.5a.75.75 0 0 1-.53-.22l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L6.56 9.25H14.5a.75.75 0 0 1 0 1.5H6.56l3.97 3.97c.3.3.3.77 0 1.06-.14.15-.34.22-.53.22Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 14.5a.75.75 0 0 1-.53-.22l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 1.06L6.56 9.25H14.5a.75.75 0 0 1 0 1.5H6.56l3.97 3.97c.3.3.3.77 0 1.06-.14.15-.34.22-.53.22Z'/%3E%3C/svg%3E") !important;
+      transform: rotate(-90deg);
+    }
+    
+    #zoomOut::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4.5 10a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5A.75.75 0 0 1 4.5 10Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4.5 10a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5A.75.75 0 0 1 4.5 10Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #zoomIn::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.75 4.5a.75.75 0 0 0-1.5 0v4.75H4.5a.75.75 0 0 0 0 1.5h4.75v4.75a.75.75 0 0 0 1.5 0v-4.75h4.75a.75.75 0 0 0 0-1.5h-4.75V4.5Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.75 4.5a.75.75 0 0 0-1.5 0v4.75H4.5a.75.75 0 0 0 0 1.5h4.75v4.75a.75.75 0 0 0 1.5 0v-4.75h4.75a.75.75 0 0 0 0-1.5h-4.75V4.5Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #print::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2a1 1 0 0 0-1 1v3H3a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2h1a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-1V3a1 1 0 0 0-1-1H5Zm0 1h10v3H5V3Zm-2 5h14a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1v-2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2H3a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm2 4h10v5H5v-5Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2a1 1 0 0 0-1 1v3H3a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2h1a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-1V3a1 1 0 0 0-1-1H5Zm0 1h10v3H5V3Zm-2 5h14a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1v-2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2H3a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm2 4h10v5H5v-5Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #download::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.75 2.75a.75.75 0 0 0-1.5 0v8.69L6.03 8.22a.75.75 0 0 0-1.06 1.06l4.5 4.5c.3.3.77.3 1.06 0l4.5-4.5a.75.75 0 0 0-1.06-1.06l-3.22 3.22V2.75ZM3.5 12.25a.75.75 0 0 0-1.5 0v2.25c0 1.24 1 2.25 2.25 2.25h11.5c1.24 0 2.25-1 2.25-2.25v-2.25a.75.75 0 0 0-1.5 0v2.25c0 .41-.34.75-.75.75H4.25a.75.75 0 0 1-.75-.75v-2.25Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.75 2.75a.75.75 0 0 0-1.5 0v8.69L6.03 8.22a.75.75 0 0 0-1.06 1.06l4.5 4.5c.3.3.77.3 1.06 0l4.5-4.5a.75.75 0 0 0-1.06-1.06l-3.22 3.22V2.75ZM3.5 12.25a.75.75 0 0 0-1.5 0v2.25c0 1.24 1 2.25 2.25 2.25h11.5c1.24 0 2.25-1 2.25-2.25v-2.25a.75.75 0 0 0-1.5 0v2.25c0 .41-.34.75-.75.75H4.25a.75.75 0 0 1-.75-.75v-2.25Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #secondaryToolbarToggle::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm5.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.5 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm5.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.5 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #spreadOdd::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 3A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h4a.5.5 0 0 0 0-1h-4A1.5 1.5 0 0 1 4 14.5v-9C4 4.67 4.67 4 5.5 4h4a.5.5 0 0 0 0-1h-4Zm5.5 0a.5.5 0 0 0 0 1h4c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-4a.5.5 0 0 0 0 1h4a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 15 3h-4Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 3A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h4a.5.5 0 0 0 0-1h-4A1.5 1.5 0 0 1 4 14.5v-9C4 4.67 4.67 4 5.5 4h4a.5.5 0 0 0 0-1h-4Zm5.5 0a.5.5 0 0 0 0 1h4c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-4a.5.5 0 0 0 0 1h4a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 15 3h-4Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    /* Sidebar icons */
+    #viewThumbnail::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9ZM5.5 4C4.67 4 4 4.67 4 5.5v9c0 .83.67 1.5 1.5 1.5h9c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5h-9Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 3 14.5v-9ZM5.5 4C4.67 4 4 4.67 4 5.5v9c0 .83.67 1.5 1.5 1.5h9c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5h-9Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #viewOutline::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M2.5 5.75c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 4.25c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 4.25c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M2.5 5.75c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 4.25c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 4.25c0-.41.34-.75.75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #viewAttachments::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.5 3.5a3 3 0 0 0-3 3v7a1.5 1.5 0 0 0 3 0v-7a.5.5 0 0 0-1 0v7a.5.5 0 0 1-1 0v-7a2 2 0 1 1 4 0v7a3 3 0 1 1-6 0v-7a4 4 0 1 1 8 0v7a.5.5 0 0 1-1 0v-7a3 3 0 0 0-3-3Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.5 3.5a3 3 0 0 0-3 3v7a1.5 1.5 0 0 0 3 0v-7a.5.5 0 0 0-1 0v7a.5.5 0 0 1-1 0v-7a2 2 0 1 1 4 0v7a3 3 0 1 1-6 0v-7a4 4 0 1 1 8 0v7a.5.5 0 0 1-1 0v-7a3 3 0 0 0-3-3Z'/%3E%3C/svg%3E") !important;
+    }
+    
+    #viewLayers::before {
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.38 2.07a.75.75 0 0 0-.76 0l-7.5 4.5a.75.75 0 0 0 0 1.3l7.5 4.5c.24.14.52.14.76 0l7.5-4.5a.75.75 0 0 0 0-1.3l-7.5-4.5ZM10 3.58l6.1 3.66L10 10.9 3.9 7.24 10 3.58Zm7.12 6.35a.75.75 0 0 1 .26 1.03l-7.5 12a.75.75 0 1 1-1.28-.8l7.5-12a.75.75 0 0 1 1.02-.23Z'/%3E%3C/svg%3E") !important;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10.38 2.07a.75.75 0 0 0-.76 0l-7.5 4.5a.75.75 0 0 0 0 1.3l7.5 4.5c.24.14.52.14.76 0l7.5-4.5a.75.75 0 0 0 0-1.3l-7.5-4.5ZM10 3.58l6.1 3.66L10 10.9 3.9 7.24 10 3.58Zm7.12 6.35a.75.75 0 0 1 .26 1.03l-7.5 12a.75.75 0 1 1-1.28-.8l7.5-12a.75.75 0 0 1 1.02-.23Z'/%3E%3C/svg%3E") !important;
+    }
+  </style>
+  </head>
+
+  <body tabindex="1">
+    <div id="outerContainer">
+
+      <div id="sidebarContainer">
+        <div id="toolbarSidebar">
+          <div id="toolbarSidebarLeft">
+            <div id="sidebarViewButtons" class="splitToolbarButton toggled" role="radiogroup">
+              <button id="viewOutline" class="toolbarButton toggled" title="Show Document Outline (double-click to expand/collapse all items)" tabindex="2" data-l10n-id="pdfjs-document-outline-button" role="radio" aria-checked="true" aria-controls="outlineView">
+                 <span data-l10n-id="pdfjs-document-outline-button-label">Document Outline</span>
+              </button>
+              <button id="viewThumbnail" class="toolbarButton" title="Show Thumbnails" tabindex="3" data-l10n-id="pdfjs-thumbs-button" role="radio" aria-checked="false" aria-controls="thumbnailView">
+                 <span data-l10n-id="pdfjs-thumbs-button-label">Thumbnails</span>
+              </button>
+              <button id="viewAttachments" class="toolbarButton" title="Show Attachments" tabindex="4" data-l10n-id="pdfjs-attachments-button" role="radio" aria-checked="false" aria-controls="attachmentsView" style="display: none;">
+                 <span data-l10n-id="pdfjs-attachments-button-label">Attachments</span>
+              </button>
+              <button id="viewLayers" class="toolbarButton" title="Show Layers (double-click to reset all layers to the default state)" tabindex="5" data-l10n-id="pdfjs-layers-button" role="radio" aria-checked="false" aria-controls="layersView" style="display: none;">
+                 <span data-l10n-id="pdfjs-layers-button-label">Layers</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="toolbarSidebarRight">
+            <div id="outlineOptionsContainer">
+              <div class="verticalToolbarSeparator"></div>
+
+              <button id="currentOutlineItem" class="toolbarButton" disabled="disabled" title="Find Current Outline Item" tabindex="6" data-l10n-id="pdfjs-current-outline-item-button">
+                <span data-l10n-id="pdfjs-current-outline-item-button-label">Current Outline Item</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="sidebarContent">
+          <div id="outlineView">
+          </div>
+          <div id="thumbnailView" class="hidden">
+          </div>
+          <div id="attachmentsView" class="hidden">
+          </div>
+          <div id="layersView" class="hidden">
+          </div>
+        </div>
+        <div id="sidebarResizer"></div>
+      </div>  <!-- sidebarContainer -->
+
+      <div id="mainContainer">
+        <div class="findbar hidden doorHanger" id="findbar">
+          <div id="findbarInputContainer">
+            <span class="loadingInput end">
+              <input id="findInput" class="toolbarField" title="Find" placeholder="Find in document…" tabindex="91" data-l10n-id="pdfjs-find-input" aria-invalid="false">
+            </span>
+            <div class="splitToolbarButton">
+              <button id="findPrevious" class="toolbarButton" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="pdfjs-find-previous-button">
+                <span data-l10n-id="pdfjs-find-previous-button-label">Previous</span>
+              </button>
+              <div class="splitToolbarButtonSeparator"></div>
+              <button id="findNext" class="toolbarButton" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="pdfjs-find-next-button">
+                <span data-l10n-id="pdfjs-find-next-button-label">Next</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="findbarOptionsOneContainer">
+            <input type="checkbox" id="findHighlightAll" class="toolbarField" tabindex="94">
+            <label for="findHighlightAll" class="toolbarLabel" data-l10n-id="pdfjs-find-highlight-checkbox">Highlight All</label>
+            <input type="checkbox" id="findMatchCase" class="toolbarField" tabindex="95">
+            <label for="findMatchCase" class="toolbarLabel" data-l10n-id="pdfjs-find-match-case-checkbox-label">Match Case</label>
+          </div>
+          <div id="findbarOptionsTwoContainer">
+            <input type="checkbox" id="findMatchDiacritics" class="toolbarField" tabindex="96">
+            <label for="findMatchDiacritics" class="toolbarLabel" data-l10n-id="pdfjs-find-match-diacritics-checkbox-label">Match Diacritics</label>
+            <input type="checkbox" id="findEntireWord" class="toolbarField" tabindex="97">
+            <label for="findEntireWord" class="toolbarLabel" data-l10n-id="pdfjs-find-entire-word-checkbox-label">Whole Words</label>
+          </div>
+
+          <div id="findbarMessageContainer" aria-live="polite">
+            <span id="findResultsCount" class="toolbarLabel"></span>
+            <span id="findMsg" class="toolbarLabel"></span>
+          </div>
+        </div>  <!-- findbar -->
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorHighlightParamsToolbar">
+          <div id="highlightParamsToolbarContainer" class="editorParamsToolbarContainer">
+            <div id="editorHighlightColorPicker" class="colorPicker">
+              <span id="highlightColorPickerLabel" class="editorParamsLabel" data-l10n-id="pdfjs-editor-highlight-colorpicker-label">Highlight color</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorFreeTextParamsToolbar">
+          <div class="editorParamsToolbarContainer">
+            <div class="editorParamsSetter">
+              <label for="editorFreeTextColor" class="editorParamsLabel" data-l10n-id="pdfjs-editor-free-text-color-input">Color</label>
+              <input type="color" id="editorFreeTextColor" class="editorParamsColor" tabindex="102">
+            </div>
+            <div class="editorParamsSetter">
+              <label for="editorFreeTextFontSize" class="editorParamsLabel" data-l10n-id="pdfjs-editor-free-text-size-input">Size</label>
+              <input type="range" id="editorFreeTextFontSize" class="editorParamsSlider" value="10" min="5" max="100" step="1" tabindex="103">
+            </div>
+          </div>
+        </div>
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorInkParamsToolbar">
+          <div class="editorParamsToolbarContainer">
+            <div class="editorParamsSetter">
+              <label for="editorInkColor" class="editorParamsLabel" data-l10n-id="pdfjs-editor-ink-color-input">Color</label>
+              <input type="color" id="editorInkColor" class="editorParamsColor" tabindex="104">
+            </div>
+            <div class="editorParamsSetter">
+              <label for="editorInkThickness" class="editorParamsLabel" data-l10n-id="pdfjs-editor-ink-thickness-input">Thickness</label>
+              <input type="range" id="editorInkThickness" class="editorParamsSlider" value="1" min="1" max="20" step="1" tabindex="105">
+            </div>
+            <div class="editorParamsSetter">
+              <label for="editorInkOpacity" class="editorParamsLabel" data-l10n-id="pdfjs-editor-ink-opacity-input">Opacity</label>
+              <input type="range" id="editorInkOpacity" class="editorParamsSlider" value="100" min="1" max="100" step="1" tabindex="106">
+            </div>
+          </div>
+        </div>
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorStampParamsToolbar">
+          <div class="editorParamsToolbarContainer">
+            <button id="editorStampAddImage" class="secondaryToolbarButton" title="Add image" tabindex="107" data-l10n-id="pdfjs-editor-stamp-add-image-button">
+              <span class="editorParamsLabel" data-l10n-id="pdfjs-editor-stamp-add-image-button-label">Add image</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
+          <div id="secondaryToolbarButtonContainer">
+            <button id="secondaryOpenFile" class="secondaryToolbarButton" title="Open File" tabindex="51" data-l10n-id="pdfjs-open-file-button">
+              <span data-l10n-id="pdfjs-open-file-button-label">Open</span>
+            </button>
+
+            <button id="secondaryPrint" class="secondaryToolbarButton visibleMediumView" title="Print" tabindex="52" data-l10n-id="pdfjs-print-button">
+              <span data-l10n-id="pdfjs-print-button-label">Print</span>
+            </button>
+
+            <button id="secondaryDownload" class="secondaryToolbarButton visibleMediumView" title="Save" tabindex="53" data-l10n-id="pdfjs-save-button">
+              <span data-l10n-id="pdfjs-save-button-label">Save</span>
+            </button>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <button id="presentationMode" class="secondaryToolbarButton" title="Switch to Presentation Mode" tabindex="54" data-l10n-id="pdfjs-presentation-mode-button">
+              <span data-l10n-id="pdfjs-presentation-mode-button-label">Presentation Mode</span>
+            </button>
+
+            <a href="#" id="viewBookmark" class="secondaryToolbarButton" title="Current Page (View URL from Current Page)" tabindex="55" data-l10n-id="pdfjs-bookmark-button">
+              <span data-l10n-id="pdfjs-bookmark-button-label">Current Page</span>
+            </a>
+
+            <div id="viewBookmarkSeparator" class="horizontalToolbarSeparator"></div>
+
+            <button id="firstPage" class="secondaryToolbarButton" title="Go to First Page" tabindex="56" data-l10n-id="pdfjs-first-page-button">
+              <span data-l10n-id="pdfjs-first-page-button-label">Go to First Page</span>
+            </button>
+            <button id="lastPage" class="secondaryToolbarButton" title="Go to Last Page" tabindex="57" data-l10n-id="pdfjs-last-page-button">
+              <span data-l10n-id="pdfjs-last-page-button-label">Go to Last Page</span>
+            </button>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <button id="pageRotateCw" class="secondaryToolbarButton" title="Rotate Clockwise" tabindex="58" data-l10n-id="pdfjs-page-rotate-cw-button">
+              <span data-l10n-id="pdfjs-page-rotate-cw-button-label">Rotate Clockwise</span>
+            </button>
+            <button id="pageRotateCcw" class="secondaryToolbarButton" title="Rotate Counterclockwise" tabindex="59" data-l10n-id="pdfjs-page-rotate-ccw-button">
+              <span data-l10n-id="pdfjs-page-rotate-ccw-button-label">Rotate Counterclockwise</span>
+            </button>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <div id="cursorToolButtons" role="radiogroup">
+              <button id="cursorSelectTool" class="secondaryToolbarButton toggled" title="Enable Text Selection Tool" tabindex="60" data-l10n-id="pdfjs-cursor-text-select-tool-button" role="radio" aria-checked="true">
+                <span data-l10n-id="pdfjs-cursor-text-select-tool-button-label">Text Selection Tool</span>
+              </button>
+              <button id="cursorHandTool" class="secondaryToolbarButton" title="Enable Hand Tool" tabindex="61" data-l10n-id="pdfjs-cursor-hand-tool-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-cursor-hand-tool-button-label">Hand Tool</span>
+              </button>
+            </div>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <div id="scrollModeButtons" role="radiogroup">
+              <button id="scrollPage" class="secondaryToolbarButton" title="Use Page Scrolling" tabindex="62" data-l10n-id="pdfjs-scroll-page-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-scroll-page-button-label">Page Scrolling</span>
+              </button>
+              <button id="scrollVertical" class="secondaryToolbarButton toggled" title="Use Vertical Scrolling" tabindex="63" data-l10n-id="pdfjs-scroll-vertical-button" role="radio" aria-checked="true">
+                <span data-l10n-id="pdfjs-scroll-vertical-button-label" >Vertical Scrolling</span>
+              </button>
+              <button id="scrollHorizontal" class="secondaryToolbarButton" title="Use Horizontal Scrolling" tabindex="64" data-l10n-id="pdfjs-scroll-horizontal-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-scroll-horizontal-button-label">Horizontal Scrolling</span>
+              </button>
+              <button id="scrollWrapped" class="secondaryToolbarButton" title="Use Wrapped Scrolling" tabindex="65" data-l10n-id="pdfjs-scroll-wrapped-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-scroll-wrapped-button-label">Wrapped Scrolling</span>
+              </button>
+            </div>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <div id="spreadModeButtons" role="radiogroup">
+              <button id="spreadNone" class="secondaryToolbarButton toggled" title="Do not join page spreads" tabindex="66" data-l10n-id="pdfjs-spread-none-button" role="radio" aria-checked="true">
+                <span data-l10n-id="pdfjs-spread-none-button-label">No Spreads</span>
+              </button>
+              <button id="spreadOdd" class="secondaryToolbarButton" title="Join page spreads starting with odd-numbered pages" tabindex="67" data-l10n-id="pdfjs-spread-odd-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-spread-odd-button-label">Odd Spreads</span>
+              </button>
+              <button id="spreadEven" class="secondaryToolbarButton" title="Join page spreads starting with even-numbered pages" tabindex="68" data-l10n-id="pdfjs-spread-even-button" role="radio" aria-checked="false">
+                <span data-l10n-id="pdfjs-spread-even-button-label">Even Spreads</span>
+              </button>
+            </div>
+
+            <div class="horizontalToolbarSeparator"></div>
+
+            <button id="documentProperties" class="secondaryToolbarButton" title="Document Properties…" tabindex="69" data-l10n-id="pdfjs-document-properties-button" aria-controls="documentPropertiesDialog">
+              <span data-l10n-id="pdfjs-document-properties-button-label">Document Properties…</span>
+            </button>
+          </div>
+        </div>  <!-- secondaryToolbar -->
+
+        <div class="toolbar">
+          <div id="toolbarContainer">
+            <div id="toolbarViewer">
+              <div id="toolbarViewerLeft">
+                <button id="sidebarToggle" class="toolbarButton" title="Toggle Sidebar" tabindex="11" data-l10n-id="pdfjs-toggle-sidebar-button" aria-expanded="false" aria-controls="sidebarContainer">
+                  <span data-l10n-id="pdfjs-toggle-sidebar-button-label">Toggle Sidebar</span>
+                </button>
+                <div class="toolbarButtonSpacer"></div>
+                <button id="viewFind" class="toolbarButton" title="Find in Document" tabindex="12" data-l10n-id="pdfjs-findbar-button" aria-expanded="false" aria-controls="findbar">
+                  <span data-l10n-id="pdfjs-findbar-button-label">Find</span>
+                </button>
+                <div class="splitToolbarButton hiddenSmallView">
+                  <button class="toolbarButton" title="Previous Page" id="previous" tabindex="13" data-l10n-id="pdfjs-previous-button">
+                    <span data-l10n-id="pdfjs-previous-button-label">Previous</span>
+                  </button>
+                  <div class="splitToolbarButtonSeparator"></div>
+                  <button class="toolbarButton" title="Next Page" id="next" tabindex="14" data-l10n-id="pdfjs-next-button">
+                    <span data-l10n-id="pdfjs-next-button-label">Next</span>
+                  </button>
+                </div>
+              </div>
+              <div id="toolbarViewerRight">
+                <span id="scaleSelectContainer" class="dropdownToolbarButton">
+                  <select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="pdfjs-zoom-select">
+                    <option id="pageAutoOption" title="" value="auto" selected="selected" data-l10n-id="pdfjs-page-scale-auto">Automatic Zoom</option>
+                    <option id="pageActualOption" title="" value="page-actual" data-l10n-id="pdfjs-page-scale-actual">Actual Size</option>
+                    <option id="pageFitOption" title="" value="page-fit" data-l10n-id="pdfjs-page-scale-fit">Page Fit</option>
+                    <option id="pageWidthOption" title="" value="page-width" data-l10n-id="pdfjs-page-scale-width">Page Width</option>
+                    <option id="customScaleOption" title="" value="custom" disabled="disabled" hidden="true" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 0 }'>0%</option>
+                    <option title="" value="0.5" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 50 }'>50%</option>
+                    <option title="" value="0.75" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 75 }'>75%</option>
+                    <option title="" value="1" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 100 }'>100%</option>
+                    <option title="" value="1.25" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 125 }'>125%</option>
+                    <option title="" value="1.5" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 150 }'>150%</option>
+                    <option title="" value="2" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 200 }'>200%</option>
+                    <option title="" value="3" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 300 }'>300%</option>
+                    <option title="" value="4" data-l10n-id="pdfjs-page-scale-percent" data-l10n-args='{ "scale": 400 }'>400%</option>
+                  </select>
+                </span>
+                
+                <!-- Editor buttons - hidden but kept for PDF.js compatibility -->
+                <div id="editorModeButtons" class="splitToolbarButton toggled" role="radiogroup" style="display: none;">
+                  <button id="editorHighlight" class="toolbarButton" hidden="true" disabled="disabled" title="Highlight" role="radio" aria-checked="false" aria-controls="editorHighlightParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-highlight-button">
+                    <span data-l10n-id="pdfjs-editor-highlight-button-label">Highlight</span>
+                  </button>
+                  <button id="editorFreeText" class="toolbarButton" disabled="disabled" title="Text" role="radio" aria-checked="false" aria-controls="editorFreeTextParamsToolbar" tabindex="32" data-l10n-id="pdfjs-editor-free-text-button">
+                    <span data-l10n-id="pdfjs-editor-free-text-button-label">Text</span>
+                  </button>
+                  <button id="editorInk" class="toolbarButton" disabled="disabled" title="Draw" role="radio" aria-checked="false" aria-controls="editorInkParamsToolbar" tabindex="33" data-l10n-id="pdfjs-editor-ink-button">
+                    <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>
+                  </button>
+                  <button id="editorStamp" class="toolbarButton" disabled="disabled" title="Add or edit images" role="radio" aria-checked="false" aria-controls="editorStampParamsToolbar" tabindex="34" data-l10n-id="pdfjs-editor-stamp-button">
+                    <span data-l10n-id="pdfjs-editor-stamp-button-label">Add or edit images</span>
+                  </button>
+                </div>
+
+                <div id="editorModeSeparator" class="verticalToolbarSeparator" style="display: none;"></div>
+                
+                <div class="verticalToolbarSeparator"></div>
+
+                <button id="print" class="toolbarButton hiddenMediumView" title="Print" tabindex="41" data-l10n-id="pdfjs-print-button">
+                  <span data-l10n-id="pdfjs-print-button-label">Print</span>
+                </button>
+
+                <button id="download" class="toolbarButton hiddenMediumView" title="Save" tabindex="42" data-l10n-id="pdfjs-save-button">
+                  <span data-l10n-id="pdfjs-save-button-label">Save</span>
+                </button>
+
+                <div class="verticalToolbarSeparator hiddenMediumView"></div>
+
+                <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="43" data-l10n-id="pdfjs-tools-button" aria-expanded="false" aria-controls="secondaryToolbar">
+                  <span data-l10n-id="pdfjs-tools-button-label">Tools</span>
+                </button>
+              </div>
+              <div id="toolbarViewerMiddle">
+                <div class="splitToolbarButton">
+                  <button id="zoomOut" class="toolbarButton" title="Zoom Out" tabindex="21" data-l10n-id="pdfjs-zoom-out-button">
+                    <span data-l10n-id="pdfjs-zoom-out-button-label">Zoom Out</span>
+                  </button>
+                  <div class="splitToolbarButtonSeparator"></div>
+                  <button id="zoomIn" class="toolbarButton" title="Zoom In" tabindex="22" data-l10n-id="pdfjs-zoom-in-button">
+                    <span data-l10n-id="pdfjs-zoom-in-button-label">Zoom In</span>
+                   </button>
+                </div>
+                <span class="loadingInput start">
+                  <input type="number" id="pageNumber" class="toolbarField" title="Page" value="1" min="1" tabindex="15" data-l10n-id="pdfjs-page-input" autocomplete="off">
+                </span>
+                <span id="numPages" class="toolbarLabel"></span>
+              </div>
+            </div>
+            <div id="loadingBar">
+              <div class="progress">
+                <div class="glimmer">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="viewerContainer" tabindex="0">
+          <div id="viewer" class="pdfViewer"></div>
+        </div>
+      </div> <!-- mainContainer -->
+
+      <div id="dialogContainer">
+        <dialog id="passwordDialog">
+          <div class="row">
+            <label for="password" id="passwordText" data-l10n-id="pdfjs-password-label">Enter the password to open this PDF file:</label>
+          </div>
+          <div class="row">
+            <input type="password" id="password" class="toolbarField">
+          </div>
+          <div class="buttonRow">
+            <button id="passwordCancel" class="dialogButton"><span data-l10n-id="pdfjs-password-cancel-button">Cancel</span></button>
+            <button id="passwordSubmit" class="dialogButton"><span data-l10n-id="pdfjs-password-ok-button">OK</span></button>
+          </div>
+        </dialog>
+        <dialog id="documentPropertiesDialog">
+          <div class="row">
+            <span id="fileNameLabel" data-l10n-id="pdfjs-document-properties-file-name">File name:</span>
+            <p id="fileNameField" aria-labelledby="fileNameLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="fileSizeLabel" data-l10n-id="pdfjs-document-properties-file-size">File size:</span>
+            <p id="fileSizeField" aria-labelledby="fileSizeLabel">-</p>
+          </div>
+          <div class="separator"></div>
+          <div class="row">
+            <span id="titleLabel" data-l10n-id="pdfjs-document-properties-title">Title:</span>
+            <p id="titleField" aria-labelledby="titleLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="authorLabel" data-l10n-id="pdfjs-document-properties-author">Author:</span>
+            <p id="authorField" aria-labelledby="authorLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="subjectLabel" data-l10n-id="pdfjs-document-properties-subject">Subject:</span>
+            <p id="subjectField" aria-labelledby="subjectLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="keywordsLabel" data-l10n-id="pdfjs-document-properties-keywords">Keywords:</span>
+            <p id="keywordsField" aria-labelledby="keywordsLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="creationDateLabel" data-l10n-id="pdfjs-document-properties-creation-date">Creation Date:</span>
+            <p id="creationDateField" aria-labelledby="creationDateLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="modificationDateLabel" data-l10n-id="pdfjs-document-properties-modification-date">Modification Date:</span>
+            <p id="modificationDateField" aria-labelledby="modificationDateLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="creatorLabel" data-l10n-id="pdfjs-document-properties-creator">Creator:</span>
+            <p id="creatorField" aria-labelledby="creatorLabel">-</p>
+          </div>
+          <div class="separator"></div>
+          <div class="row">
+            <span id="producerLabel" data-l10n-id="pdfjs-document-properties-producer">PDF Producer:</span>
+            <p id="producerField" aria-labelledby="producerLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="versionLabel" data-l10n-id="pdfjs-document-properties-version">PDF Version:</span>
+            <p id="versionField" aria-labelledby="versionLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="pageCountLabel" data-l10n-id="pdfjs-document-properties-page-count">Page Count:</span>
+            <p id="pageCountField" aria-labelledby="pageCountLabel">-</p>
+          </div>
+          <div class="row">
+            <span id="pageSizeLabel" data-l10n-id="pdfjs-document-properties-page-size">Page Size:</span>
+            <p id="pageSizeField" aria-labelledby="pageSizeLabel">-</p>
+          </div>
+          <div class="separator"></div>
+          <div class="row">
+            <span id="linearizedLabel" data-l10n-id="pdfjs-document-properties-linearized">Fast Web View:</span>
+            <p id="linearizedField" aria-labelledby="linearizedLabel">-</p>
+          </div>
+          <div class="buttonRow">
+            <button id="documentPropertiesClose" class="dialogButton"><span data-l10n-id="pdfjs-document-properties-close-button">Close</span></button>
+          </div>
+        </dialog>
+        <dialog id="altTextDialog" aria-labelledby="dialogLabel" aria-describedby="dialogDescription">
+          <div id="altTextContainer">
+            <div id="overallDescription">
+              <span id="dialogLabel" data-l10n-id="pdfjs-editor-alt-text-dialog-label" class="title">Choose an option</span>
+              <span id="dialogDescription" data-l10n-id="pdfjs-editor-alt-text-dialog-description">
+                Alt text (alternative text) helps when people can’t see the image or when it doesn’t load.
+              </span>
+            </div>
+            <div id="addDescription">
+              <div class="radio">
+                <div class="radioButton">
+                  <input type="radio" id="descriptionButton" name="altTextOption" tabindex="0" aria-describedby="descriptionAreaLabel" checked>
+                  <label for="descriptionButton" data-l10n-id="pdfjs-editor-alt-text-add-description-label">Add a description</label>
+                </div>
+                <div class="radioLabel">
+                  <span id="descriptionAreaLabel" data-l10n-id="pdfjs-editor-alt-text-add-description-description">
+                    Aim for 1-2 sentences that describe the subject, setting, or actions.
+                  </span>
+                </div>
+              </div>
+              <div class="descriptionArea">
+                <textarea id="descriptionTextarea" placeholder="For example, “A young man sits down at a table to eat a meal”" aria-labelledby="descriptionAreaLabel" data-l10n-id="pdfjs-editor-alt-text-textarea" tabindex="0"></textarea>
+              </div>
+            </div>
+            <div id="markAsDecorative">
+              <div class="radio">
+                <div class="radioButton">
+                  <input type="radio" id="decorativeButton" name="altTextOption" aria-describedby="decorativeLabel">
+                  <label for="decorativeButton" data-l10n-id="pdfjs-editor-alt-text-mark-decorative-label">Mark as decorative</label>
+                </div>
+                <div class="radioLabel">
+                  <span id="decorativeLabel" data-l10n-id="pdfjs-editor-alt-text-mark-decorative-description">
+                    This is used for ornamental images, like borders or watermarks.
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div id="buttons">
+              <button id="altTextCancel" tabindex="0"><span data-l10n-id="pdfjs-editor-alt-text-cancel-button">Cancel</span></button>
+              <button id="altTextSave" tabindex="0"><span data-l10n-id="pdfjs-editor-alt-text-save-button">Save</span></button>
+            </div>
+          </div>
+        </dialog>
+        <dialog id="printServiceDialog" style="min-width: 200px;">
+          <div class="row">
+            <span data-l10n-id="pdfjs-print-progress-message">Preparing document for printing…</span>
+          </div>
+          <div class="row">
+            <progress value="0" max="100"></progress>
+            <span data-l10n-id="pdfjs-print-progress-percent" data-l10n-args='{ "progress": 0 }' class="relative-progress">0%</span>
+          </div>
+          <div class="buttonRow">
+            <button id="printCancel" class="dialogButton"><span data-l10n-id="pdfjs-print-progress-close-button">Cancel</span></button>
+          </div>
+        </dialog>
+      </div>  <!-- dialogContainer -->
+
+    </div> <!-- outerContainer -->
+    <div id="printContainer"></div>
+
+    <input type="file" id="fileInput" class="hidden">
+    
+    <!-- Custom script to generate page-based outline when no outline exists -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // Wait for PDFViewerApplication to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+          if (typeof PDFViewerApplication === 'undefined') {
+            console.warn('PDFViewerApplication not found');
+            return;
+          }
+          
+          let syntheticOutlineGenerated = false;
+          
+          // Listen for document loaded event
+          PDFViewerApplication.eventBus.on('documentloaded', async function(evt) {
+            try {
+              const pdfDocument = evt.source.pdfDocument;
+              if (!pdfDocument) return;
+              
+              // Get the outline
+              const outline = await pdfDocument.getOutline();
+              
+              // If outline exists and has items, nothing to do
+              if (outline && outline.length > 0) {
+                console.log('📖 Document has outline, using existing outline');
+                syntheticOutlineGenerated = false;
+                return;
+              }
+              
+              console.log('📄 No outline found, generating page-based outline...');
+              
+              // Get number of pages
+              const numPages = pdfDocument.numPages;
+              
+              // Create a synthetic outline with individual pages (no grouping)
+              const syntheticOutline = [];
+              
+              // Add each page individually
+              for (let i = 1; i <= numPages; i++) {
+                syntheticOutline.push({
+                  title: `עמוד ${i}`,
+                  bold: false,
+                  italic: false,
+                  color: new Uint8ClampedArray([0, 0, 0]),
+                  dest: null,
+                  url: `#page=${i}`,
+                  unsafeUrl: undefined,
+                  newWindow: undefined,
+                  count: undefined,
+                  items: []
+                });
+              }
+              
+              // Store for later use
+              window._syntheticOutline = syntheticOutline;
+              window._syntheticPdfDocument = pdfDocument;
+              
+              // Render the synthetic outline
+              if (PDFViewerApplication.pdfOutlineViewer) {
+                PDFViewerApplication.pdfOutlineViewer.render({
+                  outline: syntheticOutline,
+                  pdfDocument: pdfDocument
+                });
+                
+                const outlineView = document.getElementById('outlineView');
+                if (outlineView) {
+                  outlineView.classList.add('auto-generated');
+                  
+                  // Add custom click handlers after a short delay
+                  setTimeout(() => {
+                    const links = outlineView.querySelectorAll('a[href]');
+                    links.forEach((link) => {
+                      // Extract page number from href (#page=123)
+                      const href = link.getAttribute('href');
+                      const match = href && href.match(/page=(\d+)/);
+                      if (match) {
+                        const pageNum = parseInt(match[1], 10);
+                        link.addEventListener('click', function(e) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log(`📄 Navigating to page ${pageNum}`);
+                          PDFViewerApplication.page = pageNum;
+                          return false;
+                        }, true); // Use capture phase
+                      }
+                    });
+                    console.log(`✅ Added ${links.length} click handlers to outline links`);
+                  }, 300);
+                }
+                
+                syntheticOutlineGenerated = true;
+                console.log(`✅ Generated outline with ${numPages} individual pages`);
+              }
+              
+            } catch (error) {
+              console.error('Error generating page-based outline:', error);
+            }
+          });
+          
+          // Listen for outlineloaded event - this fires AFTER PDF.js processes the outline
+          PDFViewerApplication.eventBus.on('outlineloaded', function(evt) {
+            // If we generated a synthetic outline, make sure the button stays enabled
+            if (syntheticOutlineGenerated && window._syntheticOutline) {
+              setTimeout(() => {
+                const viewOutlineButton = document.getElementById('viewOutline');
+                if (viewOutlineButton) {
+                  if (viewOutlineButton.disabled) {
+                    console.log('🔓 Re-enabling outline button after outlineloaded');
+                    viewOutlineButton.disabled = false;
+                  }
+                }
+                
+                // Check if content is still there
+                const outlineView = document.getElementById('outlineView');
+                if (outlineView) {
+                  const hasContent = outlineView.querySelector('.treeItem');
+                  if (!hasContent) {
+                    console.log('⚠️ Restoring outline content after outlineloaded');
+                    PDFViewerApplication.pdfOutlineViewer.render({
+                      outline: window._syntheticOutline,
+                      pdfDocument: window._syntheticPdfDocument
+                    });
+                    outlineView.classList.add('auto-generated');
+                  }
+                  
+                  // Re-add click handlers
+                  setTimeout(() => {
+                    const links = outlineView.querySelectorAll('a[href]');
+                    links.forEach((link) => {
+                      const href = link.getAttribute('href');
+                      const match = href && href.match(/page=(\d+)/);
+                      if (match) {
+                        const pageNum = parseInt(match[1], 10);
+                        link.addEventListener('click', function(e) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log(`📄 Navigating to page ${pageNum}`);
+                          PDFViewerApplication.page = pageNum;
+                          return false;
+                        }, true);
+                      }
+                    });
+                    console.log(`✅ Re-added ${links.length} click handlers after restore`);
+                  }, 100);
+                  
+                  // אל תכפה מעבר כאן - זה כבר נעשה מוקדם יותר ב-custom-search.js
+                }
+              }, 100);
+            }
+          });
+        });
+      })();
+    </script>
+    
+    <!-- סקריפט לכפיית תצוגת כותרות כברירת מחדל -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // בדוק אם זה מצב תצוגה מקדימה
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPreviewMode = urlParams.get('previewMode') === 'true';
+        
+        if (isPreviewMode) {
+          console.log('👁️ Preview mode - skipping outline forcing');
+          return; // אל תכפה outline במצב תצוגה מקדימה
+        }
+        
+        console.log('🔒 Forcing outline view as default...');
+        
+        // כפה outline view מיד כשהדף נטען
+        const forceOutlineView = function() {
+          const outlineButton = document.getElementById('viewOutline');
+          const thumbnailButton = document.getElementById('viewThumbnail');
+          const outlineView = document.getElementById('outlineView');
+          const thumbnailView = document.getElementById('thumbnailView');
+          
+          if (outlineButton && thumbnailButton && outlineView && thumbnailView) {
+            // כפה את המצב הנכון
+            outlineButton.classList.add('toggled');
+            outlineButton.setAttribute('aria-checked', 'true');
+            thumbnailButton.classList.remove('toggled');
+            thumbnailButton.setAttribute('aria-checked', 'false');
+            
+            // כפה תצוגה
+            outlineView.classList.remove('hidden');
+            outlineView.style.display = 'block';
+            thumbnailView.classList.add('hidden');
+            thumbnailView.style.display = 'none';
+            
+            console.log('✅ Forced outline view in DOM');
+          }
+        };
+        
+        // כפה מיד
+        forceOutlineView();
+        
+        // כפה שוב אחרי DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+          forceOutlineView();
+          
+          // כפה שוב אחרי זמן קצר
+          setTimeout(forceOutlineView, 10);
+          setTimeout(forceOutlineView, 50);
+          setTimeout(forceOutlineView, 100);
+          setTimeout(forceOutlineView, 200);
+        });
+        
+        // האזן לשינויים בכפתורים ועדכן את התצוגה בהתאם
+        document.addEventListener('click', function(e) {
+          const target = e.target.closest('button');
+          if (!target) return;
+          
+          if (target.id === 'viewThumbnail') {
+            console.log('👆 User clicked thumbnails - allowing');
+            setTimeout(function() {
+              const outlineView = document.getElementById('outlineView');
+              const thumbnailView = document.getElementById('thumbnailView');
+              if (outlineView && thumbnailView) {
+                outlineView.style.display = 'none';
+                thumbnailView.style.display = 'block';
+              }
+            }, 10);
+          } else if (target.id === 'viewOutline') {
+            console.log('👆 User clicked outline - showing');
+            setTimeout(function() {
+              const outlineView = document.getElementById('outlineView');
+              const thumbnailView = document.getElementById('thumbnailView');
+              if (outlineView && thumbnailView) {
+                outlineView.style.display = 'block';
+                thumbnailView.style.display = 'none';
+              }
+            }, 10);
+          }
+        });
+      })();
+    </script>
+
+    <!-- מצב תצוגה מקדימה: הסתר את סרגל הכותרות/outline של PDF.js -->
+    <script>
+      (function() {
+        'use strict';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPreviewMode = urlParams.get('previewMode') === 'true';
+        if (!isPreviewMode) return;
+
+        document.documentElement.classList.add('preview-mode');
+        document.body.classList.add('preview-mode');
+
+        // ודא שה-sidebar נסגר גם אם PDF.js פתח אותו ממקום אחר
+        const closeSidebar = () => {
+          try {
+            const outer = document.getElementById('outerContainer');
+            if (outer) {
+              outer.classList.remove('sidebarOpen');
+              outer.classList.remove('sidebarMoving');
+            }
+
+            if (window.PDFViewerApplication && window.PDFViewerApplication.pdfSidebar) {
+              window.PDFViewerApplication.pdfSidebar.close();
+            }
+          } catch (e) {
+            console.log('⚠️ Could not close sidebar in preview mode:', e);
+          }
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', closeSidebar);
+        } else {
+          closeSidebar();
+        }
+
+        // גיבוי: אחרי אתחול האפליקציה
+        if (window.PDFViewerApplication && window.PDFViewerApplication.initializedPromise) {
+          window.PDFViewerApplication.initializedPromise.then(() => closeSidebar());
+        }
+      })();
+    </script>
+  </body>
+</html>

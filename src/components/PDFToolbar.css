@@ -1,0 +1,196 @@
+.pdf-toolbar {
+  position: relative;
+  left: auto;
+  top: auto;
+  height: 100%;
+  width: 16px;
+  flex-shrink: 0;
+  background: var(--appBackgroundColor, #f7ead8);
+  border-left: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: -2px 0 6px rgba(139, 111, 71, 0.06);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-left-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.2) transparent;
+}
+
+.pdf-toolbar.collapsed {
+  width: 0;
+  padding: 0;
+  border-left-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pdf-toolbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.pdf-toolbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pdf-toolbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 2px;
+}
+
+.pdf-toolbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
+
+.pdf-toolbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+.toolbar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  width: 100%;
+  padding: 8px 0;
+}
+
+/* Toolbar Item */
+.toolbar-item {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #8b6f47;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  font-size: 18px;
+  padding: 0;
+  margin: 0;
+}
+
+.toolbar-item:hover {
+  background: rgba(212, 175, 55, 0.15);
+  color: #6d5836;
+  transform: scale(1.05);
+}
+
+.toolbar-item:active {
+  transform: scale(0.95);
+}
+
+.toolbar-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Badge for notifications */
+.toolbar-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 14px;
+  height: 14px;
+  background: #d32f2f;
+  color: #fff;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1;
+}
+
+/* Divider */
+.toolbar-divider {
+  width: 90%;
+  height: 1px;
+  background: rgba(212, 175, 55, 0.2);
+  margin: 4px auto;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .pdf-toolbar {
+  background: linear-gradient(90deg, rgba(196, 165, 116, 0.08) 0%, rgba(196, 165, 116, 0.05) 100%);
+  border-left-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .toolbar-item {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .toolbar-item:hover {
+  background: rgba(196, 165, 116, 0.15);
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .toolbar-item.active {
+  background: rgba(196, 165, 116, 0.25);
+  color: #e8dcc4;
+  box-shadow: inset 0 0 0 1px rgba(196, 165, 116, 0.4);
+}
+
+[data-theme="dark"] .toolbar-divider {
+  background: rgba(196, 165, 116, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pdf-toolbar {
+    width: 24px;
+    padding: 0;
+  }
+
+  .toolbar-content {
+    gap: 6px;
+    padding: 6px 0;
+  }
+
+  .toolbar-item {
+    height: 24px;
+    width: 24px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-toolbar {
+    width: 24px;
+    padding: 0;
+  }
+
+  .toolbar-content {
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  .toolbar-item {
+    height: 24px;
+    width: 24px;
+    font-size: 16px;
+  }
+
+  .toolbar-divider {
+    margin: 2px auto;
+  }
+}

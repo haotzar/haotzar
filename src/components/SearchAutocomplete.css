@@ -1,0 +1,274 @@
+/* תיבת השלמה אוטומטית - בתוך תיבת החיפוש */
+.search-autocomplete {
+  position: relative;
+  width: 100%;
+  background: white;
+  border-top: 1px solid rgba(92, 61, 46, 0.08);
+  z-index: 600;
+  max-height: 280px; /* גובה של כ-5 פריטים (56px כל אחד) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* הסתרת סרגל הגלילה - חזק יותר */
+.search-autocomplete::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* פריט בהשלמה */
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(92, 61, 46, 0.05);
+  min-height: 32px;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background: rgba(92, 61, 46, 0.04);
+}
+
+/* פריט "חפש את..." */
+.autocomplete-item.search-action-item {
+  background: rgba(92, 61, 46, 0.04);
+  border-top: 1px solid rgba(92, 61, 46, 0.1);
+  padding: 10px 16px;
+  min-height: 44px;
+  font-weight: 500;
+}
+
+.autocomplete-item.search-action-item:hover {
+  background: rgba(92, 61, 46, 0.08);
+}
+
+.search-action-text {
+  color: #5c3d2e;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.autocomplete-item.search-action-item .autocomplete-icon {
+  opacity: 1;
+  color: #5c3d2e;
+}
+
+.autocomplete-item.search-action-item .autocomplete-arrow {
+  opacity: 0.5;
+}
+
+.autocomplete-subtitle {
+  font-size: 11px;
+  color: rgba(92, 61, 46, 0.6);
+  text-align: right;
+  direction: rtl;
+  margin-top: 2px;
+}
+
+/* אייקון */
+.autocomplete-icon {
+  font-size: 14px;
+  color: #8b6f47;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* תוכן */
+.autocomplete-content {
+  flex: 1;
+  text-align: right;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.autocomplete-title {
+  font-size: 13px;
+  color: #5c3d2e;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: right;
+  direction: rtl;
+  width: 100%;
+}
+
+.match-highlight {
+  font-weight: 600;
+}
+
+/* מפריד בין ספר לכותרת */
+.title-separator {
+  color: #8b6f47;
+  opacity: 0.5;
+  font-weight: 300;
+}
+
+/* שם הכותרת */
+.title-name {
+  color: #5c3d2e;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.autocomplete-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.autocomplete-type {
+  font-size: 10px;
+  color: #8b6f47;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.autocomplete-author {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #8b6f47;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.author-icon {
+  font-size: 10px;
+}
+
+/* מספר עמוד */
+.autocomplete-page {
+  font-size: 10px;
+  color: #8b6f47;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* חץ */
+.autocomplete-arrow {
+  font-size: 12px;
+  color: #8b6f47;
+  opacity: 0.3;
+  flex-shrink: 0;
+  transform: rotate(-45deg);
+  margin-right: 4px;
+}
+
+.autocomplete-item:hover .autocomplete-arrow {
+  opacity: 0.5;
+}
+
+/* תג מקור הספר */
+.source-badge {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  opacity: 0.75;
+  margin: 0 6px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  filter: none;
+}
+
+.autocomplete-item:hover .source-badge {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .search-autocomplete {
+  background: transparent;
+  border-top-color: rgba(92, 61, 46, 0.2);
+}
+
+[data-theme="dark"] .source-badge {
+  filter: brightness(1.2) contrast(0.9);
+}
+
+[data-theme="dark"] .autocomplete-item {
+  border-bottom-color: rgba(92, 61, 46, 0.1);
+}
+
+[data-theme="dark"] .autocomplete-item:hover {
+  background: rgba(92, 61, 46, 0.12);
+}
+
+[data-theme="dark"] .autocomplete-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .autocomplete-title {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .title-separator {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .title-name {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .autocomplete-type {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .autocomplete-author {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .autocomplete-page {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .autocomplete-arrow {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .autocomplete-item.search-action-item {
+  background: rgba(92, 61, 46, 0.15);
+  border-top-color: rgba(92, 61, 46, 0.25);
+}
+
+[data-theme="dark"] .autocomplete-item.search-action-item:hover {
+  background: rgba(92, 61, 46, 0.22);
+}
+
+[data-theme="dark"] .search-action-text {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .autocomplete-item.search-action-item .autocomplete-icon {
+  color: #c4a574;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .autocomplete-item {
+    padding: 6px 12px;
+  }
+
+  .autocomplete-title {
+    font-size: 12px;
+  }
+
+  .autocomplete-type,
+  .autocomplete-author,
+  .autocomplete-page {
+    font-size: 9px;
+  }
+}

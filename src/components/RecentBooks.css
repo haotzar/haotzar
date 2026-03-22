@@ -1,0 +1,142 @@
+/* מצב ריק */
+.recent-books-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(42, 24, 16, 0.5);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* רשת ספרים אחרונים */
+.recent-books-grid {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  margin: 15px 0;
+  overflow: visible;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+/* כרטיס ספר */
+.recent-book-card {
+  background: white;
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  max-width: 120px;
+}
+
+.recent-book-card:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: #d4af37;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+/* תצוגה מקדימה של הספר */
+.recent-book-preview {
+  width: 100%;
+  flex: 1;
+  background: linear-gradient(135deg, #f7ead8 0%, #e8dcc4 100%);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  min-height: 80px;
+}
+
+.book-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pdf-preview-placeholder,
+.text-preview-placeholder {
+  font-size: 32px;
+  color: rgba(212, 175, 55, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* שם הספר */
+.recent-book-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #2a1810;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .recent-books-empty {
+  color: rgba(232, 220, 196, 0.5);
+}
+
+[data-theme="dark"] .recent-book-card {
+  background: rgba(232, 220, 196, 0.05);
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .recent-book-card:hover {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: #c4a574;
+  box-shadow: 0 4px 12px rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .recent-book-preview {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+
+[data-theme="dark"] .pdf-preview-placeholder,
+[data-theme="dark"] .text-preview-placeholder {
+  color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .recent-book-name {
+  color: #e8dcc4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .recent-books-grid {
+    gap: 10px;
+    padding: 12px 15px;
+  }
+  
+  .recent-book-card {
+    padding: 8px;
+    width: calc(33.333% - 7px);
+    max-width: 100px;
+  }
+  
+  .pdf-preview-placeholder,
+  .text-preview-placeholder {
+    font-size: 28px;
+  }
+  
+  .recent-book-name {
+    font-size: 10px;
+  }
+}

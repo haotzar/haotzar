@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+release/
+src-tauri/target/
+*.min.js
+*.min.css
+package-lock.json
+yarn.lock

@@ -1,0 +1,434 @@
+/* עיצוב מותאם אישית לתצוגת תוכן העניינים (Outline) */
+
+/* משתני צבע מותאמים לאפליקציה */
+:root {
+  --custom-outline-item-color: #5c3d2e;
+  --custom-outline-item-hover-bg: rgba(212, 175, 55, 0.15);
+  --custom-outline-item-selected-bg: rgba(212, 175, 55, 0.25);
+  --custom-outline-item-selected-color: #3d2817;
+  --custom-outline-border-color: rgba(212, 175, 55, 0.2);
+  --custom-sidebar-bg: #f7ead8;
+}
+
+/* הודעה על תוכן עניינים אוטומטי - מוסתרת */
+#outlineView.auto-generated::before {
+  display: none;
+}
+
+/* אין יותר קיבוץ - כל העמודים מוצגים ישירות */
+
+/* רקע כללי של תצוגת תוכן העניינים */
+#outlineView {
+  padding: 12px 8px;
+  direction: rtl;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+}
+
+/* הסתרת גלילה אופקית לכל הילדים */
+#outlineView * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ביטול הזחה - כל הפריטים מוצמדים לימין */
+.treeWithDeepNesting > .treeItem,
+.treeItem > .treeItems {
+  margin-inline-start: 0 !important;
+  margin-top: 0;
+  padding-right: 0;
+  border-right: none;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.treeWithDeepNesting {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* עיצוב פריטי תוכן העניינים */
+.treeItem > a {
+  text-decoration: none;
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 6px 12px;
+  margin-bottom: 2px;
+  color: var(--custom-outline-item-color);
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 400;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  transition: all 0.2s ease;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* אפקט hover */
+.treeItem > a:hover {
+  background: var(--custom-outline-item-hover-bg);
+  color: #6d5836;
+  transform: translateX(-2px);
+}
+
+/* פריט נבחר */
+.treeItem.selected > a {
+  background: var(--custom-outline-item-selected-bg);
+  color: var(--custom-outline-item-selected-color);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+}
+
+/* הסתרת כפתור הרחבה/כיווץ */
+.treeItemToggler {
+  position: relative;
+  float: right;
+  margin-left: 8px;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.treeItemToggler::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background-color: #8b6f47;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  display: block;
+  margin: 2px;
+  transition: transform 0.2s ease;
+}
+
+/* סיבוב החץ כשהפריטים נפתחים */
+.treeItemToggler:not(.treeItemsHidden)::before {
+  transform: rotate(90deg);
+}
+
+/* כאשר תתי-פריטים מוסתרים */
+.treeItemToggler.treeItemsHidden ~ .treeItems {
+  display: none;
+}
+
+/* רמה ראשונה - כותרת ראשית */
+.treeWithDeepNesting > .treeItem > a {
+  font-size: 17px;
+  font-weight: 700;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  color: #3d2817;
+}
+
+/* רמה שנייה */
+.treeItem > .treeItems .treeItem > a {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 7px 12px;
+  margin-bottom: 2px;
+}
+
+/* רמה שלישית */
+.treeItem > .treeItems .treeItem > .treeItems .treeItem > a {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 6px 12px;
+}
+
+/* רמה רביעית ומעלה */
+.treeItem > .treeItems .treeItem > .treeItems .treeItem > .treeItems .treeItem > a {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 5px 12px;
+  opacity: 0.9;
+}
+
+/* עיצוב פס הגלילה לתוכן עניינים */
+#outlineView::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+}
+
+#outlineView::-webkit-scrollbar-track {
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 0;
+}
+
+#outlineView::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+  border: none;
+}
+
+#outlineView::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.5);
+}
+
+/* הסתרת פס גלילה אופקי לגמרי */
+#outlineView::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
+/* עיצוב פס הגלילה לתצלומי עמודים - זהה לתוכן עניינים */
+#thumbnailView::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+}
+
+#thumbnailView::-webkit-scrollbar-track {
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 0;
+}
+
+#thumbnailView::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+  border: none;
+}
+
+#thumbnailView::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.5);
+}
+
+/* הסתרת פס גלילה אופקי לגמרי */
+#thumbnailView::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
+/* אפקט focus לנגישות */
+.treeItem > a:focus {
+  outline: 2px solid rgba(212, 175, 55, 0.6);
+  outline-offset: -2px;
+}
+
+/* עיצוב הסיידבר עצמו */
+#sidebarContainer {
+  background: var(--custom-sidebar-bg) !important;
+  border-left: 1px solid var(--custom-outline-border-color) !important;
+  padding: 0 !important;
+  top: 0 !important;
+}
+
+#sidebarContent {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  top: 40px !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* הסתרת הסרגל העליון של PDF.js */
+#toolbarContainer,
+.toolbar,
+#toolbarViewer {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+
+#viewerContainer {
+  top: 0 !important;
+}
+
+#mainContainer {
+  top: 0 !important;
+}
+
+/* כפה תצוגת כותרות כברירת מחדל */
+#outlineView {
+  display: block !important;
+  top: 0 !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* הסתר תצלומים בברירת מחדל */
+#thumbnailView {
+  display: none !important;
+}
+
+/* כשיש class hidden, הסתר */
+#outlineView.hidden {
+  display: none !important;
+}
+
+#thumbnailView:not(.hidden) {
+  display: block !important;
+}
+
+/* עיצוב תצוגת תצלומי עמודים - ללא קיבוץ */
+#thumbnailView .thumbnail {
+  margin: 4px auto !important;
+  padding: 4px !important;
+  border: 1px solid var(--custom-outline-border-color) !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+#thumbnailView .thumbnail:hover {
+  background: var(--custom-outline-item-hover-bg) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+#thumbnailView .thumbnail.selected {
+  background: var(--custom-outline-item-selected-bg) !important;
+  border-color: rgba(212, 175, 55, 0.6) !important;
+}
+
+/* הסתרת קיבוץ עמודים */
+#thumbnailView .thumbnailSelectionRing {
+  display: none !important;
+}
+
+#toolbarSidebar {
+  background: transparent !important;
+  border-bottom: 1px solid var(--custom-outline-border-color) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+#toolbarSidebarLeft {
+  flex: 0 0 auto !important;
+  max-width: fit-content !important;
+  background: rgba(212, 175, 55, 0.08) !important;
+  padding: 6px 8px !important;
+  border-radius: 0 !important;
+}
+
+#toolbarSidebarRight {
+  flex: 1 !important;
+}
+
+/* הסתרת הכפתור "Current Outline Item" */
+#outlineOptionsContainer {
+  display: none !important;
+}
+
+/* כפתורי הסיידבר */
+.toolbarButton {
+  color: #8b6f47 !important;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif !important;
+}
+
+.toolbarButton:hover {
+  background: rgba(212, 175, 55, 0.15) !important;
+  color: #6d5836 !important;
+}
+
+.toolbarButton.toggled {
+  background: rgba(212, 175, 55, 0.25) !important;
+  color: #3d2817 !important;
+}
+
+/* מצב כהה */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --custom-outline-item-color: #c4a574;
+    --custom-outline-item-hover-bg: rgba(196, 165, 116, 0.15);
+    --custom-outline-item-selected-bg: rgba(196, 165, 116, 0.25);
+    --custom-outline-item-selected-color: #e8dcc4;
+    --custom-outline-border-color: rgba(196, 165, 116, 0.2);
+    --custom-sidebar-bg: #1a1a1a;
+  }
+
+  .treeWithDeepNesting > .treeItem > a {
+    color: #e8dcc4;
+  }
+
+  .treeItem > a:hover {
+    color: #e8dcc4;
+  }
+
+  .treeItemToggler::before {
+    background-color: #c4a574;
+  }
+
+  #outlineView::-webkit-scrollbar-track {
+    background: rgba(196, 165, 116, 0.08);
+  }
+
+  #outlineView::-webkit-scrollbar-thumb {
+    background: rgba(196, 165, 116, 0.3);
+  }
+  
+  #outlineView::-webkit-scrollbar-thumb:hover {
+    background: rgba(196, 165, 116, 0.5);
+  }
+
+  /* עיצוב פס גלילה לתצלומי עמודים במצב כהה */
+  #thumbnailView::-webkit-scrollbar-track {
+    background: rgba(196, 165, 116, 0.08);
+  }
+
+  #thumbnailView::-webkit-scrollbar-thumb {
+    background: rgba(196, 165, 116, 0.3);
+  }
+  
+  #thumbnailView::-webkit-scrollbar-thumb:hover {
+    background: rgba(196, 165, 116, 0.5);
+  }
+
+  .treeItem > a:focus {
+    outline-color: rgba(196, 165, 116, 0.6);
+  }
+
+  #toolbarSidebar {
+    background: rgba(196, 165, 116, 0.08) !important;
+    border-bottom-color: rgba(196, 165, 116, 0.2) !important;
+  }
+
+  .toolbarButton {
+    color: #c4a574 !important;
+  }
+
+  .toolbarButton:hover {
+    background: rgba(196, 165, 116, 0.15) !important;
+    color: #e8dcc4 !important;
+  }
+
+  .toolbarButton.toggled {
+    background: rgba(196, 165, 116, 0.25) !important;
+    color: #e8dcc4 !important;
+  }
+}

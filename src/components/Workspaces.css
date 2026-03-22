@@ -1,0 +1,230 @@
+.workspaces-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 0;
+  width: 100%;
+}
+
+.workspaces-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+  padding: 0;
+  min-height: 0;
+  width: 100%;
+  align-content: start;
+}
+
+/* הסתרת סרגל גלילה */
+.workspaces-list::-webkit-scrollbar {
+  display: none;
+}
+
+.workspaces-list {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.workspace-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  direction: rtl;
+  text-align: right;
+  min-height: 80px;
+  position: relative;
+}
+
+.workspace-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+}
+
+.workspace-item.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: #d4af37;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+}
+
+.workspace-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  width: 100%;
+  direction: rtl;
+}
+
+.workspace-icon {
+  font-size: 22px;
+  color: #d4af37;
+  flex-shrink: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.workspace-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+.workspace-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a1810;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: right;
+}
+
+.workspace-tabs-count {
+  font-size: 11px;
+  color: #8b6f47;
+  opacity: 0.8;
+  direction: rtl;
+  text-align: right;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.workspace-item:hover .workspace-actions {
+  opacity: 1;
+}
+
+.workspace-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #8b6f47;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.workspace-action-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}
+
+.workspace-action-btn.delete:hover {
+  background: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+.workspace-edit,
+.workspace-create {
+  width: 100%;
+  direction: rtl;
+  padding: 0;
+}
+
+.workspace-edit-input,
+.workspace-create-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid #d4af37;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
+  color: #2a1810;
+  outline: none;
+  transition: all 0.2s ease;
+  direction: rtl;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.workspace-edit-input:focus,
+.workspace-create-input:focus {
+  border-color: #c4a574;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+}
+
+/* מצב כהה */
+[data-theme="dark"] .workspace-item {
+  background: rgba(42, 24, 16, 0.4);
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .workspace-item:hover {
+  background: rgba(42, 24, 16, 0.6);
+  border-color: rgba(196, 165, 116, 0.4);
+}
+
+[data-theme="dark"] .workspace-item.active {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: #c4a574;
+}
+
+[data-theme="dark"] .workspace-icon {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .workspace-name {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .workspace-tabs-count {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .workspace-action-btn {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .workspace-action-btn:hover {
+  background: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .workspace-edit-input,
+[data-theme="dark"] .workspace-create-input {
+  background: rgba(42, 24, 16, 0.6);
+  border-color: #c4a574;
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .workspace-add-btn {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.3);
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .workspace-add-btn:hover {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: #c4a574;
+  color: #c4a574;
+}

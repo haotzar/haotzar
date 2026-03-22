@@ -1,0 +1,525 @@
+/* מיכל תוצאות - תופס את כל הרוחב הזמין */
+.search-results-container {
+  direction: rtl;
+  text-align: right;
+  flex: 1;
+  width: 100%;
+  padding: 0 0 0 16px;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* רשימת תוצאות */
+.results-list-new {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 800px;
+  padding: 0 40px 40px 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* תצוגה מקדימה - 1/3 מהרוחב, מתחת לכרטיסיות עד התחתית */
+.preview-sidebar {
+  position: fixed;
+  left: 24px;
+  right: calc(66.666% + 24px);
+  top: calc(var(--preview-top-position, 100px) + 24px);
+  bottom: 24px;
+  width: auto;
+  background: white;
+  border: 1px solid rgba(92, 61, 46, 0.15);
+  box-shadow: 0 2px 12px rgba(92, 61, 46, 0.08);
+  display: flex;
+  flex-direction: column;
+  animation: slideInFromLeft 0.25s ease;
+  overflow: hidden;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  z-index: 100;
+  pointer-events: auto !important; /* כפה אינטראקציה */
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* תוכן התצוגה המקדימה */
+.preview-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(92, 61, 46, 0.08);
+  background: white;
+  pointer-events: auto !important; /* כפה אינטראקציה */
+  z-index: 1;
+}
+
+/* כפתור סגירה צף - מוסתר */
+.preview-close-btn-floating {
+  display: none !important; /* הסתר לגמרי */
+}
+
+/* קבוצת ספר */
+.book-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  padding-bottom: 24px;
+  border-bottom: 2px solid rgba(92, 61, 46, 0.15);
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.book-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* פריט תוצאה */
+.result-item-new {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+/* כותרת עם אייקון */
+.result-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.result-icon-small {
+  font-size: 18px;
+  color: #8b6f47;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* כפתור הרחבה */
+.expand-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #8b6f47;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: auto;
+}
+
+.expand-btn:hover {
+  background: rgba(92, 61, 46, 0.05);
+  border-color: rgba(92, 61, 46, 0.3);
+}
+
+.expand-btn svg {
+  font-size: 16px;
+}
+
+.match-count {
+  font-weight: 500;
+}
+
+/* תוצאות מורחבות */
+.expanded-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+  padding-right: 26px;
+  border-right: 3px solid rgba(92, 61, 46, 0.2);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.expanded-snippet {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(92, 61, 46, 0.12);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+/* אייקון תצוגה מקדימה */
+.snippet-preview-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 16px;
+  color: #5c3d2e;
+  pointer-events: none;
+}
+
+.result-snippet:hover .snippet-preview-icon,
+.expanded-snippet:hover .snippet-preview-icon {
+  opacity: 0.5;
+}
+
+.expanded-snippet::before {
+  display: none;
+}
+
+.result-snippet::before {
+  display: none;
+}
+
+.expanded-snippet:hover {
+  background: rgba(92, 61, 46, 0.05);
+  transform: translateX(-2px);
+  padding-left: 32px;
+}
+
+.expanded-snippet:hover::before {
+  opacity: 0.5;
+}
+
+.expanded-snippet:last-child {
+  border-bottom: none;
+}
+
+/* כותרת הקובץ */
+.result-title-new {
+  font-size: 20px;
+  color: #1a0dab;
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: right;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+.result-title-new:hover {
+  text-decoration: underline;
+}
+
+.result-title-new:visited {
+  color: #681da8;
+}
+
+.result-title-new::after {
+  content: 'לחץ לפתיחה בלשונית חדשה';
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.result-title-new:hover::after {
+  opacity: 1;
+}
+
+/* תצוגה מקדימה */
+.result-snippet {
+  font-size: 14px;
+  color: #4d5156;
+  line-height: 1.6;
+  margin-top: 4px;
+  text-align: right;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+.result-snippet:hover {
+  background: rgba(92, 61, 46, 0.05);
+  transform: translateX(-2px);
+  padding-left: 32px;
+}
+
+/* סימון מילת החיפוש באדום */
+.result-snippet mark.highlight {
+  background-color: transparent;
+  color: #d93025;
+  font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 40px;
+  padding: 20px 0;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 4px;
+  font-size: 14px;
+  color: #5c3d2e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+  background: rgba(92, 61, 46, 0.05);
+  border-color: rgba(92, 61, 46, 0.3);
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-number {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  color: #5c3d2e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-number:hover {
+  background: rgba(92, 61, 46, 0.08);
+}
+
+.page-number.active {
+  background: #5c3d2e;
+  color: white;
+  font-weight: 600;
+}
+
+/* טעינה */
+.search-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  width: 100%;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #8b6f47;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .preview-sidebar {
+  background: #1a1a1a;
+  border-right-color: rgba(92, 61, 46, 0.3);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .preview-content {
+  background: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .preview-close-btn-floating {
+  background: rgba(26, 26, 26, 0.98);
+  border-color: rgba(92, 61, 46, 0.4);
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .preview-close-btn-floating:hover {
+  background: #1a1a1a;
+  border-color: #8b6f47;
+  color: #c4a574;
+}
+
+[data-theme="dark"] .results-count-header {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .result-title-new {
+  color: #8ab4f8;
+}
+
+[data-theme="dark"] .result-title-new:visited {
+  color: #c58af9;
+}
+
+[data-theme="dark"] .result-snippet {
+  color: #bdc1c6;
+}
+
+[data-theme="dark"] .result-snippet:hover {
+  background: rgba(92, 61, 46, 0.15);
+}
+
+[data-theme="dark"] .result-snippet mark.highlight {
+  color: #f28b82;
+}
+
+[data-theme="dark"] .expanded-snippet:hover {
+  background: rgba(92, 61, 46, 0.15);
+}
+
+[data-theme="dark"] .snippet-preview-icon {
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .book-group {
+  border-bottom-color: rgba(92, 61, 46, 0.3);
+}
+
+[data-theme="dark"] .expand-btn {
+  border-color: rgba(92, 61, 46, 0.4);
+  color: #a68a5c;
+}
+
+[data-theme="dark"] .expand-btn:hover {
+  background: rgba(92, 61, 46, 0.15);
+  border-color: rgba(92, 61, 46, 0.5);
+}
+
+[data-theme="dark"] .expanded-results {
+  border-right-color: rgba(92, 61, 46, 0.35);
+}
+
+[data-theme="dark"] .expanded-snippet {
+  border-bottom-color: rgba(92, 61, 46, 0.2);
+}
+
+[data-theme="dark"] .page-btn {
+  border-color: rgba(92, 61, 46, 0.4);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .page-btn:hover {
+  background: rgba(92, 61, 46, 0.15);
+}
+
+[data-theme="dark"] .page-number {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .page-number:hover {
+  background: rgba(92, 61, 46, 0.15);
+}
+
+[data-theme="dark"] .page-number.active {
+  background: #8b6f47;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .preview-sidebar {
+    width: 45%;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .search-main-column {
+    flex: 1;
+  }
+  
+  .results-list-new {
+    padding: 0 20px 0 0;
+  }
+  
+  .preview-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 10000;
+    border-radius: 0;
+    padding: 8px;
+  }
+
+  .preview-close-btn-floating {
+    top: 16px;
+    left: 16px;
+  }
+
+  .result-title-new {
+    font-size: 18px;
+  }
+
+  .result-snippet {
+    font-size: 13px;
+  }
+
+  .page-number {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,94 @@
+.pdf-context-menu {
+  position: fixed;
+  background: var(--surface-primary, #ffffff);
+  border: 1px solid var(--border-subtle, #e0e0e0);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  min-width: 200px;
+  z-index: 10000;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  font-size: 14px;
+  color: var(--text-primary, #1a1a1a);
+  text-align: right;
+}
+
+.context-menu-item:hover:not(.disabled) {
+  background: var(--surface-hover, #f5f5f5);
+}
+
+.context-menu-item:active:not(.disabled) {
+  background: var(--surface-pressed, #e8e8e8);
+}
+
+.context-menu-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.context-menu-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.context-menu-label {
+  flex: 1;
+  text-align: right;
+}
+
+.context-menu-shortcut {
+  font-size: 12px;
+  color: var(--text-secondary, #666666);
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: var(--border-subtle, #e0e0e0);
+  margin: 4px 8px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .pdf-context-menu {
+    background: var(--surface-primary, #2d2d2d);
+    border-color: var(--border-subtle, #404040);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .context-menu-item {
+    color: var(--text-primary, #e0e0e0);
+  }
+
+  .context-menu-item:hover:not(.disabled) {
+    background: var(--surface-hover, #3a3a3a);
+  }
+
+  .context-menu-item:active:not(.disabled) {
+    background: var(--surface-pressed, #454545);
+  }
+
+  .context-menu-shortcut {
+    color: var(--text-secondary, #999999);
+  }
+
+  .context-menu-divider {
+    background: var(--border-subtle, #404040);
+  }
+}

@@ -1,0 +1,321 @@
+/* מדף ספרים */
+.bookshelf-section {
+  margin-bottom: 0;
+  position: relative;
+}
+
+.shelf-label {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.shelf-label-text {
+  display: inline-block;
+  background: linear-gradient(135deg, #d4af37, #c9a961);
+  color: #2a1810;
+  padding: 4px 20px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 3px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(139, 111, 71, 0.5);
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.shelf-label-text::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.shelf-container {
+  position: relative;
+  perspective: 800px;
+  padding: 0 10px;
+  width: 400px;
+  flex-shrink: 0;
+}
+
+.books-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-direction: row;
+  gap: 1px;
+  padding: 10px 15px;
+  padding-top: 16px;
+  height: 116px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  flex-wrap: nowrap;
+  overflow: visible;
+  background: transparent;
+  border-radius: 5px 5px 0 0;
+}
+
+/* ספר בודד */
+.book {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.6s ease, filter 0.6s ease;
+  transform-style: preserve-3d;
+  flex-shrink: 0;
+  margin-bottom: 15px;
+}
+
+.book:hover {
+  transform: translateY(-6px) !important;
+  z-index: 100;
+  filter: brightness(1.15);
+  margin-bottom: 21px;
+}
+
+/* גב הספר */
+.book-spine {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    #1a1410 0%,
+    #1a1410 3%,
+    #d4af37 3%,
+    #d4af37 4%,
+    #c9a961 4%,
+    #c9a961 5%,
+    #1a1410 5%,
+    #1a1410 6%,
+    #3d2817 6%,
+    #3d2817 8%,
+    #4a3124 8%,
+    #4a3124 10%,
+    #5c3d2e 10%,
+    #5c3d2e 90%,
+    #4a3124 90%,
+    #4a3124 92%,
+    #3d2817 92%,
+    #3d2817 94%,
+    #1a1410 94%,
+    #1a1410 95%,
+    #c9a961 95%,
+    #c9a961 96%,
+    #d4af37 96%,
+    #d4af37 97%,
+    #1a1410 97%,
+    #1a1410 100%
+  );
+  border-radius: 2px;
+  position: relative;
+  box-shadow: 
+    inset -3px 0 6px rgba(0, 0, 0, 0.7),
+    inset 3px 0 6px rgba(0, 0, 0, 0.7),
+    3px 0 10px rgba(0, 0, 0, 0.8),
+    -3px 0 10px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 3px;
+  overflow: hidden;
+  transform: rotate(180deg);
+}
+
+/* טקסט אנכי על גב הספר */
+.book-title-vertical {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  color: #d4af37;
+  font-size: 11px;
+  font-weight: bold;
+  text-shadow: 
+    2px 2px 3px rgba(0, 0, 0, 0.95),
+    0 0 6px rgba(0, 0, 0, 0.7);
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 2px;
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  direction: ltr;
+}
+
+/* קישוטים על הספר */
+.book-decorations {
+  display: none;
+}
+
+.book-line {
+  height: 1px;
+  background: var(--accent-color);
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  opacity: 0.8;
+}
+
+/* חלק עליון של הספר */
+.book-top {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom,
+    var(--accent-color),
+    var(--edge-color)
+  );
+  transform: rotateX(90deg);
+  transform-origin: top;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* כריכה (צד) */
+.book-cover {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom,
+    var(--edge-color) 0%,
+    var(--spine-color) 50%,
+    var(--edge-color) 100%
+  );
+  transform: rotateY(90deg);
+  transform-origin: right;
+}
+
+/* ספרים דמה (לא אינטראקטיביים) */
+.dummy-book {
+  opacity: 0.7;
+  cursor: default;
+  pointer-events: none;
+}
+
+.dummy-book:hover {
+  transform: none !important;
+  filter: none;
+}
+
+/* מדף עץ */
+.shelf-wood {
+  position: relative;
+  height: 15px;
+  background: linear-gradient(to bottom,
+    #8b6f47 0%,
+    #6b5437 50%,
+    #5c3d2e 100%
+  );
+  border-radius: 0 0 5px 5px;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 1px 3px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.shelf-edge {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom,
+    #5c3d2e,
+    #3d2817
+  );
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* טקסטורת עץ */
+.shelf-wood::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 50px,
+      rgba(0, 0, 0, 0.05) 50px,
+      rgba(0, 0, 0, 0.05) 51px
+    );
+  pointer-events: none;
+}
+
+/* אנימציות */
+@keyframes bookPulse {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.book:active {
+  animation: bookPulse 0.1s ease;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .shelf-label-text {
+  background: linear-gradient(135deg, #a68a5c, #c4a574);
+}
+
+[data-theme="dark"] .books-row {
+  background: linear-gradient(to bottom, 
+    rgba(20, 12, 8, 0.5) 0%,
+    rgba(20, 12, 8, 0.7) 50%,
+    rgba(10, 6, 4, 0.9) 100%
+  );
+}
+
+[data-theme="dark"] .shelf-wood {
+  background: linear-gradient(to bottom,
+    #6b5437 0%,
+    #5c3d2e 50%,
+    #4a3124 100%
+  );
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .books-row {
+    padding: 15px 20px;
+    gap: 1px;
+  }
+  
+  .book {
+    width: 30px !important;
+    height: 150px !important;
+  }
+  
+  .book-title-vertical {
+    font-size: 9px;
+  }
+  
+  .shelf-label-text {
+    font-size: 16px;
+    padding: 10px 30px;
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "books": [
+    {
+      "id": "",
+      "fileName": "קובץ הערות שו''ת הרשב''א יבמות",
+      "title": "",
+      "aliases": [],
+      "author": "הרב אלחנן וסרמן",
+      "categories": [
+        "shas"
+      ],
+      "description": "",
+      "tableOfContents": []
+    },
+    {
+      "id": "",
+      "fileName": "ברכת מרדכי - חנוכה",
+      "title": "ברכת מרדכי - חנוכה",
+      "aliases": [],
+      "author": "הרב ברוך מרדכי אזרחי",
+      "categories": [
+        "contemporary"
+      ],
+      "description": "",
+      "tableOfContents": []
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+.pdf-viewer-container {
+  width: 100%;
+  height: 100%;
+  background: #525659;
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* הסתר כלי עבודה בתצוגה מקדימה */
+.pdf-viewer-container.preview-mode iframe {
+  pointer-events: auto;
+}
+
+.pdf-viewer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pdf-viewer-iframe {
+  flex: 1;
+  border: none;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+.pdf-viewer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row-reverse;
+  overflow: hidden;
+}
+
+.pdf-viewer-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* מצב מסך מלא */
+.pdf-viewer-container.fullscreen-mode {
+  width: 100% !important;
+  height: 100% !important;
+  background: #525659;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.pdf-viewer-container.fullscreen-mode .pdf-toolbar {
+  display: none !important;
+}
+
+.pdf-viewer-container.fullscreen-mode .pdf-top-bar {
+  display: none !important;
+}
+
+.pdf-viewer-container.fullscreen-mode .pdf-viewer-content {
+  flex: 1 !important;
+}
+
+.pdf-viewer-container.fullscreen-mode .pdf-viewer-iframe {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 !important;
+}
+
+/* הסתר את הסיידבר של PDF.js במצב מסך מלא */
+.pdf-viewer-container.fullscreen-mode iframe #sidebarContainer {
+  display: none !important;
+}
+
+.pdf-viewer-container.fullscreen-mode iframe #outerContainer.sidebarOpen #viewerContainer {
+  left: 0 !important;
+}
+
+.pdf-viewer-container.fullscreen-mode iframe #viewerContainer {
+  left: 0 !important;
+  right: 0 !important;
+}
+
+.pdf-viewer-container.fullscreen-mode iframe #outerContainer {
+  left: 0 !important;
+}
+
+/* סגנון למצב fullscreen של הדפדפן */
+.pdf-viewer-container:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.pdf-viewer-container:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.pdf-viewer-container:-moz-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.pdf-viewer-container:-ms-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+}

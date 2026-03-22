@@ -1,0 +1,381 @@
+.parasha-tool {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0;
+  direction: rtl;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* כותרת */
+.parasha-tool .tool-header {
+  text-align: right;
+  margin-bottom: 24px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.parasha-tool .tool-header h2 {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 36px;
+  color: #2a1810;
+  margin: 0 0 8px 0;
+  padding: 0;
+}
+
+.parasha-tool .tool-header p {
+  font-size: 16px;
+  color: rgba(42, 24, 16, 0.7);
+  margin: 0;
+  padding: 0;
+}
+
+/* טאבים */
+.parasha-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  color: #8b6914;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(92, 61, 46, 0.08);
+}
+
+.tab-button:hover {
+  background: rgba(244, 228, 193, 0.5);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #f4e4c1 0%, #d4c5a0 100%);
+  border-color: #d4af37;
+  color: #5c3d2e;
+  box-shadow: 0 4px 16px rgba(139, 105, 20, 0.2);
+}
+
+.tab-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.tab-name {
+  white-space: nowrap;
+}
+
+/* תוכן */
+.parasha-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 12px 40px rgba(92, 61, 46, 0.15);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder */
+.content-placeholder {
+  text-align: center;
+  max-width: 500px;
+  padding: 40px 20px;
+}
+
+.placeholder-icon {
+  font-size: 80px;
+  color: rgba(212, 175, 55, 0.4);
+  margin-bottom: 24px;
+}
+
+.content-placeholder h3 {
+  font-family: 'DrugulinCLM-Bold', 'Arial', sans-serif;
+  font-size: 28px;
+  color: #2a1810;
+  margin: 0 0 12px 0;
+}
+
+.content-placeholder p {
+  font-size: 16px;
+  color: rgba(42, 24, 16, 0.7);
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+}
+
+.placeholder-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(244, 228, 193, 0.3);
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.feature-item svg {
+  font-size: 18px;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.feature-item span {
+  font-size: 15px;
+  color: #2a1810;
+  font-family: 'DrugulinCLM', 'Times New Roman', serif;
+  text-align: right;
+}
+
+/* Scrollbar */
+.parasha-content::-webkit-scrollbar {
+  display: none;
+}
+
+.parasha-content {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .parasha-tool .tool-header h2 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .parasha-tool .tool-header p {
+  color: rgba(232, 220, 196, 0.7);
+}
+
+[data-theme="dark"] .tab-button {
+  background: rgba(42, 24, 16, 0.8);
+  border-color: rgba(196, 165, 116, 0.2);
+  color: #c4a574;
+}
+
+[data-theme="dark"] .tab-button:hover {
+  background: rgba(196, 165, 116, 0.15);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .tab-button.active {
+  background: linear-gradient(135deg, rgba(196, 165, 116, 0.3) 0%, rgba(166, 138, 92, 0.3) 100%);
+  border-color: #c4a574;
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .parasha-content {
+  background: rgba(42, 24, 16, 0.95);
+  border-color: rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .placeholder-icon {
+  color: rgba(196, 165, 116, 0.4);
+}
+
+[data-theme="dark"] .content-placeholder h3 {
+  color: #e8dcc4;
+}
+
+[data-theme="dark"] .content-placeholder p {
+  color: rgba(232, 220, 196, 0.7);
+}
+
+[data-theme="dark"] .feature-item {
+  background: rgba(196, 165, 116, 0.1);
+  border-color: rgba(196, 165, 116, 0.2);
+}
+
+[data-theme="dark"] .feature-item svg {
+  color: #c4a574;
+}
+
+[data-theme="dark"] .feature-item span {
+  color: #e8dcc4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .parasha-tool {
+    overflow: hidden;
+  }
+
+  .parasha-tool .tool-header {
+    margin-bottom: 16px;
+  }
+
+  .parasha-tool .tool-header h2 {
+    font-size: 28px;
+  }
+
+  .parasha-tool .tool-header p {
+    font-size: 14px;
+  }
+
+  .parasha-tabs {
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+  }
+  
+  .parasha-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-button {
+    min-width: 120px;
+    padding: 12px 16px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .tab-icon {
+    font-size: 18px;
+  }
+
+  .parasha-content {
+    padding: 20px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .placeholder-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+
+  .content-placeholder {
+    padding: 30px 15px;
+  }
+
+  .content-placeholder h3 {
+    font-size: 24px;
+  }
+
+  .content-placeholder p {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .feature-item {
+    padding: 10px 14px;
+  }
+
+  .feature-item svg {
+    font-size: 16px;
+  }
+
+  .feature-item span {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .parasha-tool {
+    overflow: hidden;
+  }
+
+  .parasha-tool .tool-header {
+    margin-bottom: 12px;
+  }
+
+  .parasha-tool .tool-header h2 {
+    font-size: 24px;
+  }
+
+  .parasha-tool .tool-header p {
+    font-size: 13px;
+  }
+
+  .parasha-tabs {
+    flex-direction: row;
+    gap: 6px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tab-button {
+    width: auto;
+    min-width: 110px;
+    padding: 10px 14px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .tab-icon {
+    font-size: 16px;
+  }
+
+  .parasha-content {
+    padding: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .content-placeholder {
+    padding: 20px 12px;
+  }
+
+  .placeholder-icon {
+    font-size: 50px;
+  }
+
+  .content-placeholder h3 {
+    font-size: 22px;
+  }
+
+  .placeholder-features {
+    gap: 12px;
+  }
+}

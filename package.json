@@ -1,0 +1,143 @@
+{
+  "name": "haotzer",
+  "version": "1.0.0",
+  "description": "אפליקציה דסקטופ להצגת ספרים תורניים",
+  "main": "electron/main.js",
+  "author": "האויצר Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[username]/haotzer.git"
+  },
+  "keywords": [
+    "torah",
+    "books",
+    "pdf",
+    "text",
+    "hebrew",
+    "tauri",
+    "react"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/tools.js pdf:worker && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
+    "build:electron": "cross-env ELECTRON=true node scripts/tools.js pdf:worker && cross-env ELECTRON=true node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
+    "preview": "vite preview",
+    "electron": "cross-env NODE_ENV=development electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on -t 30000 http://localhost:5173 && npm run electron\"",
+    "electron:build": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --publish never",
+    "electron:build:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --win --x64 --publish never",
+    "electron:build:portable": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --win portable --x64",
+    "optimize": "node scripts/optimize-startup.js",
+    "measure": "node scripts/measure-startup.js",
+    "clean:logs": "node scripts/remove-logs.js",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:debug": "tauri build --debug",
+    "download:meilisearch": "node scripts/tools.js meili:download",
+    "postinstall": "node scripts/tools.js postinstall",
+    "build:index": "node scripts/tools.js index:build",
+    "build:index:ui": "node scripts/tools.js index:ui",
+    "build:index:optimized": "node --expose-gc --max-old-space-size=8192 scripts/build-index-memory-optimized.js --flushEvery 2 --meili",
+    "build:otzaria": "node --expose-gc --max-old-space-size=4096 scripts/build-otzaria-index.js",
+    "build:otzaria:test": "node --expose-gc scripts/build-otzaria-index.js --maxBooks=10",
+    "clean": "rimraf dist build release src-tauri/target",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\""
+  },
+  "build": {
+    "appId": "com.haotzer.app",
+    "productName": "האויצר",
+    "directories": {
+      "output": "release",
+      "buildResources": "public"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/pdfjs/**/*",
+      "public/fonts/**/*",
+      "public/*.png",
+      "public/*.jpg",
+      "public/abbr_merged.json",
+      "public/books-metadata.json",
+      "public/dictionary.json",
+      "public/ראשי-תיבות.json",
+      "public/pdf.worker.min.mjs",
+      "!books/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/meilisearch",
+        "to": "resources/meilisearch",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "signExts": [],
+      "icon": "src-tauri/icons/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "האויצר",
+      "installerIcon": "src-tauri/icons/icon.ico",
+      "uninstallerIcon": "src-tauri/icons/icon.ico",
+      "installerHeaderIcon": "src-tauri/icons/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "menuCategory": true,
+      "displayLanguageSelector": false,
+      "language": "1037"
+    }
+  },
+  "dependencies": {
+    "@fluentui/react-components": "^9.47.0",
+    "@fluentui/react-icons": "^2.0.239",
+    "@hebcal/core": "^6.0.8",
+    "@hebcal/learning": "^6.6.1",
+    "@pdftron/pdfjs-express-viewer": "^8.7.5",
+    "@tauri-apps/api": "^1.6.0",
+    "better-sqlite3": "^12.6.2",
+    "flexsearch": "^0.8.212",
+    "kosher-zmanim": "^0.9.0",
+    "lunr": "^2.3.9",
+    "meilisearch": "^0.55.0",
+    "minimist": "^1.2.8",
+    "p-limit": "^7.2.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.530",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-pdf": "^10.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "vite": "^5.0.0",
+    "wait-on": "^9.0.3"
+  }
+}

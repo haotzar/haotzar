@@ -1,0 +1,339 @@
+.table-editor {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+}
+
+.table-header {
+  background: #2c3e50;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.table-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modified-badge {
+  color: #ffd700;
+  font-size: 0.9rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-back {
+  background: #95a5a6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: #7f8c8d;
+}
+
+.btn-add-row {
+  background: #27ae60;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-row:hover {
+  background: #229954;
+}
+
+.btn-import, .btn-export {
+  background: #3498db;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-import:hover, .btn-export:hover {
+  background: #2980b9;
+}
+
+.btn-save {
+  background: #e67e22;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #d35400;
+}
+
+.btn-save:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.table-info {
+  background: white;
+  padding: 0.75rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.tip {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  background: white;
+}
+
+.metadata-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+.metadata-table thead {
+  position: sticky;
+  top: 0;
+  background: #34495e;
+  color: white;
+  z-index: 10;
+}
+
+.metadata-table th {
+  padding: 1rem 0.75rem;
+  text-align: right;
+  font-weight: 600;
+  border-left: 1px solid #2c3e50;
+  white-space: nowrap;
+}
+
+.metadata-table th:first-child {
+  border-right: 1px solid #2c3e50;
+}
+
+.metadata-table td {
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  vertical-align: top;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: embed;
+}
+
+.metadata-table tr.even {
+  background: #ffffff;
+}
+
+.metadata-table tr.odd {
+  background: #f8f9fa;
+}
+
+.metadata-table tr:hover {
+  background: #e3f2fd;
+}
+
+/* עמודות */
+.col-actions {
+  width: 100px;
+  text-align: center;
+}
+
+.col-id {
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.col-filename {
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.col-title {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.col-author {
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.col-aliases {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.col-categories {
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.col-description {
+  min-width: 250px;
+  max-width: 400px;
+}
+
+/* תאים ניתנים לעריכה */
+.editable {
+  cursor: pointer;
+  position: relative;
+}
+
+.editable:hover {
+  background: #fff9e6;
+  outline: 2px solid #ffd700;
+}
+
+.editable input,
+.editable textarea,
+.editable select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid #3498db;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-size: inherit;
+  box-sizing: border-box;
+  direction: rtl;
+  text-align: right;
+}
+
+.editable textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.editable select {
+  height: auto;
+}
+
+.editable select option {
+  padding: 0.25rem;
+}
+
+.editable .empty {
+  color: #bdc3c7;
+  font-style: italic;
+}
+
+/* כפתורי פעולה */
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.2);
+}
+
+.btn-icon.btn-delete:hover {
+  filter: brightness(1.2);
+}
+
+/* טבלה ריקה */
+.empty-table {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* גלילה */
+.table-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
+}
+
+/* רספונסיביות */
+@media (max-width: 1400px) {
+  .metadata-table {
+    font-size: 0.85rem;
+  }
+  
+  .col-id, .col-filename, .col-author {
+    min-width: 120px;
+  }
+  
+  .col-title, .col-aliases {
+    min-width: 150px;
+  }
+}
+
+/* הדגשת שורה בעריכה */
+.metadata-table tr:has(.editable input:focus),
+.metadata-table tr:has(.editable textarea:focus),
+.metadata-table tr:has(.editable select:focus) {
+  background: #e8f5e9 !important;
+  box-shadow: 0 0 0 2px #4caf50;
+}
