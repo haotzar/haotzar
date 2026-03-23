@@ -81,9 +81,9 @@ jobs:
           release/*.exe
         draft: true
         prerelease: false
-        name: 'האויצר v${{ github.ref_name }}'
+        name: 'האוצר v${{ github.ref_name }}'
         body: |
-          ## האויצר - אפליקציית ספרייה תורנית
+          ## האוצר - אפליקציית ספרייה תורנית
           
           ### הורדה והתקנה:
           1. הורד את קובץ ההתקנה (Setup.exe)
@@ -187,9 +187,9 @@ jobs:
           src-tauri/target/release/bundle/nsis/*.exe
         draft: true
         prerelease: false
-        name: 'האויצר (Tauri) v${{ github.ref_name }}'
+        name: 'האוצר (Tauri) v${{ github.ref_name }}'
         body: |
-          ## האויצר - אפליקציית ספרייה תורנית (Tauri)
+          ## האוצר - אפליקציית ספרייה תורנית (Tauri)
           
           ### הורדה והתקנה:
           1. הורד את קובץ ההתקנה (.exe או .msi)

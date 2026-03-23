@@ -159,9 +159,9 @@ jobs:
           src-tauri/target/release/bundle/**/*.AppImage
         draft: true
         prerelease: false
-        name: 'האויצר (Tauri) ${{ github.ref_name }}'
+        name: 'האוצר (Tauri) ${{ github.ref_name }}'
         body: |
-          ## האויצר - אפליקציית ספרייה תורנית (Tauri)
+          ## האוצר - אפליקציית ספרייה תורנית (Tauri)
           
           ### קבצים להורדה:
           - **Windows**: הורד את קובץ ה-`.exe` (NSIS installer) או `.msi`

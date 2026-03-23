@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "האויצר",
+    "productName": "האוצר",
     "version": "1.0.0"
   },
   "tauri": {
@@ -50,7 +50,7 @@
       "copyright": "",
       "category": "Education",
       "shortDescription": "אפליקציה דסקטופ להצגת ספרים תורניים",
-      "longDescription": "האויצר - אפליקציה דסקטופ מתקדמת להצגת וחיפוש בספרים תורניים",
+      "longDescription": "האוצר - אפליקציה דסקטופ מתקדמת להצגת וחיפוש בספרים תורניים",
       "deb": {
         "depends": []
       },
@@ -78,7 +78,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "האויצר",
+        "title": "האוצר",
         "width": 1400,
         "height": 900,
         "minWidth": 800,

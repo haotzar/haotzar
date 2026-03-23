@@ -84,7 +84,7 @@ const GematriaTool = () => {
 
     try {
       // קבלת כל קבצי הטקסט בתיקיית תנך
-      const textModules = import.meta.glob('/books/האויצר ספריה/תנך/**/*.txt', { 
+      const textModules = import.meta.glob('/books/האוצר ספריה/תנך/**/*.txt', { 
         eager: false,
         query: '?raw',
         import: 'default'

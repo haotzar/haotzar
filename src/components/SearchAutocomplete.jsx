@@ -53,7 +53,7 @@ const SearchAutocomplete = ({ suggestions, onSelect, searchQuery }) => {
       if (pathLower.includes('מוסד הרב קוק') || pathLower.includes('kook')) {
         return 'kook';
       }
-      if (pathLower.includes('האויצר') || pathLower.includes('ozer')) {
+      if (pathLower.includes('האוצר') || pathLower.includes('ozer')) {
         return 'ozer';
       }
     }
@@ -376,9 +376,9 @@ const SearchAutocomplete = ({ suggestions, onSelect, searchQuery }) => {
             {bookSource === 'ozer' && (
               <img 
                 src="/icon.png" 
-                alt="האויצר" 
+                alt="האוצר" 
                 className="source-badge"
-                title="ספר מהאויצר"
+                title="ספר מהאוצר"
               />
             )}
             

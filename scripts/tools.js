@@ -154,7 +154,7 @@ function formatBytes(bytes) {
 
 function checkIndex() {
   console.log('╔════════════════════════════════════════╗');
-  console.log('║   🔍 בדיקת אינדקס חיפוש - האויצר     ║');
+  console.log('║   🔍 בדיקת אינדקס חיפוש - האוצר     ║');
   console.log('╚════════════════════════════════════════╝');
   console.log('');
 
@@ -356,7 +356,7 @@ function runIndexUi() {
 
   server.listen(PORT, () => {
     console.log('╔════════════════════════════════════════╗');
-    console.log('║   🔨 בונה אינדקס חיפוש - האויצר      ║');
+    console.log('║   🔨 בונה אינדקס חיפוש - האוצר      ║');
     console.log('╚════════════════════════════════════════╝');
     console.log('');
     console.log(`✅ השרת רץ על: http://localhost:${PORT}`);

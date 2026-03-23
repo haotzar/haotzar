@@ -2,7 +2,7 @@
 name = "haotzer"
 version = "1.0.0"
 description = "אפליקציה דסקטופ להצגת ספרים תורניים"
-authors = ["האויצר Team"]
+authors = ["האוצר Team"]
 license = "MIT"
 repository = "https://github.com/[username]/haotzer"
 edition = "2021"

@@ -16,7 +16,7 @@ const SplashScreen = ({ stage, progress, message }) => {
     <div className={`splash-screen ${isClosing ? 'fade-out' : ''}`}>
       <div className="splash-content">
         <div className="splash-logo">
-          <Text size={1000} weight="bold">האויצר</Text>
+          <Text size={1000} weight="bold">האוצר</Text>
         </div>
         
         <div className="splash-progress-container">
