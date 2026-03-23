@@ -485,9 +485,16 @@ function App() {
             console.log('📁 Total scan paths:', scanPaths);
 
             if (scanPaths.length === 0) {
-              console.warn('⚠️ אין תיקיות מוגדרות לסריקה');
-              alert('אין תיקיות ספרייה מוגדרות.\n\nעבור להגדרות > ניהול נתונים > תיקיות ספרייה\nוהוסף תיקייה עם ספרים.');
+              console.warn('⚠️ אין תיקיות מוגדרות לסריקה - ממשיך עם רשימה ריקה');
+              // אל תציג alert - פשוט המשך עם רשימה ריקה
+              // המשתמש יכול להוסיף תיקיות דרך ההגדרות
               setAllFiles([]);
+              // המשך לטעון את האפליקציה גם בלי ספרים
+              const savedState = loadTabsState();
+              if (savedState && savedState.openTabs.length > 0) {
+                setOpenTabs(savedState.openTabs);
+                setActiveTabId(savedState.activeTabId);
+              }
               return;
             }
 
@@ -648,9 +655,16 @@ function App() {
             console.log('📁 Total scan paths:', scanPaths);
 
             if (scanPaths.length === 0) {
-              console.warn('⚠️ אין תיקיות מוגדרות לסריקה');
-              alert('אין תיקיות ספרייה מוגדרות.\n\nעבור להגדרות > ניהול נתונים > תיקיות ספרייה\nוהוסף תיקייה עם ספרים.');
+              console.warn('⚠️ אין תיקיות מוגדרות לסריקה - ממשיך עם רשימה ריקה');
+              // אל תציג alert - פשוט המשך עם רשימה ריקה
+              // המשתמש יכול להוסיף תיקיות דרך ההגדרות
               setAllFiles([]);
+              // המשך לטעון את האפליקציה גם בלי ספרים
+              const savedState = loadTabsState();
+              if (savedState && savedState.openTabs.length > 0) {
+                setOpenTabs(savedState.openTabs);
+                setActiveTabId(savedState.activeTabId);
+              }
               return;
             }
 
