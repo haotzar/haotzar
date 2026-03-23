@@ -199,20 +199,24 @@ function App() {
 
   // הסרת מסך טעינה כשהאפליקציה מוכנה
   useEffect(() => {
-    if (allFiles.length > 0 || openTabs.length > 0) {
-      // המתן רגע קצר כדי לוודא שהכל נטען
-      const timer = setTimeout(() => {
-        document.body.classList.add('loaded');
-        // הסר את מסך הטעינה לגמרי אחרי האנימציה
-        setTimeout(() => {
-          const loadingScreen = document.getElementById('loading-screen');
-          if (loadingScreen) {
-            loadingScreen.remove();
-          }
-        }, 300);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
+    // הסר את מסך הטעינה אחרי זמן קצוב או כשיש תוכן
+    const hasContent = allFiles.length > 0 || openTabs.length > 0;
+    
+    // אם יש תוכן, הסר מיד. אם אין, המתן 2 שניות ואז הסר בכל מקרה
+    const delay = hasContent ? 100 : 2000;
+    
+    const timer = setTimeout(() => {
+      document.body.classList.add('loaded');
+      // הסר את מסך הטעינה לגמרי אחרי האנימציה
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.remove();
+        }
+      }, 300);
+    }, delay);
+    
+    return () => clearTimeout(timer);
   }, [allFiles, openTabs]);
 
   // שמירת מצב הכרטיסיות לשולחן העבודה הנוכחי
