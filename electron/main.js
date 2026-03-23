@@ -242,13 +242,36 @@ function setupCustomProtocol() {
 }
 
 function createWindow() {
+  // קביעת נתיב האייקון - שונה בין dev ל-production
+  const iconPath = process.env.NODE_ENV === 'development'
+    ? path.join(__dirname, '../public/icon.png')
+    : path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'icon.png');
+  
+  // אם האייקון לא נמצא, נסה נתיבים נוספים
+  let finalIconPath = iconPath;
+  if (!fs.existsSync(iconPath)) {
+    const alternativePaths = [
+      path.join(__dirname, '../dist/icon.png'),
+      path.join(__dirname, '../public/icon.png'),
+      path.join(process.resourcesPath, 'icon.png')
+    ];
+    
+    for (const altPath of alternativePaths) {
+      if (fs.existsSync(altPath)) {
+        finalIconPath = altPath;
+        console.log('✅ Found icon at:', altPath);
+        break;
+      }
+    }
+  }
+  
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 800,
     minHeight: 600,
-    title: 'האוצר',
-    icon: path.join(__dirname, '../public/icon.png'),
+    title: 'haotzar',
+    icon: finalIconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
