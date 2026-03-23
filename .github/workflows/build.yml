@@ -154,26 +154,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Create placeholder icons if needed
+    - name: Verify Tauri icons exist
       run: |
         if (-not (Test-Path "src-tauri/icons/icon.ico")) {
-          Write-Host "Creating placeholder Tauri icons..."
-          
-          New-Item -ItemType Directory -Force -Path "src-tauri/icons" | Out-Null
-          
-          if (Test-Path "public/home-background.png") {
-            Copy-Item "public/home-background.png" "temp-icon.png"
-            
-            try {
-              npm run tauri icon temp-icon.png 2>&1 | Out-Null
-              Remove-Item "temp-icon.png" -ErrorAction SilentlyContinue
-              Write-Host "✅ Icons generated"
-            } catch {
-              Write-Host "⚠️ Could not generate icons: $_"
-            }
-          }
+          Write-Host "❌ Error: Tauri icons are missing!"
+          Write-Host "Please ensure all required icons exist in src-tauri/icons/"
+          exit 1
         } else {
-          Write-Host "✅ Icons already exist"
+          Write-Host "✅ Tauri icons exist"
         }
       shell: pwsh
       continue-on-error: false

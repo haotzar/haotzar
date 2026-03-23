@@ -258,32 +258,36 @@ async function checkMeiliStatus() {
 }
 
 function generateTauriIcons() {
-  const preferredSquareIcon = path.join(__dirname, '..', 'src-tauri', 'icons', 'icon.png');
-  const fallbackIcon = path.join(__dirname, '..', 'public', 'icon.png');
-  const baseSource = fs.existsSync(preferredSquareIcon) ? preferredSquareIcon : fallbackIcon;
-  const baseIconPath = path.join(__dirname, '..', 'src-tauri', 'base-icon.png');
-
-  if (!fs.existsSync(baseSource)) {
-    die(`❌ Base icon not found: ${baseSource}`);
+  const iconsDir = path.join(__dirname, '..', 'src-tauri', 'icons');
+  const sourceIcon = path.join(__dirname, '..', 'public', 'icon.png');
+  
+  // Check if required icons already exist
+  const requiredIcons = [
+    'icon.png',
+    '32x32.png',
+    '128x128.png',
+    '128x128@2x.png',
+    'icon.ico',
+    'icon.icns'
+  ];
+  
+  const allExist = requiredIcons.every(icon => 
+    fs.existsSync(path.join(iconsDir, icon))
+  );
+  
+  if (allExist) {
+    console.log('✅ All Tauri icons already exist, skipping generation');
+    return;
   }
-
-  ensureDir(path.dirname(baseIconPath));
-  fs.copyFileSync(baseSource, baseIconPath);
-
-  const res = spawnSync('npx', ['tauri', 'icon', baseIconPath], {
-    stdio: 'inherit',
-    shell: process.platform === 'win32'
-  });
-
-  try {
-    if (fs.existsSync(baseIconPath)) fs.unlinkSync(baseIconPath);
-  } catch {
-    // ignore
+  
+  // If source icon doesn't exist, fail
+  if (!fs.existsSync(sourceIcon)) {
+    die(`❌ Source icon not found: ${sourceIcon}`);
   }
-
-  if (res.status !== 0) {
-    process.exit(res.status || 1);
-  }
+  
+  console.log('⚠️  Some icons are missing. Please run: npx tauri icon public/icon.png');
+  console.log('Or manually copy icons to src-tauri/icons/');
+  process.exit(1);
 }
 
 function buildIndex(options = {}) {

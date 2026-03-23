@@ -4,17 +4,17 @@
 
 ## מצב נוכחי ✅
 
-האייקונים נוצרו אוטומטית באמצעות Tauri CLI ותקינים לחלוטין לבנייה.
+האייקונים נוצרו מהקובץ `public/icon.png` ותקינים לחלוטין לבנייה.
 
 ## קבצים קיימים
 
 ### נדרש עבור Tauri:
-- ✅ `icon.ico` (7,627 bytes) - Windows icon
-- ✅ `icon.icns` (53,104 bytes) - macOS icon  
-- ✅ `32x32.png` (981 bytes) - Small icon
-- ✅ `128x128.png` (2,409 bytes) - Medium icon
-- ✅ `128x128@2x.png` (1,234 bytes) - High-DPI icon
-- ✅ `icon.png` (2,409 bytes) - Default icon
+- ✅ `icon.ico` - Windows icon
+- ✅ `icon.icns` - macOS icon  
+- ✅ `32x32.png` - Small icon
+- ✅ `128x128.png` - Medium icon
+- ✅ `128x128@2x.png` - High-DPI icon
+- ✅ `icon.png` - Default icon
 
 ### נוסף עבור Windows Store:
 - ✅ `StoreLogo.png`
@@ -22,29 +22,18 @@
 
 ## יצירת אייקונים מחדש
 
-### אוטומטי (מומלץ):
-```bash
-node scripts/generate-tauri-icons.js
-```
+אם תרצה ליצור אייקונים חדשים מאייקון מותאם אישית:
 
-הסקריפט:
-1. יוצר אייקון PNG בסיס (256x256) עם עיצוב פשוט
-2. משתמש ב-Tauri CLI ליצירת כל הפורמטים
-3. מאמת שכל הקבצים נוצרו
-
-### ידני (עם אייקון מותאם אישית):
-
-אם יש לך אייקון משלך:
+1. החלף את הקובץ `public/icon.png` באייקון שלך (512x512 פיקסלים מומלץ)
+2. הרץ את הפקודה:
 
 ```bash
-# צור אייקון PNG באיכות גבוהה (512x512 מומלץ)
-# ואז הרץ:
-npx tauri icon path/to/your-icon.png
+npx tauri icon public/icon.png
 ```
 
 או דרך cmd (אם יש בעיות עם PowerShell):
 ```cmd
-cmd /c "npx tauri icon path/to/your-icon.png"
+cmd /c "npx tauri icon public/icon.png"
 ```
 
 ## דרישות לאייקון מותאם אישית
@@ -64,28 +53,26 @@ cmd /c "npx tauri icon path/to/your-icon.png"
 
 ## הערות
 
-- האייקונים הנוכחיים נוצרו אוטומטית ופונקציונליים
-- הם מכילים עיצוב פשוט (גרדיאנט כחול עם צורה לבנה)
-- לפני שחרור לייצור, מומלץ להחליף באייקון ממותג
+- האייקונים הנוכחיים נוצרו מ-`public/icon.png`
 - כל האייקונים מועברים למאגר Git כדי להבטיח בניות CI/CD עובדות
-- הסקריפט רץ אוטומטית ב-CI/CD אם האייקונים חסרים
+- הבנייה לא תנסה ליצור אייקונים אוטומטית - הם חייבים להיות קיימים מראש
 
 ## פתרון בעיות
 
 ### "failed to decode icon"
-זה אומר שקובץ האייקון לא תקין. הרץ:
+זה אומר שקובץ האייקון לא תקין. צור אותם מחדש:
 ```bash
-node scripts/generate-tauri-icons.js
+npx tauri icon public/icon.png
 ```
 
 ### "npx: command not found"
 וודא ש-Node.js מותקן. אם יש בעיות עם PowerShell, השתמש ב-cmd:
 ```cmd
-cmd /c "node scripts/generate-tauri-icons.js"
+cmd /c "npx tauri icon public/icon.png"
 ```
 
 ### אייקון לא נראה טוב
-ערוך את `scripts/create-base-icon.js` או צור אייקון משלך והרץ:
+החלף את `public/icon.png` באייקון חדש והרץ:
 ```bash
-npx tauri icon your-custom-icon.png
+npx tauri icon public/icon.png
 ```

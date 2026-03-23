@@ -85,8 +85,29 @@ jobs:
     - name: Install npm dependencies
       run: npm install
 
-    - name: Generate Tauri icons
-      run: node scripts/generate-tauri-icons.js
+    - name: Verify Tauri icons exist
+      run: |
+        $iconsDir = "src-tauri/icons"
+        $requiredIcons = @("icon.png", "32x32.png", "128x128.png", "128x128@2x.png", "icon.ico", "icon.icns")
+        
+        Write-Host "Checking for required Tauri icons..."
+        $allExist = $true
+        foreach ($icon in $requiredIcons) {
+          $iconPath = Join-Path $iconsDir $icon
+          if (Test-Path $iconPath) {
+            Write-Host "✅ Found: $icon"
+          } else {
+            Write-Host "❌ Missing: $icon"
+            $allExist = $false
+          }
+        }
+        
+        if (-not $allExist) {
+          Write-Host "Error: Some required icons are missing!"
+          exit 1
+        }
+        
+        Write-Host "`n✅ All required Tauri icons exist"
       shell: pwsh
       continue-on-error: false
 
