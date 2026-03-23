@@ -103,36 +103,37 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 
   const handleAddFolder = async () => {
     try {
-      const isElectron = window.electron !== undefined;
-      const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+      // המתן ל-Tauri API אם נדרש
+      if (typeof window.__TAURI__ !== 'undefined' && !window.__TAURI__.dialog) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
       
-      if (isTauri && window.__TAURI__.dialog) {
+      const isElectron = window.electron !== undefined;
+      const isTauri = typeof window !== 'undefined' && 
+                      typeof window.__TAURI__ !== 'undefined' &&
+                      typeof window.__TAURI__.dialog !== 'undefined';
+      
+      if (isTauri) {
         // שימוש ב-Tauri dialog API דרך window.__TAURI__
-        try {
-          const selectedPath = await window.__TAURI__.dialog.open({
-            directory: true,
-            multiple: false,
-            title: 'בחר תיקיית ספרים'
-          });
+        const selectedPath = await window.__TAURI__.dialog.open({
+          directory: true,
+          multiple: false,
+          title: 'בחר תיקיית ספרים'
+        });
+        
+        if (selectedPath && typeof selectedPath === 'string') {
+          const folderName = selectedPath.split(/[/\\]/).pop();
           
-          if (selectedPath && typeof selectedPath === 'string') {
-            const folderName = selectedPath.split(/[/\\]/).pop();
+          if (!libraryFolders.includes(selectedPath)) {
+            const updatedFolders = [...libraryFolders, selectedPath];
+            setLibraryFolders(updatedFolders);
+            updateSetting('libraryFolders', updatedFolders);
             
-            if (!libraryFolders.includes(selectedPath)) {
-              const updatedFolders = [...libraryFolders, selectedPath];
-              setLibraryFolders(updatedFolders);
-              updateSetting('libraryFolders', updatedFolders);
-              
-              if (window.confirm(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
-                window.location.reload();
-              }
-            } else {
-              alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
-            }
+            alert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`);
+            window.location.reload();
+          } else {
+            alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
           }
-        } catch (error) {
-          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
-          alert('שגיאה בבחירת תיקייה: ' + error.message);
         }
       } else if (isElectron) {
         const result = await window.electron.selectFolder();
