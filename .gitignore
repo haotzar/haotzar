@@ -62,6 +62,9 @@ books/
 # Meilisearch binary - too large for Git, downloaded automatically
 resources/meilisearch/meilisearch.exe
 resources/meilisearch/data.ms/
+meilisearch/meilisearch.exe
+meilisearch/אינדקס מהיר/meilisearch.exe
+meilisearch/data.ms/
 
 # Local settings
 settings.json
