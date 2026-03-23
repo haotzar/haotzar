@@ -31,6 +31,22 @@ import {
   InfoFilled,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
+
+// Tauri API imports
+let tauriDialog = null;
+try {
+  // ייבוא דינמי של Tauri dialog API
+  if (typeof window !== 'undefined') {
+    import('@tauri-apps/api/dialog').then(module => {
+      tauriDialog = module;
+    }).catch(() => {
+      console.log('Tauri dialog API not available');
+    });
+  }
+} catch (err) {
+  console.log('Tauri not available');
+}
+
 import meilisearchEngine from './utils/meilisearchEngine';
 import { 
   exportSettingsToFile, 
@@ -103,13 +119,14 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 
   const handleAddFolder = async () => {
     try {
-      const isTauri = window.__TAURI__ !== undefined;
       const isElectron = window.electron !== undefined;
+      const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API דרך window.__TAURI__
+        // שימוש ב-Tauri dialog API
         try {
-          const selectedPath = await window.__TAURI__.dialog.open({
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
             directory: true,
             multiple: false,
             title: 'בחר תיקיית ספרים'
@@ -152,6 +169,34 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           } else {
             alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
           }
+        }
+      } else if (isTauri) {
+        // שימוש ב-Tauri dialog API דרך window.__TAURI__
+        try {
+          const selectedPath = await window.__TAURI__.dialog.open({
+            directory: true,
+            multiple: false,
+            title: 'בחר תיקיית ספרים'
+          });
+          
+          if (selectedPath && typeof selectedPath === 'string') {
+            const folderName = selectedPath.split(/[/\\]/).pop();
+            
+            if (!libraryFolders.includes(selectedPath)) {
+              const updatedFolders = [...libraryFolders, selectedPath];
+              setLibraryFolders(updatedFolders);
+              updateSetting('libraryFolders', updatedFolders);
+              
+              if (window.confirm(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
+                window.location.reload();
+              }
+            } else {
+              alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
+            }
+          }
+        } catch (error) {
+          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          alert('שגיאה בבחירת תיקייה: ' + error.message);
         }
       } else {
         const input = document.createElement('input');
