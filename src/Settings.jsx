@@ -107,10 +107,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API
+        // שימוש ב-Tauri dialog API דרך window.__TAURI__
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
-          const selectedPath = await open({
+          const selectedPath = await window.__TAURI__.dialog.open({
             directory: true,
             multiple: false,
             title: 'בחר תיקיית ספרים'
@@ -154,6 +153,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
           }
         }
+      } else {
+        alert('בחירת תיקיות זמינה רק בגרסת Tauri או Electron');
+      }
       } else {
         const input = document.createElement('input');
         input.type = 'file';
@@ -243,10 +245,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API
+        // שימוש ב-Tauri dialog API דרך window.__TAURI__
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
-          const selectedPath = await open({
+          const selectedPath = await window.__TAURI__.dialog.open({
             directory: true,
             multiple: false,
             title: 'בחר תיקייה לאינדקס'
@@ -272,6 +273,8 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           setIndexDone(false);
           setIndexStatus('');
         }
+      } else {
+        setIndexStatus('בחירת תיקיות זמינה רק בגרסת Tauri או Electron');
       }
     } catch (error) {
       setIndexStatus('שגיאה בבחירת תיקייה: ' + error.message);
@@ -284,10 +287,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API
+        // שימוש ב-Tauri dialog API דרך window.__TAURI__
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
-          const selectedPath = await open({
+          const selectedPath = await window.__TAURI__.dialog.open({
             directory: false,
             multiple: false,
             title: 'בחר קובץ מסד נתונים של אוצריא',
@@ -315,6 +317,8 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           setIndexDone(false);
           setIndexStatus('');
         }
+      } else {
+        setIndexStatus('בחירת קבצים זמינה רק בגרסת Tauri או Electron');
       }
     } catch (error) {
       setIndexStatus('שגיאה בבחירת קובץ: ' + error.message);

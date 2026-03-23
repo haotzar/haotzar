@@ -34,28 +34,23 @@ import {
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
-// Tauri API - ייבוא דינמי
+// Tauri API - ייבוא מותנה
 let invoke = null;
-let dialog = null;
+let tauriDialog = null;
 
-// בדיקה אם Tauri זמין
-const isTauri = typeof window !== 'undefined' && window.__TAURI__;
+// נסה לייבא Tauri API אם זמין
+try {
+  if (typeof window !== 'undefined' && window.__TAURI__) {
+    // Tauri זמין - השתמש ב-window.__TAURI__ API
+    invoke = window.__TAURI__.tauri.invoke;
+    tauriDialog = window.__TAURI__.dialog;
+  }
+} catch (err) {
+  console.warn('Tauri API not available:', err);
+}
 
-if (isTauri) {
-  // ייבוא Tauri API רק אם זמין
-  import('@tauri-apps/api/tauri').then(module => {
-    invoke = module.invoke;
-  }).catch(err => {
-    console.warn('Failed to load Tauri API:', err);
-  });
-  
-  import('@tauri-apps/api/dialog').then(module => {
-    dialog = module;
-  }).catch(err => {
-    console.warn('Failed to load Tauri dialog:', err);
-  });
-} else {
-  // Stub for non-Tauri environments (Electron/Browser)
+// אם Tauri לא זמין, צור stub
+if (!invoke) {
   invoke = async () => {
     throw new Error('Tauri invoke not available - using Electron/Browser mode');
   };
