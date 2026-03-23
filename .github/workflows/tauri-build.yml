@@ -10,6 +10,7 @@ on:
       - 'package-lock.json'
       - '.github/workflows/tauri-build.yml'
     tags:
+      - 'v*'
       - 'tauri-v*'
   pull_request:
     branches: [ main ]
@@ -149,7 +150,7 @@ jobs:
 
     - name: Create Release (for tags)
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/tauri-v')
+      if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/tauri-v')
       with:
         files: |
           src-tauri/target/release/bundle/**/*.msi
@@ -157,8 +158,8 @@ jobs:
           src-tauri/target/release/bundle/**/*.dmg
           src-tauri/target/release/bundle/**/*.deb
           src-tauri/target/release/bundle/**/*.AppImage
-        draft: true
-        prerelease: false
+        draft: false
+        prerelease: true
         name: 'האוצר (Tauri) ${{ github.ref_name }}'
         body: |
           ## האוצר - אפליקציית ספרייה תורנית (Tauri)
