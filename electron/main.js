@@ -243,25 +243,31 @@ function setupCustomProtocol() {
 
 function createWindow() {
   // קביעת נתיב האייקון - שונה בין dev ל-production
-  const iconPath = process.env.NODE_ENV === 'development'
-    ? path.join(__dirname, '../public/icon.png')
-    : path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'icon.png');
+  let iconPath;
   
-  // אם האייקון לא נמצא, נסה נתיבים נוספים
-  let finalIconPath = iconPath;
-  if (!fs.existsSync(iconPath)) {
-    const alternativePaths = [
-      path.join(__dirname, '../dist/icon.png'),
+  if (process.env.NODE_ENV === 'development') {
+    iconPath = path.join(__dirname, '../public/icon.png');
+  } else {
+    // ב-production, הקבצים נמצאים ב-resources/app.asar או resources/app.asar.unpacked
+    const possiblePaths = [
       path.join(__dirname, '../public/icon.png'),
-      path.join(process.resourcesPath, 'icon.png')
+      path.join(process.resourcesPath, 'public', 'icon.png'),
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'public', 'icon.png'),
+      path.join(__dirname, '../../public/icon.png')
     ];
     
-    for (const altPath of alternativePaths) {
-      if (fs.existsSync(altPath)) {
-        finalIconPath = altPath;
-        console.log('✅ Found icon at:', altPath);
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        iconPath = testPath;
+        console.log('✅ Found icon at:', testPath);
         break;
       }
+    }
+    
+    // אם לא נמצא, השתמש באייקון ברירת המחדל
+    if (!iconPath) {
+      console.warn('⚠️ Icon not found, using default');
+      iconPath = path.join(__dirname, '../public/icon.png');
     }
   }
   
@@ -271,7 +277,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'haotzar',
-    icon: finalIconPath,
+    icon: iconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

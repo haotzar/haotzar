@@ -47,7 +47,7 @@ export default defineConfig({
     copyPublicDir: true
   },
   publicDir: 'public',
-  assetsInclude: ['**/*.pdf', '**/*.txt'],
+  assetsInclude: ['**/*.pdf', '**/*.txt', '**/*.png', '**/*.jpg', '**/*.ico'],
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
   }

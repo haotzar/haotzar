@@ -96,7 +96,7 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "האוצר",
+      "shortcutName": "haotzar",
       "installerIcon": "src-tauri/icons/icon.ico",
       "uninstallerIcon": "src-tauri/icons/icon.ico",
       "installerHeaderIcon": "src-tauri/icons/icon.ico",
