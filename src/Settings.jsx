@@ -31,22 +31,6 @@ import {
   InfoFilled,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
-
-// Tauri API imports
-let tauriDialog = null;
-try {
-  // ייבוא דינמי של Tauri dialog API
-  if (typeof window !== 'undefined') {
-    import('@tauri-apps/api/dialog').then(module => {
-      tauriDialog = module;
-    }).catch(() => {
-      console.log('Tauri dialog API not available');
-    });
-  }
-} catch (err) {
-  console.log('Tauri not available');
-}
-
 import meilisearchEngine from './utils/meilisearchEngine';
 import { 
   exportSettingsToFile, 
@@ -122,11 +106,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
       
-      if (isTauri) {
-        // שימוש ב-Tauri dialog API
+      if (isTauri && window.__TAURI__.dialog) {
+        // שימוש ב-Tauri dialog API דרך window.__TAURI__
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
-          const selectedPath = await open({
+          const selectedPath = await window.__TAURI__.dialog.open({
             directory: true,
             multiple: false,
             title: 'בחר תיקיית ספרים'
