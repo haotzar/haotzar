@@ -216,7 +216,7 @@ export function buildHebrewBooksVirtualTree(allFiles) {
   });
 
   const hebrewBooksRoot = {
-    name: 'היברובוקס',
+    name: 'HebrewBooks',
     type: 'folder',
     path: 'virtual-hebrewbooks',
     isVirtual: true,
