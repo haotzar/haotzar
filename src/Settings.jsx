@@ -809,7 +809,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const renderAboutSection = () => (
     <div className="settings-container-win11">
       <div className="settings-header-win11">
-        <h1 className="settings-title-win11">אודות האויצר</h1>
+        <h1 className="settings-title-win11">אודות האוצר</h1>
         <p className="settings-subtitle-win11">מידע על האפליקציה</p>
       </div>
 

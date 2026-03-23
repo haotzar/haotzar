@@ -2192,8 +2192,8 @@ function App() {
         {window.electron && (
           <div className="custom-title-bar">
             <div className="title-bar-drag-region">
-              <img src="/icon.png" alt="האויצר" className="title-bar-icon" />
-              <span className="title-bar-title">האויצר</span>
+              <img src="/icon.png" alt="האוצר" className="title-bar-icon" />
+              <span className="title-bar-title">האוצר</span>
             </div>
             <div className="title-bar-controls">
               <button 

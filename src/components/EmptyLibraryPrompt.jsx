@@ -19,7 +19,7 @@ const EmptyLibraryPrompt = ({ libraryType, onSelectFolder, onDownload, isDownloa
       infoText: 'ספריית אוצריא כוללת אלפי ספרי קודש מסוגים שונים: תנ"ך, משנה, תלמוד, הלכה, מחשבה ועוד'
     },
     hebrewbooks: {
-      name: 'היברובוקס',
+      name: 'HebrewBooks',
       icon: '/hebrew_books.png',
       description: 'ספריית HebrewBooks - אוסף ספרי PDF',
       downloadText: 'עבור לאתר HebrewBooks',

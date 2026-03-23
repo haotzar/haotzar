@@ -346,7 +346,7 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
               if (part && part !== 'c:' && part !== 'd:' && part !== 'e:' && 
                   part !== 'users' && part !== 'user' && 
                   part !== 'documents' && part !== 'downloads' && part !== 'desktop' &&
-                  part !== 'haotzar' && part !== 'האויצר' && // דלג על תיקיית האפליקציה
+                  part !== 'haotzar' && part !== 'האוצר' && // דלג על תיקיית האפליקציה
                   !part.includes('appdata') && !part.includes('program') && 
                   !part.includes('roaming') && part !== '') {
                 // אם זו תיקיית books, בדוק אם יש תיקייה אחרי זה
@@ -548,7 +548,7 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
                 node.name.toLowerCase() === 'hebrewbooks' || 
                 node.name.toLowerCase() === 'hebrew books' ||
                 node.name.toLowerCase() === 'hebrew-books' ||
-                node.name === 'היברובוקס' || 
+                node.name === 'hebrewbooks' || 
                 node.path?.toLowerCase().includes('hebrewbooks') || 
                 node.path?.toLowerCase().includes('hebrew-books') || 
                 node.path?.toLowerCase().includes('hebrew books') ||
@@ -559,8 +559,8 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
                 <img src="/Logo-ozveadar.png" alt="עוז והדר" style={{ width: '20px', height: '20px' }} />
               ) : level === 0 && (node.name === 'מוסד הרב קוק' || node.path?.toLowerCase().includes('מוסד הרב קוק') || node.path?.toLowerCase().includes('kook')) ? (
                 <img src="/logo-kook.png" alt="מוסד הרב קוק" style={{ width: '20px', height: '20px' }} />
-              ) : level === 0 && (node.name === 'האויצר' || node.name === 'האויצר' || node.path?.toLowerCase().includes('האויצר') || node.path?.toLowerCase().includes('האויצר') || node.virtualType === 'האויצר') ? (
-                <img src="/icon.png" alt="האויצר" style={{ width: '20px', height: '20px' }} />
+              ) : level === 0 && (node.name === 'האוצר' || node.name === 'האוצר' || node.path?.toLowerCase().includes('האוצר') || node.path?.toLowerCase().includes('האוצר') || node.virtualType === 'האוצר') ? (
+                <img src="/icon.png" alt="האוצר" style={{ width: '20px', height: '20px' }} />
               ) : (
                 isExpanded ? <FolderOpenRegular /> : <FolderRegular />
               )

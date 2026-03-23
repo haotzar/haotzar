@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "אפליקציה דסקטופ להצגת ספרים תורניים",
   "main": "electron/main.js",
-  "author": "האויצר Team",
+  "author": "האוצר Team",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -48,7 +48,7 @@
   },
   "build": {
     "appId": "com.haotzer.app",
-    "productName": "האויצר",
+    "productName": "האוצר",
     "directories": {
       "output": "release",
       "buildResources": "public"
@@ -96,7 +96,7 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "האויצר",
+      "shortcutName": "האוצר",
       "installerIcon": "src-tauri/icons/icon.ico",
       "uninstallerIcon": "src-tauri/icons/icon.ico",
       "installerHeaderIcon": "src-tauri/icons/icon.ico",
