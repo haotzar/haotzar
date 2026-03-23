@@ -33,11 +33,34 @@ import {
   ChevronDownRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
-// import { invoke } from '@tauri-apps/api/tauri'; // Disabled for Electron build
-// Stub for Tauri invoke when building for Electron
-const invoke = async () => {
-  throw new Error('Tauri invoke not available in Electron build');
-};
+
+// Tauri API - ייבוא דינמי
+let invoke = null;
+let dialog = null;
+
+// בדיקה אם Tauri זמין
+const isTauri = typeof window !== 'undefined' && window.__TAURI__;
+
+if (isTauri) {
+  // ייבוא Tauri API רק אם זמין
+  import('@tauri-apps/api/tauri').then(module => {
+    invoke = module.invoke;
+  }).catch(err => {
+    console.warn('Failed to load Tauri API:', err);
+  });
+  
+  import('@tauri-apps/api/dialog').then(module => {
+    dialog = module;
+  }).catch(err => {
+    console.warn('Failed to load Tauri dialog:', err);
+  });
+} else {
+  // Stub for non-Tauri environments (Electron/Browser)
+  invoke = async () => {
+    throw new Error('Tauri invoke not available - using Electron/Browser mode');
+  };
+}
+
 import TextViewer from './TextViewer';
 import PDFViewer from './PDFViewer';
 import Settings from './Settings';

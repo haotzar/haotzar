@@ -107,8 +107,34 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        console.error('❌ Tauri is not supported in this build');
-        alert('שגיאה: Tauri לא זמין');
+        // שימוש ב-Tauri dialog API
+        try {
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
+            directory: true,
+            multiple: false,
+            title: 'בחר תיקיית ספרים'
+          });
+          
+          if (selectedPath && typeof selectedPath === 'string') {
+            const folderName = selectedPath.split(/[/\\]/).pop();
+            
+            if (!libraryFolders.includes(selectedPath)) {
+              const updatedFolders = [...libraryFolders, selectedPath];
+              setLibraryFolders(updatedFolders);
+              updateSetting('libraryFolders', updatedFolders);
+              
+              if (window.confirm(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
+                window.location.reload();
+              }
+            } else {
+              alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
+            }
+          }
+        } catch (error) {
+          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          alert('שגיאה בבחירת תיקייה: ' + error.message);
+        }
       } else if (isElectron) {
         const result = await window.electron.selectFolder();
         
@@ -213,8 +239,31 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 
   const handleSelectIndexFolder = async () => {
     try {
+      const isTauri = window.__TAURI__ !== undefined;
       const isElectron = window.electron !== undefined;
-      if (isElectron) {
+      
+      if (isTauri) {
+        // שימוש ב-Tauri dialog API
+        try {
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
+            directory: true,
+            multiple: false,
+            title: 'בחר תיקייה לאינדקס'
+          });
+          
+          if (selectedPath && typeof selectedPath === 'string') {
+            setIndexFolder(selectedPath);
+            const folderName = selectedPath.split(/[/\\]/).pop().toLowerCase().replace(/\s+/g, '_');
+            setIndexName(folderName || 'books');
+            setIndexDone(false);
+            setIndexStatus('');
+          }
+        } catch (error) {
+          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          setIndexStatus('שגיאה בבחירת תיקייה: ' + error.message);
+        }
+      } else if (isElectron) {
         const result = await window.electron.selectFolder();
         if (result.success && result.path) {
           setIndexFolder(result.path);
@@ -231,8 +280,33 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 
   const handleSelectOtzariaDb = async () => {
     try {
+      const isTauri = window.__TAURI__ !== undefined;
       const isElectron = window.electron !== undefined;
-      if (isElectron) {
+      
+      if (isTauri) {
+        // שימוש ב-Tauri dialog API
+        try {
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
+            directory: false,
+            multiple: false,
+            title: 'בחר קובץ מסד נתונים של אוצריא',
+            filters: [{
+              name: 'Otzaria Database',
+              extensions: ['db']
+            }]
+          });
+          
+          if (selectedPath && typeof selectedPath === 'string') {
+            setOtzariaDbPath(selectedPath);
+            setIndexDone(false);
+            setIndexStatus('');
+          }
+        } catch (error) {
+          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          setIndexStatus('שגיאה בבחירת קובץ: ' + error.message);
+        }
+      } else if (isElectron) {
         const result = await window.electron.selectFile([
           { name: 'Otzaria Database', extensions: ['db'] }
         ]);
