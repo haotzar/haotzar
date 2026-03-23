@@ -154,9 +154,6 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           }
         }
       } else {
-        alert('בחירת תיקיות זמינה רק בגרסת Tauri או Electron');
-      }
-      } else {
         const input = document.createElement('input');
         input.type = 'file';
         input.webkitdirectory = true;
