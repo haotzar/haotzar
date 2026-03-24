@@ -86,7 +86,15 @@ const TextViewerToolbar = ({
   }, []);
 
   const handleFullScreen = () => {
-    const textViewer = document.querySelector('.text-viewer');
+    // נסה למצוא את ה-text-viewer בכרטיסיה הפעילה, אם לא קיימת - חפש בכלל
+    let textViewer = null;
+    const activeTab = document.querySelector('.tab-item.active');
+    if (activeTab) {
+      textViewer = activeTab.querySelector('.text-viewer');
+    }
+    if (!textViewer) {
+      textViewer = document.querySelector('.text-viewer');
+    }
     if (!textViewer) return;
     
     if (isFullscreen) {

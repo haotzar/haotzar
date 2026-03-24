@@ -76,7 +76,16 @@ const PDFToolbar = ({
       // אם יצאנו ממסך מלא, החזר את הסרגלים
       if (!isNowFullscreen && iframeRef && iframeRef.current) {
         const iframe = iframeRef.current;
-        const pdfContainer = iframe.closest('.pdf-viewer-container');
+        
+        // נסה למצוא את ה-container בכרטיסיה הפעילה, אם לא - השתמש ב-closest
+        let pdfContainer = null;
+        const activeTab = document.querySelector('.tab-item.active');
+        if (activeTab) {
+          pdfContainer = activeTab.querySelector('.pdf-viewer-container');
+        }
+        if (!pdfContainer) {
+          pdfContainer = iframe.closest('.pdf-viewer-container');
+        }
         
         if (pdfContainer && pdfContainer.classList.contains('fullscreen-mode')) {
           // נקה את המחלקות והחזר את הסרגלים
@@ -179,8 +188,15 @@ const PDFToolbar = ({
     if (!iframeRef || !iframeRef.current) return;
     const iframe = iframeRef.current;
     
-    // מצא את ה-container הקרוב ביותר
-    const pdfContainer = iframe.closest('.pdf-viewer-container');
+    // נסה למצוא את ה-container בכרטיסיה הפעילה, אם לא - השתמש ב-closest
+    let pdfContainer = null;
+    const activeTab = document.querySelector('.tab-item.active');
+    if (activeTab) {
+      pdfContainer = activeTab.querySelector('.pdf-viewer-container');
+    }
+    if (!pdfContainer) {
+      pdfContainer = iframe.closest('.pdf-viewer-container');
+    }
     if (!pdfContainer) return;
     
     const toolbar = pdfContainer.querySelector('.pdf-toolbar');
