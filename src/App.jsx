@@ -189,7 +189,7 @@ function App() {
     root.style.setProperty('--colorBrandStroke2', savedColor);
     
     // טעינת הגדרות רקע
-    const savedBackgroundMode = getSetting('backgroundMode', 'with-image');
+    const savedBackgroundMode = getSetting('backgroundMode', 'none');
     if (savedBackgroundMode === 'none') {
       root.style.setProperty('--show-background-image', 'none');
       root.style.setProperty('--appBackgroundColor', '#ffffff');
@@ -236,6 +236,54 @@ function App() {
     
     return () => clearTimeout(timer);
   }, [allFiles, openTabs]);
+
+  // בדיקה אם צריך לפתוח אוצריא או HebrewBooks אחרי רענון
+  useEffect(() => {
+    const shouldOpenOtzaria = localStorage.getItem('openOtzariaAfterReload');
+    const shouldOpenHebrewBooks = localStorage.getItem('openHebrewBooksAfterReload');
+    
+    if (shouldOpenOtzaria === 'true') {
+      // נקה את הדגל
+      localStorage.removeItem('openOtzariaAfterReload');
+      
+      // המתן שהאפליקציה תיטען לגמרי
+      setTimeout(async () => {
+        try {
+          // טען את שורש אוצריא
+          const { getOtzariaRootFolder } = await import('./utils/otzariaIntegration');
+          const rootFolder = await getOtzariaRootFolder();
+          
+          if (rootFolder) {
+            console.log('פותח את שורש אוצריא אחרי רענון');
+            setFolderPreview(rootFolder);
+            localStorage.setItem('library_lastFolder', JSON.stringify(rootFolder));
+          }
+        } catch (error) {
+          console.error('שגיאה בפתיחת אוצריא אחרי רענון:', error);
+        }
+      }, 500);
+    } else if (shouldOpenHebrewBooks === 'true') {
+      // נקה את הדגל
+      localStorage.removeItem('openHebrewBooksAfterReload');
+      
+      // המתן שהאפליקציה תיטען לגמרי
+      setTimeout(async () => {
+        try {
+          // טען את שורש HebrewBooks
+          const { buildHebrewBooksVirtualTree } = await import('./utils/otzariaIntegration');
+          const rootFolder = buildHebrewBooksVirtualTree(allFiles);
+          
+          if (rootFolder) {
+            console.log('פותח את שורש HebrewBooks אחרי רענון');
+            setFolderPreview(rootFolder);
+            localStorage.setItem('library_lastFolder', JSON.stringify(rootFolder));
+          }
+        } catch (error) {
+          console.error('שגיאה בפתיחת HebrewBooks אחרי רענון:', error);
+        }
+      }, 500);
+    }
+  }, [allFiles]);
 
   // שמירת מצב הכרטיסיות לשולחן העבודה הנוכחי
   const saveTabsState = (tabs, activeId) => {
@@ -527,23 +575,6 @@ function App() {
             
             if (bookFiles.length === 0) {
               console.warn('⚠️ לא נמצאו ספרים');
-
-              const primaryPath = scanPaths[0];
-              const openFolder = window.confirm(
-                `📚 לא נמצאו ספרים!\n\n` +
-                `תיקיות שנסרקו:\n${scanPaths.join('\n')}\n\n` +
-                `הוסף קבצי PDF או TXT לתיקיות אלו.\n\n` +
-                `האם לפתוח את תיקיית הספרים עכשיו?`
-              );
-              
-              if (openFolder) {
-                try {
-                  await invoke('open_books_folder', { path: primaryPath });
-                } catch (error) {
-                  console.error('שגיאה בפתיחת תיקייה:', error);
-                  alert(`לא ניתן לפתוח את התיקייה אוטומטית.\n\nפתח ידנית את:\n${primaryPath}`);
-                }
-              }
               
               // אל תחזור - תן למשתמש לגשת להגדרות
               setAllFiles([]);
@@ -775,25 +806,6 @@ function App() {
             if (bookFiles.length === 0) {
               console.warn('⚠️ לא נמצאו ספרים');
               
-              const booksPath = window.electron.getBooksPath();
-              const openFolder = window.confirm(
-                `📚 לא נמצאו ספרים!\n\n` +
-                `תיקיית הספרים שלך:\n${booksPath}\n\n` +
-                `הוסף קבצי PDF או TXT לתיקייה זו.\n\n` +
-                `💡 טיפ: אתה יכול גם להוסיף תיקיות נוספות דרך:\n` +
-                `הגדרות > ניהול נתונים > תיקיות ספרייה\n\n` +
-                `האם לפתוח את תיקיית הספרים עכשיו?`
-              );
-              
-              if (openFolder) {
-                try {
-                  await window.electron.openBooksFolder();
-                } catch (error) {
-                  console.error('שגיאה בפתיחת תיקייה:', error);
-                  alert(`לא ניתן לפתוח את התיקייה אוטומטית.\n\nפתח ידנית את:\n${booksPath}`);
-                }
-              }
-              
               setAllFiles([]);
               return;
             }
@@ -825,8 +837,7 @@ function App() {
             console.log('📊 PDF:', pdfFiles.length, 'TXT:', textFiles.length);
             
             if (pdfFiles.length === 0 && textFiles.length === 0) {
-              console.error('❌ לא נמצאו קבצי PDF או TXT!');
-              alert('לא נמצאו ספרים!\n\nהאפליקציה לא מצאה קבצי PDF או TXT.');
+              console.warn('⚠️ לא נמצאו קבצי PDF או TXT');
               setAllFiles([]);
               return;
             }

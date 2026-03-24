@@ -82,6 +82,9 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
               // שמור את הנתיב ב-localStorage
               localStorage.setItem('otzariaDbPath', dbPath);
               
+              // שמור שצריך לפתוח את אוצריא אחרי הרענון
+              localStorage.setItem('openOtzariaAfterReload', 'true');
+              
               // נקה את ה-cache לפני רענון
               clearOtzariaTreeCache();
               
@@ -95,6 +98,10 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
           } else {
             // hebrewbooks - שמור את הנתיב
             localStorage.setItem('hebrewBooksPath', result.path);
+            
+            // שמור שצריך לפתוח את HebrewBooks אחרי הרענון
+            localStorage.setItem('openHebrewBooksAfterReload', 'true');
+            
             alert(`נבחרה תיקיית HebrewBooks!\n\nמרענן את האפליקציה...`);
             window.location.reload();
           }

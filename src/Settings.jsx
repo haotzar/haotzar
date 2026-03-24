@@ -45,7 +45,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const [activeSection, setActiveSection] = useState('personalization');
   const [selectedColor, setSelectedColor] = useState(() => getSetting('accentColor', '#5c3d2e'));
   const [libraryFolders, setLibraryFolders] = useState(() => getSetting('libraryFolders', ['books']));
-  const [backgroundMode, setBackgroundMode] = useState(() => getSetting('backgroundMode', 'with-image'));
+  const [backgroundMode, setBackgroundMode] = useState(() => getSetting('backgroundMode', 'none'));
 
   // state לבניית אינדקס
   const [indexFolder, setIndexFolder] = useState('');
@@ -451,7 +451,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 
   useEffect(() => {
     const savedColor = getSetting('accentColor', '#5c3d2e');
-    const savedBackgroundMode = getSetting('backgroundMode', 'with-image');
+    const savedBackgroundMode = getSetting('backgroundMode', 'none');
     
     if (savedColor !== selectedColor) {
       setSelectedColor(savedColor);

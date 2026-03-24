@@ -18,7 +18,7 @@
       body {
         margin: 0;
         padding: 0;
-        background-color: #f7ead8;
+        background: linear-gradient(135deg, #f7ead8 0%, #e8d5c0 25%, #f0e3d0 50%, #e8d5c0 75%, #f7ead8 100%);
       }
 
       /* מסך טעינה */
@@ -28,32 +28,265 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: #f7ead8;
+        background: linear-gradient(135deg, #f7ead8 0%, #e8d5c0 25%, #f0e3d0 50%, #e8d5c0 75%, #f7ead8 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 3s ease infinite;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         font-family: 'DrugulinCLM-Bold', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
       }
 
+      /* סמלים ברקע - מצד שמאל */
+      #loading-screen::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png');
+        background-size: 
+          150px 150px,
+          120px 120px,
+          180px 180px,
+          100px 100px,
+          160px 160px,
+          130px 130px;
+        background-position: 
+          5% 15%,
+          15% 75%,
+          10% 45%,
+          20% 90%,
+          8% 55%,
+          25% 30%;
+        background-repeat: no-repeat;
+        opacity: 0;
+        animation: iconsAppearLeft 3s ease-out 0.5s forwards;
+        z-index: 0;
+      }
+
+      /* סמלים ברקע - מצד ימין */
+      #loading-screen::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png'),
+          url('./icon.png');
+        background-size: 
+          140px 140px,
+          110px 110px,
+          170px 170px,
+          125px 125px,
+          155px 155px,
+          135px 135px;
+        background-position: 
+          85% 25%,
+          75% 85%,
+          90% 60%,
+          80% 20%,
+          95% 70%,
+          78% 40%;
+        background-repeat: no-repeat;
+        opacity: 0;
+        animation: iconsAppearRight 3s ease-out 0.5s forwards;
+        z-index: 0;
+      }
+
+      @keyframes iconsAppearLeft {
+        0% {
+          opacity: 0;
+          transform: scale(0.3) translateX(-100vw);
+        }
+        100% {
+          opacity: 0.25;
+          transform: scale(1) translateX(0);
+        }
+      }
+
+      @keyframes iconsAppearRight {
+        0% {
+          opacity: 0;
+          transform: scale(0.3) translateX(100vw);
+        }
+        100% {
+          opacity: 0.25;
+          transform: scale(1) translateX(0);
+        }
+      }
+
+      @keyframes gradientShift {
+        0%, 100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      /* קונטיינר האייקון */
+      #loading-screen .icon-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 30px;
+        animation: iconFadeIn 0.8s ease-out;
+        z-index: 10;
+      }
+
+      @keyframes iconFadeIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        60% {
+          transform: scale(1.1);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* האייקון עצמו */
+      #loading-screen .app-icon {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(92, 61, 46, 0.2);
+        object-fit: contain;
+      }
+
+      /* קו מתאר מסתובב */
+      #loading-screen .rotating-border {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border-radius: 26px;
+        padding: 3px;
+        background: conic-gradient(
+          from var(--angle),
+          transparent 0deg,
+          #5c3d2e 90deg,
+          #8b6f47 180deg,
+          #5c3d2e 270deg,
+          transparent 360deg
+        );
+        -webkit-mask: 
+          linear-gradient(#fff 0 0) content-box, 
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask: 
+          linear-gradient(#fff 0 0) content-box, 
+          linear-gradient(#fff 0 0);
+        mask-composite: exclude;
+        animation: rotateBorder 2s linear infinite;
+        z-index: 1;
+        pointer-events: none;
+        --angle: 0deg;
+      }
+
+      @keyframes rotateBorder {
+        0% {
+          --angle: 0deg;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            #5c3d2e 90deg,
+            #8b6f47 180deg,
+            #5c3d2e 270deg,
+            transparent 360deg
+          );
+        }
+        100% {
+          --angle: 360deg;
+          background: conic-gradient(
+            from 360deg,
+            transparent 0deg,
+            #5c3d2e 90deg,
+            #8b6f47 180deg,
+            #5c3d2e 270deg,
+            transparent 360deg
+          );
+        }
+      }
+
+      /* שם האפליקציה */
       #loading-screen h1 {
-        font-size: 48px;
+        font-size: 56px;
         color: #5c3d2e;
-        margin-bottom: 20px;
+        margin: 0;
+        letter-spacing: 2px;
+        animation: titleFadeIn 1s ease-out 0.3s both;
+        text-shadow: 0 2px 10px rgba(92, 61, 46, 0.1);
+        z-index: 10;
+        position: relative;
       }
 
-      #loading-screen .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #e0d4c3;
-        border-top-color: #5c3d2e;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+      @keyframes titleFadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
-      @keyframes spin {
-        to { transform: rotate(360deg); }
+      /* טקסט משני */
+      #loading-screen .subtitle {
+        font-size: 18px;
+        color: #8b6f47;
+        margin-top: 10px;
+        animation: subtitleFadeIn 1s ease-out 0.6s both;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      @keyframes subtitleFadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* טקסט משני */
+      #loading-screen .subtitle {
+        font-size: 18px;
+        color: #8b6f47;
+        margin-top: 10px;
+        animation: subtitleFadeIn 1s ease-out 0.6s both;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      @keyframes subtitleFadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
       }
 
       /* הסתר את מסך הטעינה כשהאפליקציה מוכנה */
@@ -64,10 +297,13 @@
       }
     </style>
   </head>
-  <body>
+  <body style="margin: 0; padding: 0; background: linear-gradient(135deg, #f7ead8 0%, #e8d5c0 25%, #f0e3d0 50%, #e8d5c0 75%, #f7ead8 100%);">
     <div id="loading-screen">
+      <div class="icon-container">
+        <div class="rotating-border"></div>
+        <img src="./icon.png" alt="האוצר" class="app-icon" />
+      </div>
       <h1>האוצר</h1>
-      <div class="spinner"></div>
     </div>
     <div id="root"></div>
     <script type="module" src="./src/main.jsx"></script>
