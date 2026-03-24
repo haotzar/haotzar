@@ -560,13 +560,13 @@
   background: rgba(212, 175, 55, 0.15);
 }
 
-/* קבצים רגילים - ללא רקע */
-.folder-preview-grid .folder-preview-item:not(.is-folder) {
-  background: transparent;
+/* קבצים - ללא רקע */
+.folder-preview-grid .folder-preview-item.is-file {
+  background: transparent !important;
 }
 
-.folder-preview-grid .folder-preview-item:not(.is-folder):hover {
-  background: rgba(212, 175, 55, 0.1);
+.folder-preview-grid .folder-preview-item.is-file:hover {
+  background: rgba(212, 175, 55, 0.1) !important;
 }
 
 /* פריט בודד - תצוגת רשימה */
@@ -729,7 +729,7 @@
 }
 
 [data-theme="dark"] .folder-preview-grid .folder-preview-item {
-  background: rgba(232, 220, 196, 0.05);
+  background: transparent;
   border-color: rgba(196, 165, 116, 0.2);
 }
 
@@ -747,13 +747,13 @@
   background: rgba(196, 165, 116, 0.15);
 }
 
-/* קבצים רגילים במצב כהה - ללא רקע */
-[data-theme="dark"] .folder-preview-grid .folder-preview-item:not(.is-folder) {
-  background: transparent;
+/* קבצים - ללא רקע */
+[data-theme="dark"] .folder-preview-grid .folder-preview-item.is-file {
+  background: transparent !important;
 }
 
-[data-theme="dark"] .folder-preview-grid .folder-preview-item:not(.is-folder):hover {
-  background: rgba(196, 165, 116, 0.1);
+[data-theme="dark"] .folder-preview-grid .folder-preview-item.is-file:hover {
+  background: rgba(196, 165, 116, 0.1) !important;
 }
 
 [data-theme="dark"] .folder-preview-list .folder-preview-item {

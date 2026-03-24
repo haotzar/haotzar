@@ -237,10 +237,9 @@ function App() {
     return () => clearTimeout(timer);
   }, [allFiles, openTabs]);
 
-  // בדיקה אם צריך לפתוח אוצריא או HebrewBooks אחרי רענון
+  // בדיקה אם צריך לפתוח אוצריא אחרי רענון
   useEffect(() => {
     const shouldOpenOtzaria = localStorage.getItem('openOtzariaAfterReload');
-    const shouldOpenHebrewBooks = localStorage.getItem('openHebrewBooksAfterReload');
     
     if (shouldOpenOtzaria === 'true') {
       // נקה את הדגל
@@ -262,28 +261,71 @@ function App() {
           console.error('שגיאה בפתיחת אוצריא אחרי רענון:', error);
         }
       }, 500);
-    } else if (shouldOpenHebrewBooks === 'true' && allFiles.length > 0) {
-      // נקה את הדגל
-      localStorage.removeItem('openHebrewBooksAfterReload');
-      
-      // המתן שהאפליקציה תיטען לגמרי
-      setTimeout(async () => {
-        try {
-          // טען את שורש HebrewBooks
-          const { buildHebrewBooksVirtualTree } = await import('./utils/otzariaIntegration');
-          const rootFolder = buildHebrewBooksVirtualTree(allFiles);
-          
-          if (rootFolder) {
-            console.log('פותח את שורש HebrewBooks אחרי רענון');
-            setFolderPreview(rootFolder);
-            localStorage.setItem('library_lastFolder', JSON.stringify(rootFolder));
-          }
-        } catch (error) {
-          console.error('שגיאה בפתיחת HebrewBooks אחרי רענון:', error);
-        }
-      }, 500);
     }
+    // HebrewBooks מטופל ב-useEffect נפרד שתלוי ב-allFiles
   }, [allFiles]);
+
+  // useEffect נפרד שמאזין לשינויים ב-allFiles ובודק את הדגל
+  useEffect(() => {
+    console.log('🔍 useEffect רץ - allFiles.length:', allFiles.length);
+    
+    const shouldOpenHebrewBooks = localStorage.getItem('openHebrewBooksAfterReload');
+    console.log('🔍 shouldOpenHebrewBooks:', shouldOpenHebrewBooks);
+    
+    if (shouldOpenHebrewBooks === 'true') {
+      console.log('✅ דגל קיים!');
+      
+      // המתן קצת כדי לוודא שהכל נטען
+      setTimeout(() => {
+        const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
+        console.log('🔍 hebrewBooksPath:', hebrewBooksPath);
+        
+        if (!hebrewBooksPath) {
+          console.error('❌ לא נמצא נתיב HebrewBooks');
+          localStorage.removeItem('openHebrewBooksAfterReload');
+          return;
+        }
+        
+        // בדוק אם יש קבצים
+        if (allFiles.length === 0) {
+          console.warn('⚠️ אין קבצים עדיין - ממתין...');
+          return; // לא מנקה את הדגל - ה-useEffect ירוץ שוב כשיהיו קבצים
+        }
+        
+        console.log('✅ יש', allFiles.length, 'קבצים');
+        
+        const normalizedHebrewBooksPath = hebrewBooksPath.toLowerCase().replace(/\\/g, '/');
+        const hebrewBooksFiles = allFiles.filter(file => {
+          const normalizedFilePath = file.path.toLowerCase().replace(/\\/g, '/');
+          return normalizedFilePath.includes(normalizedHebrewBooksPath);
+        });
+        
+        console.log(`🔍 נמצאו ${hebrewBooksFiles.length} קבצים מ-HebrewBooks`);
+        
+        if (hebrewBooksFiles.length > 0) {
+          const hebrewBooksFolder = {
+            name: hebrewBooksPath.split(/[/\\]/).pop() || 'HebrewBooks',
+            type: 'folder',
+            path: hebrewBooksPath,
+            isVirtual: false
+          };
+          
+          console.log('✅ פותח תיקייה:', hebrewBooksFolder);
+          
+          // פתח את התיקייה
+          setFolderPreview(hebrewBooksFolder);
+          localStorage.setItem('library_lastFolder', JSON.stringify(hebrewBooksFolder));
+          
+          // נקה את הדגל
+          localStorage.removeItem('openHebrewBooksAfterReload');
+          console.log('✅ דגל נוקה');
+        } else {
+          console.warn('⚠️ לא נמצאו קבצים מ-HebrewBooks');
+          // לא מנקה את הדגל - אולי הקבצים עדיין נסרקים
+        }
+      }, 500); // המתן 500ms
+    }
+  }, [allFiles, setFolderPreview]);
 
   // שמירת מצב הכרטיסיות לשולחן העבודה הנוכחי
   const saveTabsState = (tabs, activeId) => {

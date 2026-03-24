@@ -18,6 +18,7 @@ import {
 import PDFThumbnail from './PDFThumbnail';
 import TextViewer from '../TextViewer';
 import { getOtzariaRootFolder, getOtzariaCategoryById, getOtzariaCategoryByPath, clearOtzariaTreeCache } from '../utils/otzariaIntegration';
+import { getSetting, updateSetting } from '../utils/settingsManager';
 import EmptyLibraryPrompt from './EmptyLibraryPrompt';
 import './FolderPreview.css';
 
@@ -97,13 +98,31 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
             }
           } else {
             // hebrewbooks - שמור את הנתיב
+            console.log('💾 שומר נתיב HebrewBooks:', result.path);
             localStorage.setItem('hebrewBooksPath', result.path);
             
+            // הוסף את התיקייה ל-libraryFolders אם היא לא קיימת
+            const currentFolders = getSetting('libraryFolders', ['books']);
+            if (!currentFolders.includes(result.path)) {
+              const updatedFolders = [...currentFolders, result.path];
+              updateSetting('libraryFolders', updatedFolders);
+              console.log('✅ הוספתי את HebrewBooks ל-libraryFolders:', updatedFolders);
+            }
+            
             // שמור שצריך לפתוח את HebrewBooks אחרי הרענון
+            console.log('💾 שומר דגל openHebrewBooksAfterReload');
             localStorage.setItem('openHebrewBooksAfterReload', 'true');
             
+            // וודא שהדגל נשמר
+            const savedFlag = localStorage.getItem('openHebrewBooksAfterReload');
+            console.log('✅ דגל נשמר:', savedFlag);
+            
             alert(`נבחרה תיקיית HebrewBooks!\n\nמרענן את האפליקציה...`);
-            window.location.reload();
+            
+            // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
+            setTimeout(() => {
+              window.location.reload();
+            }, 100);
           }
         }
       } else {
@@ -311,53 +330,100 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
         root.children.push(otzariaTree);
       }
       
-      allFiles.forEach(file => {
-        const normalizedPath = file.path.replace(/\\/g, '/');
-        let pathParts = [];
+      // קבל את רשימת התיקיות המוגדרות
+      const libraryFolders = getSetting('libraryFolders', ['books']);
+      const folderRoots = new Map();
+      
+      // אל תסנן קבצים - נשתמש בכל הקבצים
+      const filteredFiles = allFiles;
+      
+      // עבור על כל קובץ ומצא לאיזו תיקייה ראשית הוא שייך
+      filteredFiles.forEach(file => {
+        const normalizedPath = file.path.replace(/\\/g, '/').toLowerCase();
         
-        const booksIndex = normalizedPath.indexOf('books/');
-        if (booksIndex !== -1) {
-          const afterBooks = normalizedPath.substring(booksIndex + 'books/'.length);
-          pathParts = afterBooks.split('/').filter(p => p);
-        } else {
-          const allParts = normalizedPath.split('/').filter(p => p);
-          let startIndex = 0;
-          for (let i = 0; i < allParts.length - 1; i++) {
-            const part = allParts[i].toLowerCase();
-            if (part && part !== 'c:' && part !== 'd:' && part !== 'e:' && 
-                part !== 'users' && part !== 'user' && 
-                part !== 'documents' && part !== 'downloads' && part !== 'desktop' &&
-                !part.includes('appdata') && !part.includes('program') && part !== '') {
-              startIndex = i;
-              break;
+        let matchedFolder = null;
+        let matchedFolderPath = null;
+        
+        for (const folder of libraryFolders) {
+          let folderPath = folder;
+          
+          if (folder === 'books') {
+            if (window.electron) {
+              folderPath = window.electron.getBooksPath();
+            } else {
+              continue;
             }
           }
-          pathParts = allParts.slice(startIndex);
+          
+          const normalizedFolderPath = folderPath.replace(/\\/g, '/').toLowerCase();
+          
+          if (normalizedPath.startsWith(normalizedFolderPath)) {
+            matchedFolder = folderPath.split(/[/\\]/).pop() || folder;
+            matchedFolderPath = folderPath;
+            break;
+          }
         }
         
-        let currentLevel = root.children;
-        let currentPath = 'root';
-        
-        pathParts.forEach((part, index) => {
-          currentPath += '/' + part;
-          const isLastPart = index === pathParts.length - 1;
-          
-          if (isLastPart) {
-            currentLevel.push({
-              name: part,
-              type: 'file',
-              path: file.path,
-              fullData: file
-            });
-          } else {
-            let folder = currentLevel.find(item => item.name === part && item.type === 'folder');
-            if (!folder) {
-              folder = { name: part, type: 'folder', path: currentPath, children: [] };
-              currentLevel.push(folder);
-            }
-            currentLevel = folder.children;
+        if (matchedFolder && matchedFolderPath) {
+          if (!folderRoots.has(matchedFolder)) {
+            folderRoots.set(matchedFolder, []);
           }
+          
+          const normalizedFolderPath = matchedFolderPath.replace(/\\/g, '/');
+          const normalizedFilePath = file.path.replace(/\\/g, '/');
+          
+          let relativePath = '';
+          if (normalizedFilePath.toLowerCase().startsWith(normalizedFolderPath.toLowerCase())) {
+            relativePath = normalizedFilePath.substring(normalizedFolderPath.length);
+          }
+          
+          const parts = relativePath.split('/').filter(p => p);
+          
+          if (parts.length > 0) {
+            folderRoots.get(matchedFolder).push({
+              file,
+              parts
+            });
+          }
+        }
+      });
+      
+      // בנה את העץ מהתיקיות הראשיות
+      folderRoots.forEach((files, rootFolderName) => {
+        const rootFolder = {
+          name: rootFolderName,
+          type: 'folder',
+          path: `root/${rootFolderName}`,
+          children: []
+        };
+        
+        files.forEach(({ file, parts }) => {
+          let currentLevel = rootFolder.children;
+          let currentPath = `root/${rootFolderName}`;
+          
+          parts.forEach((part, index) => {
+            currentPath += '/' + part;
+            const isLastPart = index === parts.length - 1;
+            
+            if (isLastPart) {
+              currentLevel.push({
+                name: part,
+                type: 'file',
+                path: file.path,
+                fullData: file
+              });
+            } else {
+              let folder = currentLevel.find(item => item.name === part && item.type === 'folder');
+              if (!folder) {
+                folder = { name: part, type: 'folder', path: currentPath, children: [] };
+                currentLevel.push(folder);
+              }
+              currentLevel = folder.children;
+            }
+          });
         });
+        
+        root.children.push(rootFolder);
       });
       
       return root;
@@ -382,6 +448,14 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
     const findFolderByPath = (node, targetPath) => {
       if (node.path === targetPath) {
         return node;
+      }
+      
+      // אם זה נתיב אמיתי (לא מתחיל ב-root/ או virtual-), חפש לפי שם התיקייה
+      if (targetPath && !targetPath.startsWith('root/') && !targetPath.startsWith('virtual-')) {
+        const folderName = targetPath.split(/[/\\]/).pop();
+        if (node.name === folderName && node.type === 'folder') {
+          return node;
+        }
       }
       
       if (node.children) {

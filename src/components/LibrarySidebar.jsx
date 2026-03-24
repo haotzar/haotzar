@@ -14,6 +14,7 @@ import {
 } from '@fluentui/react-icons';
 import './LibrarySidebar.css';
 import { buildOtzariaVirtualTree, buildHebrewBooksVirtualTree } from '../utils/otzariaIntegration';
+import { getSetting } from '../utils/settingsManager';
 
 const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, isOpen = true, recentBooks = [], onFolderClick, onClose, onHomeClick, currentFolder = null }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -249,10 +250,14 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
       virtualFolders.push(otzariaTree);
     }
 
-    // תיקיית hebrewbooks - תמיד מוצגת
-    const hebrewBooksTree = buildHebrewBooksVirtualTree(filesList);
-    if (hebrewBooksTree) {
-      virtualFolders.push(hebrewBooksTree);
+    // תיקיית hebrewbooks - רק אם אין תיקייה אמיתית מוגדרת
+    const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
+    if (!hebrewBooksPath) {
+      // אין תיקייה אמיתית - הצג תיקייה וירטואלית
+      const hebrewBooksTree = buildHebrewBooksVirtualTree(filesList);
+      if (hebrewBooksTree) {
+        virtualFolders.push(hebrewBooksTree);
+      }
     }
 
     // תיקיית היסטוריה
@@ -292,90 +297,64 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
     }
 
     // מצא את התיקייה הראשונה המשותפת לכל הקבצים מכל תיקייה
+    // קבל את רשימת התיקיות המוגדרות
+    const libraryFolders = getSetting('libraryFolders', ['books']);
     const folderRoots = new Map(); // מפה של תיקיות ראשיות לקבצים שלהן
     
-    // סנן קבצים - הוצא קבצי HebrewBooks אם יש תיקייה וירטואלית
-    const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
-    const filteredFilesList = filesList.filter(file => {
-      // אם יש תיקיית HebrewBooks מוגדרת, הוצא קבצים שלה
-      if (hebrewBooksPath) {
-        const normalizedFilePath = file.path.toLowerCase().replace(/\\/g, '/');
-        const normalizedHebrewBooksPath = hebrewBooksPath.toLowerCase().replace(/\\/g, '/');
-        return !normalizedFilePath.includes(normalizedHebrewBooksPath);
-      }
-      return true;
-    });
+    // אל תסנן קבצים - נשתמש בכל הקבצים
+    const filteredFilesList = filesList;
     
+    // עבור על כל קובץ ומצא לאיזו תיקייה ראשית הוא שייך
     filteredFilesList.forEach(file => {
-      const normalizedPath = file.path.replace(/\\/g, '/');
+      const normalizedPath = file.path.replace(/\\/g, '/').toLowerCase();
       
-      // אם הנתיב מכיל 'books/', זו תיקיית books הרגילה
-      const booksIndex = normalizedPath.indexOf('books/');
-      if (booksIndex !== -1) {
-        const afterBooks = normalizedPath.substring(booksIndex + 'books/'.length);
-        const rawParts = afterBooks.split('/').filter(p => p);
+      // מצא את התיקייה הראשית שהקובץ שייך אליה
+      let matchedFolder = null;
+      let matchedFolderPath = null;
+      
+      for (const folder of libraryFolders) {
+        let folderPath = folder;
         
-        if (rawParts.length > 0) {
-          const isFileDirectlyInBooks = rawParts.length === 1;
-          const rootFolder = isFileDirectlyInBooks ? 'books' : rawParts[0]; // התיקייה הראשונה אחרי books
-          if (!folderRoots.has(rootFolder)) {
-            folderRoots.set(rootFolder, []);
-          }
-          folderRoots.get(rootFolder).push({
-            file,
-            parts: isFileDirectlyInBooks ? rawParts : rawParts.slice(1) // כל השאר אחרי התיקייה הראשונה
-          });
-        }
-      } else {
-        // תיקייה מותאמת - קח את שם התיקייה האחרונה בנתיב (לפני הקבצים)
-        const pathParts = normalizedPath.split('/');
-        
-        // מצא את התיקייה האחרונה שמכילה תתי-תיקיות או קבצים
-        // נתחיל מהסוף ונחפש את התיקייה הראשונה שיש בה יותר מקובץ אחד
-        let rootFolderIndex = -1;
-        
-        // אם יש לפחות 2 חלקים (תיקייה + קובץ), קח את התיקייה האחרונה לפני הקובץ
-        if (pathParts.length >= 2) {
-          // אם הקובץ נמצא ישירות בתיקייה (ללא תתי-תיקיות)
-          if (pathParts.length === 2 || 
-              (pathParts.length === 3 && (pathParts[0].includes(':') || pathParts[0] === ''))) {
-            // קח את התיקייה האחרונה
-            rootFolderIndex = pathParts.length - 2;
+        // אם זו תיקיית 'books', קבל את הנתיב המלא
+        if (folder === 'books') {
+          if (window.electron) {
+            folderPath = window.electron.getBooksPath();
           } else {
-            // יש תתי-תיקיות - חפש את התיקייה הראשונה שאינה תיקיית מערכת
-            for (let i = 0; i < pathParts.length - 1; i++) {
-              const part = pathParts[i].toLowerCase();
-              // דלג על תיקיות מערכת וכוננים
-              if (part && part !== 'c:' && part !== 'd:' && part !== 'e:' && 
-                  part !== 'users' && part !== 'user' && 
-                  part !== 'documents' && part !== 'downloads' && part !== 'desktop' &&
-                  part !== 'haotzar' && part !== 'האוצר' && // דלג על תיקיית האפליקציה
-                  !part.includes('appdata') && !part.includes('program') && 
-                  !part.includes('roaming') && part !== '') {
-                // אם זו תיקיית books, בדוק אם יש תיקייה אחרי זה
-                if (part === 'books' && i < pathParts.length - 2) {
-                  // יש תיקייה אחרי books - השתמש בה במקום
-                  rootFolderIndex = i + 1;
-                  break;
-                } else if (part !== 'books') {
-                  // תיקייה רגילה - השתמש בה
-                  rootFolderIndex = i;
-                  break;
-                }
-              }
-            }
+            continue;
           }
         }
         
-        if (rootFolderIndex !== -1 && rootFolderIndex < pathParts.length) {
-          const rootFolder = pathParts[rootFolderIndex];
-          console.log('📁 Root folder detected:', rootFolder, 'from path:', file.path);
-          if (!folderRoots.has(rootFolder)) {
-            folderRoots.set(rootFolder, []);
-          }
-          folderRoots.get(rootFolder).push({
+        const normalizedFolderPath = folderPath.replace(/\\/g, '/').toLowerCase();
+        
+        // בדוק אם הקובץ נמצא בתוך התיקייה הזו
+        if (normalizedPath.startsWith(normalizedFolderPath)) {
+          matchedFolder = folderPath.split(/[/\\]/).pop() || folder;
+          matchedFolderPath = folderPath;
+          break;
+        }
+      }
+      
+      if (matchedFolder && matchedFolderPath) {
+        if (!folderRoots.has(matchedFolder)) {
+          folderRoots.set(matchedFolder, []);
+        }
+        
+        // חשב את הנתיב היחסי מהתיקייה הראשית
+        const normalizedFolderPath = matchedFolderPath.replace(/\\/g, '/');
+        const normalizedFilePath = file.path.replace(/\\/g, '/');
+        
+        // וודא שהנתיב מתחיל בנתיב התיקייה
+        let relativePath = '';
+        if (normalizedFilePath.toLowerCase().startsWith(normalizedFolderPath.toLowerCase())) {
+          relativePath = normalizedFilePath.substring(normalizedFolderPath.length);
+        }
+        
+        const parts = relativePath.split('/').filter(p => p);
+        
+        if (parts.length > 0) {
+          folderRoots.get(matchedFolder).push({
             file,
-            parts: pathParts.slice(rootFolderIndex + 1) // כל השאר אחרי התיקייה הראשונה
+            parts
           });
         }
       }
