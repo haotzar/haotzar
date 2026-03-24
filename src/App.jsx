@@ -2383,15 +2383,20 @@ function App() {
             <Button
               appearance="subtle"
               icon={<BookOpenRegular />}
-              onClick={() => setCurrentView('books')}
+              onClick={() => {
+                setCurrentView('books');
+                setFolderPreview(null); // סגור תצוגת תיקייה
+                localStorage.removeItem('library_lastFolder');
+              }}
               aria-label="כרטיסיות פתוחות"
-              data-active={currentView === 'books'}
+              data-active={currentView === 'books' && !folderPreview}
             />
             <Button
               appearance="subtle"
               icon={<SearchRegular />}
               onClick={() => {
                 setCurrentView('books');
+                setFolderPreview(null); // סגור תצוגת תיקייה
                 handleNewSearchTab();
               }}
               aria-label="חיפוש חדש"
@@ -2401,10 +2406,10 @@ function App() {
               icon={<LibraryRegular />}
               onClick={() => {
                 setCurrentView('books');
-                setIsLibrarySidebarOpen(true);
+                setIsLibrarySidebarOpen(!isLibrarySidebarOpen); // toggle
               }}
               aria-label="ספרייה"
-              data-active={isLibrarySidebarOpen}
+              data-active={isLibrarySidebarOpen || folderPreview}
             />
           </div>
         </div>
