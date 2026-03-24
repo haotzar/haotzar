@@ -249,19 +249,10 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
       virtualFolders.push(otzariaTree);
     }
 
-    // תיקיית hebrewbooks - רק אם אין תיקייה קיימת
-    const hasHebrewBooksFolder = filesList.some(file => {
-      const normalizedPath = file.path.toLowerCase().replace(/\\/g, '/');
-      return normalizedPath.includes('hebrewbooks') || 
-             normalizedPath.includes('hebrew-books') ||
-             normalizedPath.includes('hebrew_books');
-    });
-    
-    if (!hasHebrewBooksFolder) {
-      const hebrewBooksTree = buildHebrewBooksVirtualTree(filesList);
-      if (hebrewBooksTree) {
-        virtualFolders.push(hebrewBooksTree);
-      }
+    // תיקיית hebrewbooks - תמיד מוצגת
+    const hebrewBooksTree = buildHebrewBooksVirtualTree(filesList);
+    if (hebrewBooksTree) {
+      virtualFolders.push(hebrewBooksTree);
     }
 
     // תיקיית היסטוריה
@@ -303,7 +294,19 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
     // מצא את התיקייה הראשונה המשותפת לכל הקבצים מכל תיקייה
     const folderRoots = new Map(); // מפה של תיקיות ראשיות לקבצים שלהן
     
-    filesList.forEach(file => {
+    // סנן קבצים - הוצא קבצי HebrewBooks אם יש תיקייה וירטואלית
+    const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
+    const filteredFilesList = filesList.filter(file => {
+      // אם יש תיקיית HebrewBooks מוגדרת, הוצא קבצים שלה
+      if (hebrewBooksPath) {
+        const normalizedFilePath = file.path.toLowerCase().replace(/\\/g, '/');
+        const normalizedHebrewBooksPath = hebrewBooksPath.toLowerCase().replace(/\\/g, '/');
+        return !normalizedFilePath.includes(normalizedHebrewBooksPath);
+      }
+      return true;
+    });
+    
+    filteredFilesList.forEach(file => {
       const normalizedPath = file.path.replace(/\\/g, '/');
       
       // אם הנתיב מכיל 'books/', זו תיקיית books הרגילה

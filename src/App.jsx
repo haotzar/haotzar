@@ -262,7 +262,7 @@ function App() {
           console.error('שגיאה בפתיחת אוצריא אחרי רענון:', error);
         }
       }, 500);
-    } else if (shouldOpenHebrewBooks === 'true') {
+    } else if (shouldOpenHebrewBooks === 'true' && allFiles.length > 0) {
       // נקה את הדגל
       localStorage.removeItem('openHebrewBooksAfterReload');
       
@@ -618,9 +618,11 @@ function App() {
               console.log('📚 Sample files:', allFiles.slice(0, 3).map(f => ({ name: f.name, path: f.path })));
               setAllFiles(allFiles);
               
-              // בניית אינדקס חיפוש מהיר
+              // בניית אינדקס חיפוש מהיר - אסינכרונית
               console.log('🔨 בונה אינדקס חיפוש...');
-              searchIndex.buildIndex(allFiles);
+              searchIndex.buildIndex(allFiles).then(() => {
+                console.log('✅ אינדקס חיפוש הושלם');
+              });
             }
             console.log('✅ setAllFiles called with', allFiles.length, 'files');
             
@@ -786,6 +788,18 @@ function App() {
               bookFiles = window.electron.scanBooksInPaths(scanPaths);
               console.log(`✅ נמצאו ${bookFiles.length} קבצים ב-${(performance.now() - scanStart).toFixed(0)}ms`);
               
+              // בדוק אם יש תיקיית HebrewBooks נפרדת
+              const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
+              if (hebrewBooksPath && window.electron.fileExists(hebrewBooksPath)) {
+                console.log('📁 סורק תיקיית HebrewBooks:', hebrewBooksPath);
+                const hebrewBooksFiles = window.electron.scanBooksInPaths([hebrewBooksPath]);
+                console.log(`✅ נמצאו ${hebrewBooksFiles.length} קבצים ב-HebrewBooks`);
+                
+                // הוסף את הקבצים לרשימה הכללית
+                bookFiles = [...bookFiles, ...hebrewBooksFiles];
+                console.log(`📚 סה"כ קבצים כולל HebrewBooks: ${bookFiles.length}`);
+              }
+              
               // שמור ב-cache
               if (ENABLE_FILES_CACHE && bookFiles.length > 0) {
                 try {
@@ -849,9 +863,11 @@ function App() {
             setAllFiles(allFiles);
             console.log('✅ setAllFiles called with', allFiles.length, 'files');
             
-            // בניית אינדקס חיפוש מהיר
+            // בניית אינדקס חיפוש מהיר - אסינכרונית
             console.log('🔨 בונה אינדקס חיפוש...');
-            searchIndex.buildIndex(allFiles);
+            searchIndex.buildIndex(allFiles).then(() => {
+              console.log('✅ אינדקס חיפוש הושלם');
+            });
             
             // טעינת אינדקס קיים - רק אם צריך
             console.log('📋 בודק אם יש אינדקס חיפוש...');
@@ -933,9 +949,11 @@ function App() {
 
           setAllFiles(allFiles);
           
-          // בניית אינדקס חיפוש מהיר
+          // בניית אינדקס חיפוש מהיר - אסינכרונית
           console.log('🔨 בונה אינדקס חיפוש...');
-          searchIndex.buildIndex(allFiles);
+          searchIndex.buildIndex(allFiles).then(() => {
+            console.log('✅ אינדקס חיפוש הושלם');
+          });
 
           // טעינת אינדקס קיים (האינדקס נבנה מראש) - רק אם צריך
           console.log('📋 בודק אם יש אינדקס חיפוש...');

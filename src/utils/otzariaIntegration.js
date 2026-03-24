@@ -226,11 +226,73 @@ export function buildHebrewBooksVirtualTree(allFiles) {
   };
 
   // אם אין קבצים, החזר תיקייה ריקה
-  if (hebrewBooksFiles.length === 0) {    return hebrewBooksRoot;
+  if (hebrewBooksFiles.length === 0) {
+    return hebrewBooksRoot;
   }
 
-  // בנה עץ מהקבצים שנמצאו
-  // (הלוגיקה הקיימת של buildTree תטפל בזה)  return hebrewBooksRoot;
+  // בנה עץ תיקיות מהקבצים
+  const hebrewBooksPath = localStorage.getItem('hebrewBooksPath');
+  if (!hebrewBooksPath) {
+    return hebrewBooksRoot;
+  }
+
+  // נרמל את נתיב הבסיס
+  const basePath = hebrewBooksPath.replace(/\\/g, '/').toLowerCase();
+  
+  // בנה מבנה עץ
+  const folderMap = new Map();
+  
+  hebrewBooksFiles.forEach(file => {
+    const normalizedPath = file.path.replace(/\\/g, '/');
+    const normalizedLowerPath = normalizedPath.toLowerCase();
+    
+    // מצא את הנתיב היחסי מתיקיית HebrewBooks
+    let relativePath = normalizedPath;
+    if (normalizedLowerPath.includes(basePath)) {
+      relativePath = normalizedPath.substring(normalizedPath.toLowerCase().indexOf(basePath) + basePath.length);
+      if (relativePath.startsWith('/')) {
+        relativePath = relativePath.substring(1);
+      }
+    }
+    
+    const parts = relativePath.split('/');
+    const fileName = parts.pop();
+    
+    // בנה את מבנה התיקיות
+    let currentPath = '';
+    let currentParent = hebrewBooksRoot;
+    
+    parts.forEach((folderName, index) => {
+      currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+      
+      if (!folderMap.has(currentPath)) {
+        const newFolder = {
+          name: folderName,
+          type: 'folder',
+          path: `virtual-hebrewbooks/${currentPath}`,
+          isVirtual: true,
+          virtualType: 'hebrewbooks',
+          children: []
+        };
+        
+        folderMap.set(currentPath, newFolder);
+        currentParent.children.push(newFolder);
+        currentParent = newFolder;
+      } else {
+        currentParent = folderMap.get(currentPath);
+      }
+    });
+    
+    // הוסף את הקובץ לתיקייה הנוכחית
+    currentParent.children.push({
+      ...file,
+      name: fileName.replace(/\.(pdf|txt)$/i, ''),
+      type: file.type,
+      isVirtual: false
+    });
+  });
+  
+  return hebrewBooksRoot;
 }
 
 /**

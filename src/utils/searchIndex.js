@@ -41,64 +41,75 @@ class SearchIndex {
   }
 
   /**
-   * בניית האינדקס מרשימת קבצים
+   * בניית האינדקס מרשימת קבצים - אסינכרונית
    */
-  buildIndex(files) {
+  async buildIndex(files) {
     console.time('🔨 בניית אינדקס חיפוש');
     
     this.clear();
     
-    files.forEach(file => {
-      if (!file || !file.id) return;
+    const BATCH_SIZE = 100; // עבד על 100 קבצים בכל פעם
+    
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
       
-      // שמור את הספר
-      this.books.set(file.id, file);
-      
-      // אינדקס שם הספר
-      const normalizedName = normalizeText(file.name);
-      this._addToIndex(this.nameIndex, normalizedName, file.id);
-      
-      // אינדקס מילים בודדות מהשם
-      const nameWords = normalizedName.split(' ').filter(w => w.length > 1);
-      nameWords.forEach(word => {
-        this._addToIndex(this.wordIndex, word, file.id);
-      });
-      
-      // אינדקס ראשי תיבות
-      const acronym = createAcronym(normalizedName);
-      if (acronym.length >= 2) {
-        this._addToIndex(this.acronymIndex, acronym, file.id);
-      }
-      
-      // אינדקס ראשי תיבות 2+1
-      const twoOne = createTwoOneAcronym(normalizedName);
-      if (twoOne) {
-        this._addToIndex(this.twoOneIndex, twoOne, file.id);
-      }
-      
-      // אינדקס מחבר
-      if (file.author) {
-        const normalizedAuthor = normalizeText(file.author);
-        this._addToIndex(this.authorIndex, normalizedAuthor, file.id);
+      batch.forEach(file => {
+        if (!file || !file.id) return;
         
-        // מילים בודדות מהמחבר
-        const authorWords = normalizedAuthor.split(' ').filter(w => w.length > 1);
-        authorWords.forEach(word => {
+        // שמור את הספר
+        this.books.set(file.id, file);
+        
+        // אינדקס שם הספר
+        const normalizedName = normalizeText(file.name);
+        this._addToIndex(this.nameIndex, normalizedName, file.id);
+        
+        // אינדקס מילים בודדות מהשם
+        const nameWords = normalizedName.split(' ').filter(w => w.length > 1);
+        nameWords.forEach(word => {
           this._addToIndex(this.wordIndex, word, file.id);
         });
-      }
+        
+        // אינדקס ראשי תיבות
+        const acronym = createAcronym(normalizedName);
+        if (acronym.length >= 2) {
+          this._addToIndex(this.acronymIndex, acronym, file.id);
+        }
+        
+        // אינדקס ראשי תיבות 2+1
+        const twoOne = createTwoOneAcronym(normalizedName);
+        if (twoOne) {
+          this._addToIndex(this.twoOneIndex, twoOne, file.id);
+        }
+        
+        // אינדקס מחבר
+        if (file.author) {
+          const normalizedAuthor = normalizeText(file.author);
+          this._addToIndex(this.authorIndex, normalizedAuthor, file.id);
+          
+          // מילים בודדות מהמחבר
+          const authorWords = normalizedAuthor.split(' ').filter(w => w.length > 1);
+          authorWords.forEach(word => {
+            this._addToIndex(this.wordIndex, word, file.id);
+          });
+        }
+        
+        // אינדקס תוכן עניינים
+        if (file.tableOfContents && Array.isArray(file.tableOfContents)) {
+          file.tableOfContents.forEach(entry => {
+            if (entry.label) {
+              const normalizedLabel = normalizeText(entry.label);
+              const key = `${file.id}:${normalizedLabel}`;
+              this._addToIndex(this.tocIndex, normalizedLabel, key);
+            }
+          });
+        }
+      });
       
-      // אינדקס תוכן עניינים
-      if (file.tableOfContents && Array.isArray(file.tableOfContents)) {
-        file.tableOfContents.forEach(entry => {
-          if (entry.label) {
-            const normalizedLabel = normalizeText(entry.label);
-            const key = `${file.id}:${normalizedLabel}`;
-            this._addToIndex(this.tocIndex, normalizedLabel, key);
-          }
-        });
+      // תן ל-UI להתעדכן בין batch-ים
+      if (i + BATCH_SIZE < files.length) {
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
-    });
+    }
     
     this.isBuilt = true;
     console.timeEnd('🔨 בניית אינדקס חיפוש');
