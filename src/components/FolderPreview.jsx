@@ -175,13 +175,36 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
     const loadUrl = async () => {
       try {
         const isElectron = window.electron !== undefined;
-        if (isElectron) {
-          const arrayBuffer = window.electron.readFileAsBuffer(previewFile.path);
-          const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-          const blobUrl = URL.createObjectURL(blob);
-          setPreviewUrl(`/pdfjs/web/viewer.html?file=${encodeURIComponent(blobUrl)}&previewMode=true#zoom=page-fit`);
+        const isDevelopment = import.meta.env.DEV;
+        
+        let viewerPath;
+        if (isElectron && !isDevelopment) {
+          // Production Electron - use app:// protocol
+          viewerPath = 'app://pdfjs/web/viewer.html';
+        } else if (isDevelopment) {
+          // Development mode - use absolute path from dev server
+          viewerPath = '/pdfjs/web/viewer.html';
         } else {
-          setPreviewUrl(`/pdfjs/web/viewer.html?file=${encodeURIComponent(previewFile.path)}&previewMode=true#zoom=page-fit`);
+          // Web production - use relative path
+          const baseUrl = import.meta?.env?.BASE_URL ?? './';
+          viewerPath = baseUrl.endsWith('/') ? `${baseUrl}pdfjs/web/viewer.html` : `${baseUrl}/pdfjs/web/viewer.html`;
+        }
+        
+        if (isElectron) {
+          if (isDevelopment) {
+            // Development: Use Blob URL
+            const buffer = window.electron.readFileAsBuffer(previewFile.path);
+            const blob = new Blob([buffer], { type: 'application/pdf' });
+            const fileUrl = URL.createObjectURL(blob);
+            setPreviewUrl(`${viewerPath}?file=${encodeURIComponent(fileUrl)}&previewMode=true#zoom=page-fit`);
+          } else {
+            // Production: Use app://pdf/ protocol (same origin as viewer)
+            const encodedPath = encodeURIComponent(previewFile.path);
+            const fileUrl = `app://pdf/${encodedPath}`;
+            setPreviewUrl(`${viewerPath}?file=${encodeURIComponent(fileUrl)}&previewMode=true#zoom=page-fit`);
+          }
+        } else {
+          setPreviewUrl(`${viewerPath}?file=${encodeURIComponent(previewFile.path)}&previewMode=true#zoom=page-fit`);
         }
       } catch (error) {
         console.error('Error loading PDF:', error);

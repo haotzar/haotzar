@@ -1,3 +1,4 @@
+
 const { app, BrowserWindow, shell, ipcMain, protocol } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
@@ -198,6 +199,82 @@ function setupCustomProtocol() {
     }
   });
   
+  // רשום את app:// protocol לטעינת קבצים מתוך dist
+  protocol.registerFileProtocol('app', (request, callback) => {
+    let url = request.url.replace('app://', '');
+    
+    // הסר query string אם יש (הכל אחרי ?)
+    const queryIndex = url.indexOf('?');
+    if (queryIndex !== -1) {
+      url = url.substring(0, queryIndex);
+    }
+    
+    // הסר hash אם יש (הכל אחרי #)
+    const hashIndex = url.indexOf('#');
+    if (hashIndex !== -1) {
+      url = url.substring(0, hashIndex);
+    }
+    
+    // הסר slashes מיותרים בהתחלה
+    url = url.replace(/^\/+/, '');
+    
+    const decodedPath = decodeURIComponent(url);
+    
+    console.log('📦 App protocol request:', request.url);
+    console.log('📦 Decoded path:', decodedPath);
+    
+    // בדוק אם זו בקשה לקובץ PDF (app://pdf/...)
+    if (decodedPath.startsWith('pdf/')) {
+      // הסר את 'pdf/' והשאר את הנתיב המלא
+      const pdfPath = decodedPath.substring(4);
+      const actualPath = decodeURIComponent(pdfPath);
+      console.log('📄 PDF file request:', actualPath);
+      
+      if (fs.existsSync(actualPath)) {
+        console.log('✅ Found PDF at:', actualPath);
+        callback({ path: actualPath });
+        return;
+      } else {
+        console.error('❌ PDF file not found:', actualPath);
+        callback({ error: -6 }); // FILE_NOT_FOUND
+        return;
+      }
+    }
+    
+    console.log('📦 __dirname:', __dirname);
+    console.log('📦 process.resourcesPath:', process.resourcesPath);
+    
+    // נסה מספר מיקומים אפשריים
+    // בסדר עדיפות: development -> production unpacked -> production asar
+    const possiblePaths = [
+      // Development paths
+      path.join(__dirname, '../public', decodedPath),
+      path.join(__dirname, '../dist', decodedPath),
+      // Production unpacked paths (for files that can't be in asar)
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'public', decodedPath),
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', decodedPath),
+      // Production asar paths
+      path.join(process.resourcesPath, 'app.asar', 'public', decodedPath),
+      path.join(process.resourcesPath, 'app.asar', 'dist', decodedPath),
+      // Fallback: try in resources directly
+      path.join(process.resourcesPath, 'public', decodedPath),
+      path.join(process.resourcesPath, 'dist', decodedPath)
+    ];
+    
+    console.log('📦 Trying paths:');
+    for (const testPath of possiblePaths) {
+      console.log('  🔍', testPath, '- exists:', fs.existsSync(testPath));
+      if (fs.existsSync(testPath)) {
+        console.log('✅ Found file at:', testPath);
+        callback({ path: testPath });
+        return;
+      }
+    }
+    
+    console.error('❌ File not found in any location:', decodedPath);
+    callback({ error: -6 }); // FILE_NOT_FOUND
+  });
+  
   // הוסף protocol handler לקבצים סטטיים מ-dist
   protocol.interceptFileProtocol('file', (request, callback) => {
     let url = request.url.substr(7); // הסר 'file://'
@@ -211,29 +288,52 @@ function setupCustomProtocol() {
     if (url.startsWith('/') && !url.includes(':')) {
       // זה נתיב יחסי - חפש ב-dist
       const fileName = url.substring(1); // הסר את ה-/ הראשון
-      const distPath = path.join(__dirname, '../dist', fileName);
-      console.log('🔍 Looking for file in dist:', distPath);
       
-      if (fs.existsSync(distPath)) {
-        console.log('✅ Found in dist:', distPath);
-        callback({ path: distPath });
-        return;
+      // נסה מספר מיקומים אפשריים
+      const possiblePaths = [
+        path.join(__dirname, '../dist', fileName),
+        path.join(__dirname, '../public', fileName),
+        path.join(process.resourcesPath, 'app.asar', 'dist', fileName),
+        path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', fileName)
+      ];
+      
+      for (const testPath of possiblePaths) {
+        if (fs.existsSync(testPath)) {
+          console.log('✅ Found file at:', testPath);
+          callback({ path: testPath });
+          return;
+        }
       }
+      
+      console.warn('⚠️ File not found in any location:', fileName);
     }
     
-    // אם זה נתיב מוחלט שמתחיל ב-C:/ (או כונן אחר) אבל הקובץ לא קיים
-    // נסה לחפש אותו ב-dist
-    if (url.includes(':') && !fs.existsSync(url)) {
-      // קח רק את שם הקובץ
-      const fileName = path.basename(url);
-      const distPath = path.join(__dirname, '../dist', fileName);
-      console.log('🔍 File not found at absolute path, trying dist:', distPath);
-      
-      if (fs.existsSync(distPath)) {
-        console.log('✅ Found in dist:', distPath);
-        callback({ path: distPath });
+    // אם זה נתיב מוחלט שמתחיל ב-C:/ (או כונן אחר)
+    if (url.includes(':')) {
+      // בדוק אם הקובץ קיים
+      if (fs.existsSync(url)) {
+        console.log('✅ Using absolute path:', url);
+        callback({ path: path.normalize(url) });
         return;
       }
+      
+      // אם הקובץ לא קיים, נסה לחפש אותו ב-dist
+      const fileName = path.basename(url);
+      const possiblePaths = [
+        path.join(__dirname, '../dist', fileName),
+        path.join(process.resourcesPath, 'app.asar', 'dist', fileName),
+        path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', fileName)
+      ];
+      
+      for (const testPath of possiblePaths) {
+        if (fs.existsSync(testPath)) {
+          console.log('✅ Found file at:', testPath);
+          callback({ path: testPath });
+          return;
+        }
+      }
+      
+      console.warn('⚠️ File not found:', url);
     }
     
     // אחרת, השתמש בנתיב המקורי
@@ -365,6 +465,16 @@ protocol.registerSchemesAsPrivileged([
       supportFetchAPI: true,
       corsEnabled: true,
       stream: true
+    }
+  },
+  {
+    scheme: 'app',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      bypassCSP: true
     }
   }
 ]);

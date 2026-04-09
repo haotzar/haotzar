@@ -47,6 +47,7 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
       
       const isTauri = window.__TAURI__ !== undefined;
       const isElectron = window.electron !== undefined;
+      const isDevelopment = import.meta.env.DEV;
       
       if (isAbsolutePath && (isTauri || isElectron)) {
         // נתיב מוחלט - צריך להמיר לפורמט מתאים
@@ -63,29 +64,35 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
           console.error('❌ Tauri is not supported in this build');
           return;
         } else if (isElectron) {
-          // ב-Electron, קרא את הקובץ כ-ArrayBuffer ושמור אותו
-          try {
-            console.log('📖 Reading PDF file as buffer...');
-            const arrayBuffer = window.electron.readFileAsBuffer(pdfPath);
-            console.log('✅ Buffer size:', arrayBuffer.byteLength, 'bytes');
-            
-            // שמור את ה-ArrayBuffer ב-state כדי שנוכל להעביר אותו ל-PDF.js
-            const uint8Array = new Uint8Array(arrayBuffer);
-            
-            // צור Blob URL
-            const blob = new Blob([uint8Array], { type: 'application/pdf' });
-            fileUrl = URL.createObjectURL(blob);
-            console.log('✅ Created Blob URL for PDF:', fileUrl);
-            
-            // שמור את ה-Blob URL כדי לנקות אותו מאוחר יותר
-            if (pdfBlobUrlRef.current) {
-              URL.revokeObjectURL(pdfBlobUrlRef.current);
+          // ב-Electron
+          if (isDevelopment) {
+            // Development: השתמש ב-Blob URL (עובד עם localhost)
+            try {
+              console.log('📄 Reading PDF file as buffer (dev mode)...');
+              const buffer = window.electron.readFileAsBuffer(pdfPath);
+              const blob = new Blob([buffer], { type: 'application/pdf' });
+              fileUrl = URL.createObjectURL(blob);
+              
+              // שמור את ה-Blob URL לניקוי מאוחר יותר
+              pdfBlobUrlRef.current = fileUrl;
+              
+              console.log('✅ Created Blob URL for PDF:', fileUrl.substring(0, 50) + '...');
+            } catch (error) {
+              console.error('❌ Error reading PDF file:', error);
+              setError('שגיאה בטעינת קובץ PDF: ' + error.message);
+              return;
             }
-            pdfBlobUrlRef.current = fileUrl;
-          } catch (error) {
-            console.error('❌ Error reading PDF file:', error);
-            setError('שגיאה בטעינת קובץ PDF: ' + error.message);
-            return;
+          } else {
+            // Production: השתמש ב-app://pdf/ protocol (streaming, same origin)
+            try {
+              const encodedPath = encodeURIComponent(pdfPath);
+              fileUrl = `app://pdf/${encodedPath}`;
+              console.log('✅ Using app://pdf/ protocol URL for PDF:', fileUrl);
+            } catch (error) {
+              console.error('❌ Error creating app://pdf/ URL:', error);
+              setError('שגיאה בטעינת קובץ PDF: ' + error.message);
+              return;
+            }
           }
         }
       } else {
@@ -93,7 +100,21 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
         fileUrl = pdfPath;
       }
       
-      let url = `/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}`;
+      // Build viewer path
+      let viewerPath;
+      if (isElectron && !isDevelopment) {
+        // Production Electron - use app:// protocol
+        viewerPath = 'app://pdfjs/web/viewer.html';
+      } else if (isDevelopment) {
+        // Development mode - use absolute path from dev server
+        viewerPath = '/pdfjs/web/viewer.html';
+      } else {
+        // Web production - use relative path
+        const baseUrl = import.meta?.env?.BASE_URL ?? './';
+        viewerPath = baseUrl.endsWith('/') ? `${baseUrl}pdfjs/web/viewer.html` : `${baseUrl}/pdfjs/web/viewer.html`;
+      }
+      
+      let url = `${viewerPath}?file=${encodeURIComponent(fileUrl)}`;
       
       // במצב תצוגה מקדימה, הוסף פרמטר מיוחד
       if (isPreviewMode) {
@@ -149,12 +170,11 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
     // ניקוי - שחרר Blob URLs
     return () => {
       if (pdfBlobUrlRef.current) {
-        console.log('🧹 Cleaning up Blob URL');
-        URL.revokeObjectURL(pdfBlobUrlRef.current);
+        if (typeof pdfBlobUrlRef.current === 'string' && pdfBlobUrlRef.current.startsWith('blob:')) {
+          console.log('🧹 Cleaning up Blob URL');
+          URL.revokeObjectURL(pdfBlobUrlRef.current);
+        }
         pdfBlobUrlRef.current = null;
-      }
-      if (viewerUrl && viewerUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(viewerUrl);
       }
     };
   }, [pdfPath, searchContext]);

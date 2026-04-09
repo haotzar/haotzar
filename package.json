@@ -49,6 +49,12 @@
   "build": {
     "appId": "com.haotzer.app",
     "productName": "haotzar",
+    "asarUnpack": [
+      "dist/pdfjs/**",
+      "public/pdfjs/**",
+      "dist/pdf.worker.min.mjs",
+      "public/pdf.worker.min.mjs"
+    ],
     "directories": {
       "output": "release",
       "buildResources": "public"
