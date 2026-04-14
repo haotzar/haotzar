@@ -1,0 +1,100 @@
+.custom-alert-surface {
+  max-width: 500px;
+  min-width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  direction: rtl;
+  text-align: right;
+}
+
+.custom-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.alert-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.alert-icon.info {
+  color: #0078d4;
+}
+
+.alert-icon.success {
+  color: #107c10;
+}
+
+.alert-icon.warning {
+  color: #f7630c;
+}
+
+.alert-icon.error {
+  color: #d13438;
+}
+
+.custom-alert-content {
+  padding: 20px 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--colorNeutralForeground1);
+  direction: rtl;
+  text-align: right;
+  white-space: pre-line;
+}
+
+.custom-alert-content p {
+  margin: 0;
+  padding: 4px 0;
+}
+
+.custom-alert-content p:first-child {
+  padding-top: 0;
+}
+
+.custom-alert-content p:last-child {
+  padding-bottom: 0;
+}
+
+.custom-alert-actions {
+  padding: 12px 24px 20px;
+  justify-content: center;
+}
+
+.custom-alert-actions button {
+  min-width: 100px;
+  font-size: 15px;
+  padding: 8px 24px;
+  border-radius: 6px;
+}
+
+/* אנימציה */
+.custom-alert-surface {
+  animation: alertSlideIn 0.2s ease-out;
+}
+
+@keyframes alertSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* תמיכה במצב כהה */
+[data-theme="dark"] .custom-alert-surface {
+  background-color: var(--colorNeutralBackground1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .custom-alert-title {
+  border-bottom-color: var(--colorNeutralStroke2);
+}

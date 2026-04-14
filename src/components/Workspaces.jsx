@@ -1,5 +1,6 @@
 import { AddRegular, DeleteRegular, EditRegular, FolderRegular } from '@fluentui/react-icons';
 import { useState } from 'react';
+import customConfirm from '../utils/customConfirm';
 import './Workspaces.css';
 
 const Workspaces = ({ workspaces, currentWorkspace, onSelectWorkspace, onCreateWorkspace, onDeleteWorkspace, onRenameWorkspace }) => {
@@ -70,9 +71,13 @@ const Workspaces = ({ workspaces, currentWorkspace, onSelectWorkspace, onCreateW
                   </button>
                   <button
                     className="workspace-action-btn delete"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      if (confirm(`למחוק את שולחן העבודה "${workspace.name}"?`)) {
+                      const shouldDelete = await customConfirm(
+                        `למחוק את שולחן העבודה "${workspace.name}"?`,
+                        { type: 'warning', title: 'אישור מחיקה' }
+                      );
+                      if (shouldDelete) {
                         onDeleteWorkspace(workspace.id);
                       }
                     }}

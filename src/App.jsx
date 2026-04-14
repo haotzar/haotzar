@@ -78,6 +78,9 @@ import booksMetadata from './utils/booksMetadata';
 import { autoConvertSearch } from './utils/hebrewConverter';
 import searchIndex from './utils/searchIndex';
 import './utils/meilisearchTest'; // טוען פונקציות בדיקה ל-window.testMeilisearch
+import CustomAlert from './components/CustomAlert';
+import CustomConfirm from './components/CustomConfirm';
+import customConfirm from './utils/customConfirm';
 import './App.css';
 
 // ערכת צבעים מותאמת אישית - חום-שחור
@@ -455,14 +458,16 @@ function App() {
                     console.error('');
                     
                     // הצג התראה למשתמש - רק אם באמת יש בעיה
-                    setTimeout(() => {
-                      if (window.confirm(
+                    setTimeout(async () => {
+                      const shouldOpen = await customConfirm(
                         '⚠️ שגיאה בפתיחת מסד נתונים אוצריא\n\n' +
                         'better-sqlite3 צריך rebuild.\n\n' +
                         'הרץ בטרמינל:\n' +
                         'npm rebuild better-sqlite3\n\n' +
-                        'האם לפתוח את התיעוד?'
-                      )) {
+                        'האם לפתוח את התיעוד?',
+                        { type: 'warning', title: 'שגיאה' }
+                      );
+                      if (shouldOpen) {
                         window.open('https://github.com/WiseLibs/better-sqlite3#installation', '_blank');
                       }
                     }, 2000);
@@ -3120,6 +3125,12 @@ function App() {
             </div>
           </div>
         )}
+        
+        {/* קומפוננט התראות מותאם אישית */}
+        <CustomAlert />
+        
+        {/* קומפוננט אישור מותאם אישית */}
+        <CustomConfirm />
       </div>
     </FluentProvider>
   );

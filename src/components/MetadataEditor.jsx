@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import customConfirm from '../utils/customConfirm';
 import './MetadataEditor.css';
 
 const MetadataEditor = ({ onBack }) => {
@@ -112,9 +113,13 @@ const MetadataEditor = ({ onBack }) => {
   };
 
   // מחיקת ספר
-  const deleteBook = () => {
+  const deleteBook = async () => {
     if (selectedBookIndex === null) return;
-    if (!confirm(`האם למחוק את "${books[selectedBookIndex].title}"?`)) return;
+    const shouldDelete = await customConfirm(
+      `האם למחוק את "${books[selectedBookIndex].title}"?`,
+      { type: 'warning', title: 'אישור מחיקה' }
+    );
+    if (!shouldDelete) return;
     
     const updatedBooks = books.filter((_, i) => i !== selectedBookIndex);
     setBooks(updatedBooks);

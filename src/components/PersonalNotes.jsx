@@ -10,6 +10,8 @@ import {
   CalendarRegular,
   TagRegular
 } from '@fluentui/react-icons';
+import customAlert from '../utils/customAlert';
+import customConfirm from '../utils/customConfirm';
 import './PersonalNotes.css';
 
 const PersonalNotes = () => {
@@ -55,7 +57,7 @@ const PersonalNotes = () => {
   // Create new note
   const handleCreateNote = () => {
     if (!noteTitle.trim() || !noteContent.trim()) {
-      alert('נא למלא כותרת ותוכן להערה');
+      customAlert('נא למלא כותרת ותוכן להערה', { type: 'warning', title: 'שים לב' });
       return;
     }
 
@@ -80,7 +82,7 @@ const PersonalNotes = () => {
   // Update existing note
   const handleUpdateNote = () => {
     if (!noteTitle.trim() || !noteContent.trim()) {
-      alert('נא למלא כותרת ותוכן להערה');
+      customAlert('נא למלא כותרת ותוכן להערה', { type: 'warning', title: 'שים לב' });
       return;
     }
 
@@ -103,8 +105,12 @@ const PersonalNotes = () => {
   };
 
   // Delete note
-  const handleDeleteNote = (noteId) => {
-    if (confirm('האם אתה בטוח שברצונך למחוק הערה זו?')) {
+  const handleDeleteNote = async (noteId) => {
+    const shouldDelete = await customConfirm(
+      'האם אתה בטוח שברצונך למחוק הערה זו?',
+      { type: 'warning', title: 'אישור מחיקה' }
+    );
+    if (shouldDelete) {
       const updatedNotes = notes.filter(note => note.id !== noteId);
       saveNotesToStorage(updatedNotes);
     }

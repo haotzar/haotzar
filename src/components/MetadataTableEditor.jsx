@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import customAlert from '../utils/customAlert';
+import customConfirm from '../utils/customConfirm';
 import './MetadataTableEditor.css';
 
 const MetadataTableEditor = ({ onBack }) => {
@@ -67,8 +69,12 @@ const MetadataTableEditor = ({ onBack }) => {
   };
 
   // מחיקת שורה
-  const deleteRow = (index) => {
-    if (confirm(`האם למחוק את "${books[index].title || 'ספר ללא שם'}"?`)) {
+  const deleteRow = async (index) => {
+    const shouldDelete = await customConfirm(
+      `האם למחוק את "${books[index].title || 'ספר ללא שם'}"?`,
+      { type: 'warning', title: 'אישור מחיקה' }
+    );
+    if (shouldDelete) {
       const newBooks = books.filter((_, i) => i !== index);
       setBooks(newBooks);
       setIsModified(true);
@@ -138,9 +144,9 @@ const MetadataTableEditor = ({ onBack }) => {
         if (newBooks.length > 0) {
           setBooks([...books, ...newBooks]);
           setIsModified(true);
-          alert(`נוספו ${newBooks.length} ספרים בהצלחה!`);
+          customAlert(`נוספו ${newBooks.length} ספרים בהצלחה!`, { type: 'success', title: 'הצלחה' });
         } else {
-          alert('לא נמצאו ספרים תקינים בקובץ');
+          customAlert('לא נמצאו ספרים תקינים בקובץ', { type: 'warning', title: 'שים לב' });
         }
       };
       reader.readAsText(file, 'UTF-8');

@@ -1,0 +1,93 @@
+.custom-confirm-surface {
+  max-width: 500px;
+  min-width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  direction: rtl;
+  text-align: right;
+}
+
+.custom-confirm-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.confirm-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.confirm-icon.question {
+  color: #0078d4;
+}
+
+.confirm-icon.warning {
+  color: #f7630c;
+}
+
+.custom-confirm-content {
+  padding: 20px 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--colorNeutralForeground1);
+  direction: rtl;
+  text-align: right;
+  white-space: pre-line;
+}
+
+.custom-confirm-content p {
+  margin: 0;
+  padding: 4px 0;
+}
+
+.custom-confirm-content p:first-child {
+  padding-top: 0;
+}
+
+.custom-confirm-content p:last-child {
+  padding-bottom: 0;
+}
+
+.custom-confirm-actions {
+  padding: 12px 24px 20px;
+  justify-content: center;
+  gap: 12px;
+}
+
+.custom-confirm-actions button {
+  min-width: 100px;
+  font-size: 15px;
+  padding: 8px 24px;
+  border-radius: 6px;
+}
+
+/* אנימציה */
+.custom-confirm-surface {
+  animation: confirmSlideIn 0.2s ease-out;
+}
+
+@keyframes confirmSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* תמיכה במצב כהה */
+[data-theme="dark"] .custom-confirm-surface {
+  background-color: var(--colorNeutralBackground1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .custom-confirm-title {
+  border-bottom-color: var(--colorNeutralStroke2);
+}

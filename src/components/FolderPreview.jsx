@@ -20,6 +20,7 @@ import TextViewer from '../TextViewer';
 import { getOtzariaRootFolder, getOtzariaCategoryById, getOtzariaCategoryByPath, clearOtzariaTreeCache } from '../utils/otzariaIntegration';
 import { getSetting, updateSetting } from '../utils/settingsManager';
 import EmptyLibraryPrompt from './EmptyLibraryPrompt';
+import customAlert from '../utils/customAlert';
 import './FolderPreview.css';
 
 const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }) => {
@@ -89,12 +90,12 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
               // נקה את ה-cache לפני רענון
               clearOtzariaTreeCache();
               
-              alert(`מסד הנתונים נמצא!\n\nמרענן את האפליקציה...`);
+              customAlert(`מסד הנתונים נמצא!\n\nמרענן את האפליקציה...`, { type: 'success', title: 'הצלחה' });
               
               // רענן את האפליקציה
               window.location.reload();
             } else {
-              alert(`לא נמצא קובץ seforim.db בתיקייה שנבחרה.\n\nוודא שבחרת את התיקייה הנכונה.`);
+              customAlert(`לא נמצא קובץ seforim.db בתיקייה שנבחרה.\n\nוודא שבחרת את התיקייה הנכונה.`, { type: 'warning', title: 'שגיאה' });
             }
           } else {
             // hebrewbooks - שמור את הנתיב
@@ -117,7 +118,7 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
             const savedFlag = localStorage.getItem('openHebrewBooksAfterReload');
             console.log('✅ דגל נשמר:', savedFlag);
             
-            alert(`נבחרה תיקיית HebrewBooks!\n\nמרענן את האפליקציה...`);
+            customAlert(`נבחרה תיקיית HebrewBooks!\n\nמרענן את האפליקציה...`, { type: 'success', title: 'הצלחה' });
             
             // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
             setTimeout(() => {
@@ -126,11 +127,11 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
           }
         }
       } else {
-        alert('פונקציה זו זמינה רק בגרסת האפליקציה המותקנת');
+        customAlert('פונקציה זו זמינה רק בגרסת האפליקציה המותקנת', { type: 'info', title: 'מידע' });
       }
     } catch (error) {
       console.error('שגיאה בבחירת תיקייה:', error);
-      alert('שגיאה בבחירת תיקייה: ' + error.message);
+      customAlert('שגיאה בבחירת תיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
     }
   };
 

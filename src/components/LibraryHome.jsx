@@ -21,6 +21,7 @@ import BookPreview from './BookPreview';
 import RecentBooks from './RecentBooks';
 import Workspaces from './Workspaces';
 import { getZmanimInfo, getDafYomiDetails } from '../utils/hebrewCalendar';
+import customAlert from '../utils/customAlert';
 import './LibraryHome.css';
 
 const LibraryHome = ({ 
@@ -150,7 +151,7 @@ const LibraryHome = ({
     } else {
       console.warn(`Could not find book for masechta: ${masechta}`);
       console.log('📚 Searching in files:', allFiles.filter(f => f.name.includes('שס')).map(f => f.name));
-      alert(`לא נמצא ספר למסכת ${masechta}\nנסה לחפש את הספר ידנית בספרייה.`);
+      customAlert(`לא נמצא ספר למסכת ${masechta}\nנסה לחפש את הספר ידנית בספרייה.`, { type: 'info', title: 'מידע' });
     }
   };
   // סינון ספרים לפי קטגוריות

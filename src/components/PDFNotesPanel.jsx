@@ -5,6 +5,8 @@ import {
   DeleteRegular,
   NoteRegular
 } from '@fluentui/react-icons';
+import customAlert from '../utils/customAlert';
+import customConfirm from '../utils/customConfirm';
 import './PDFNotesPanel.css';
 
 const PDFNotesPanel = ({ bookName, currentPage, onClose, autoOpenCreate = false, initialContent = '' }) => {
@@ -101,7 +103,7 @@ const PDFNotesPanel = ({ bookName, currentPage, onClose, autoOpenCreate = false,
 
   const handleCreateNote = () => {
     if (!newNoteTitle.trim() || !newNoteContent.trim()) {
-      alert('נא למלא כותרת ותוכן להערה');
+      customAlert('נא למלא כותרת ותוכן להערה', { type: 'warning', title: 'שים לב' });
       return;
     }
 
@@ -134,12 +136,16 @@ const PDFNotesPanel = ({ bookName, currentPage, onClose, autoOpenCreate = false,
       loadNotes();
     } catch (error) {
       console.error('Error creating note:', error);
-      alert('שגיאה בשמירת ההערה');
+      customAlert('שגיאה בשמירת ההערה', { type: 'error', title: 'שגיאה' });
     }
   };
 
-  const handleDeleteNote = (noteId) => {
-    if (confirm('האם אתה בטוח שברצונך למחוק הערה זו?')) {
+  const handleDeleteNote = async (noteId) => {
+    const shouldDelete = await customConfirm(
+      'האם אתה בטוח שברצונך למחוק הערה זו?',
+      { type: 'warning', title: 'אישור מחיקה' }
+    );
+    if (shouldDelete) {
       try {
         const savedNotes = localStorage.getItem('personalNotes');
         const allNotes = savedNotes ? JSON.parse(savedNotes) : [];

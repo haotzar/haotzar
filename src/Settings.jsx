@@ -39,6 +39,8 @@ import {
   getSetting,
   updateSetting
 } from './utils/settingsManager';
+import customAlert from './utils/customAlert';
+import customConfirm from './utils/customConfirm';
 import './Settings.css';
 
 const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
@@ -140,14 +142,14 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               console.log('✅ דגל HebrewBooks נשמר');
             }
             
-            alert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`);
+            customAlert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`, { type: 'success', title: 'הצלחה' });
             
             // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
             setTimeout(() => {
               window.location.reload();
             }, 100);
           } else {
-            alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
+            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
           }
         }
       } else if (isElectron) {
@@ -173,14 +175,18 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               console.log('✅ דגל HebrewBooks נשמר');
             }
             
-            if (window.confirm(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
+            const shouldReload = await customConfirm(
+              `התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
+              { type: 'question', title: 'הצלחה' }
+            );
+            if (shouldReload) {
               // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
               setTimeout(() => {
                 window.location.reload();
               }, 100);
             }
           } else {
-            alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
+            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
           }
         }
       } else if (isTauri) {
@@ -211,19 +217,23 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                 console.log('✅ דגל HebrewBooks נשמר');
               }
               
-              if (window.confirm(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
+              const shouldReload = await customConfirm(
+                `התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
+                { type: 'question', title: 'הצלחה' }
+              );
+              if (shouldReload) {
                 // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
                 setTimeout(() => {
                   window.location.reload();
                 }, 100);
-              }
-            } else {
-              alert(`התיקייה "${folderName}" כבר קיימת בספרייה.`);
+            }
+          } else {
+            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
             }
           }
         } catch (error) {
           console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
-          alert('שגיאה בבחירת תיקייה: ' + error.message);
+          customAlert('שגיאה בבחירת תיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
         }
       } else {
         const input = document.createElement('input');
@@ -241,11 +251,15 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               setLibraryFolders(updatedFolders);
               updateSetting('libraryFolders', updatedFolders);
               
-              if (window.confirm(`התיקייה "${folderPath}" נוספה בהצלחה!\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ OK להמשך.`)) {
+              const shouldReload = await customConfirm(
+                `התיקייה "${folderPath}" נוספה בהצלחה!\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
+                { type: 'question', title: 'הצלחה' }
+              );
+              if (shouldReload) {
                 window.location.reload();
-              }
-            } else {
-              alert(`התיקייה "${folderPath}" כבר קיימת בספרייה.`);
+            }
+          } else {
+            customAlert(`התיקייה "${folderPath}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
             }
           }
         };
@@ -254,22 +268,26 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       }
     } catch (error) {
       console.error('שגיאה בהוספת תיקייה:', error);
-      alert('שגיאה בהוספת התיקייה: ' + error.message);
+      customAlert('שגיאה בהוספת התיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
     }
   };
 
-  const handleRemoveFolder = (folderName) => {
+  const handleRemoveFolder = async (folderName) => {
     if (folderName === 'books') {
-      alert('לא ניתן להסיר את תיקיית books הראשית');
+      customAlert('לא ניתן להסיר את תיקיית books הראשית', { type: 'warning', title: 'שים לב' });
       return;
     }
     
-    if (confirm(`האם אתה בטוח שברצונך להסיר את התיקייה "${folderName}" מהספרייה?\n\nהאפליקציה תתרענן אחרי ההסרה.`)) {
+    const shouldRemove = await customConfirm(
+      `האם אתה בטוח שברצונך להסיר את התיקייה "${folderName}" מהספרייה?\n\nהאפליקציה תתרענן אחרי ההסרה.`,
+      { type: 'warning', title: 'אישור הסרה' }
+    );
+    if (shouldRemove) {
       const updatedFolders = libraryFolders.filter(folder => folder !== folderName);
       setLibraryFolders(updatedFolders);
       updateSetting('libraryFolders', updatedFolders);
       
-      alert(`התיקייה "${folderName}" הוסרה מהספרייה`);
+      customAlert(`התיקייה "${folderName}" הוסרה מהספרייה`, { type: 'success', title: 'הצלחה' });
       window.location.reload();
     }
   };
@@ -277,9 +295,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const handleExportSettings = async () => {
     const success = await exportSettingsToFile();
     if (success) {
-      alert('ההגדרות יוצאו בהצלחה לקובץ JSON');
+      customAlert('ההגדרות יוצאו בהצלחה לקובץ JSON', { type: 'success', title: 'הצלחה' });
     } else {
-      alert('שגיאה בייצוא ההגדרות');
+      customAlert('שגיאה בייצוא ההגדרות', { type: 'error', title: 'שגיאה' });
     }
   };
 
@@ -291,19 +309,23 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
         setIsDark(settings.theme === 'dark');
       }
       
-      alert('ההגדרות יובאו בהצלחה! רענן את הדף כדי לראות את השינויים.');
+      customAlert('ההגדרות יובאו בהצלחה! רענן את הדף כדי לראות את השינויים.', { type: 'success', title: 'הצלחה' });
     } catch (error) {
-      alert('שגיאה בייבוא ההגדרות: ' + error.message);
+      customAlert('שגיאה בייבוא ההגדרות: ' + error.message, { type: 'error', title: 'שגיאה' });
     }
   };
 
-  const handleClearSettings = () => {
-    if (confirm('האם אתה בטוח שברצונך למחוק את כל ההגדרות?')) {
+  const handleClearSettings = async () => {
+    const shouldClear = await customConfirm(
+      'האם אתה בטוח שברצונך למחוק את כל ההגדרות?',
+      { type: 'warning', title: 'אישור מחיקה' }
+    );
+    if (shouldClear) {
       const success = clearAllSettings();
       if (success) {
-        alert('כל ההגדרות נמחקו בהצלחה! רענן את הדף.');
+        customAlert('כל ההגדרות נמחקו בהצלחה! רענן את הדף.', { type: 'success', title: 'הצלחה' });
       } else {
-        alert('שגיאה במחיקת ההגדרות');
+        customAlert('שגיאה במחיקת ההגדרות', { type: 'error', title: 'שגיאה' });
       }
     }
   };
