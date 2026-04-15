@@ -23,8 +23,10 @@
     workerPath = '../build/pdf.worker.mjs';
     console.log('🦀 Tauri development mode - worker path:', workerPath);
   } else if (isTauri) {
-    // Tauri production - use absolute path from asset protocol
-    workerPath = '/pdfjs/build/pdf.worker.mjs';
+    // Tauri production - use asset protocol with relative path
+    // In production, files are served via asset:// or https://tauri.localhost
+    // Use relative path from viewer.html location
+    workerPath = '../build/pdf.worker.mjs';
     console.log('🦀 Tauri production mode - worker path:', workerPath, { protocol: window.location.protocol });
   } else if (isElectron && !isDevelopment) {
     // Production Electron build
