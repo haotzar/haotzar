@@ -257,6 +257,52 @@ fn stop_meilisearch(state: tauri::State<Mutex<MeilisearchState>>) -> Result<serd
     }
 }
 
+// Command לפתיחת תיקיית books
+#[tauri::command]
+fn open_books_folder(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
+    
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
+    
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
+    
+    println!("📂 Opened folder: {}", path);
+    Ok(())
+}
+
+// Command לקבלת נתיב DB של אוצריא
+#[tauri::command]
+fn get_otzaria_db_path(app: tauri::AppHandle) -> Result<String, String> {
+    let app_data = app.path_resolver()
+        .app_data_dir()
+        .ok_or_else(|| "Failed to get app data path".to_string())?;
+    
+    let otzaria_path = app_data
+        .join("books")
+        .join("אוצריא")
+        .join("seforim.db");
+    
+    Ok(otzaria_path.to_string_lossy().to_string())
+}
+
 #[derive(serde::Serialize)]
 struct FileInfo {
     id: String,
@@ -275,7 +321,9 @@ fn main() {
             scan_folder,
             scan_books_in_paths,
             start_meilisearch,
-            stop_meilisearch
+            stop_meilisearch,
+            open_books_folder,
+            get_otzaria_db_path
         ])
         .setup(|app| {
             let window = app.get_window("main").unwrap();
@@ -346,6 +394,8 @@ fn main() {
             println!("   - scan_books_in_paths");
             println!("   - start_meilisearch");
             println!("   - stop_meilisearch");
+            println!("   - open_books_folder");
+            println!("   - get_otzaria_db_path");
 
             Ok(())
         })
