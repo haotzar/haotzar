@@ -53,6 +53,12 @@
   padding-bottom: 0;
 }
 
+.dont-show-again-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--colorNeutralStroke2);
+}
+
 .custom-confirm-actions {
   padding: 12px 24px 20px;
   justify-content: center;

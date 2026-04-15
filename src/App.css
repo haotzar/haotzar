@@ -520,19 +520,29 @@ body.with-background * {
 
 .tabs-container {
   background: var(--appBackgroundColorSecondary);
-  padding: 0 8px 0 8px; /* רק padding צדדי */
+  padding: 0 8px 0 8px;
   display: flex;
-  gap: 0; /* ללא רווח בין אלמנטים */
-  overflow-x: hidden;
-  overflow-y: hidden; /* מונע פס גלילה אנכי */
+  flex-direction: row;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid white;
   direction: rtl;
-  justify-content: flex-start;
   align-items: flex-end;
-  position: relative; /* חשוב למיקום הפאנל */
-  flex-wrap: nowrap;
-  min-height: 36px; /* גובה מינימלי */
-  max-height: 36px; /* גובה מקסימלי */
+  position: relative;
+  min-height: 36px;
+  max-height: 36px;
+  --tab-count: 1;
+}
+
+/* הסתרת scrollbar */
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* כפתור חיפוש כרטיסיות */
@@ -571,24 +581,30 @@ body.with-background * {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 16px;
+  padding: 4px 12px;
   background: transparent;
   border: none;
   border-radius: 8px 8px 0 0;
   cursor: pointer;
-  min-width: 80px; /* הקטנת הרוחב המינימלי */
-  max-width: 240px;
-  width: auto; /* רוחב דינמי */
-  flex: 0 1 auto; /* מאפשר התכווצות */
   height: 28px;
-  font-size: 13px;
-  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 12px;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  transition: width 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   direction: rtl;
   position: relative;
   box-shadow: none;
   margin: 0 -2px;
   z-index: 1;
-  user-select: none; /* מניעת בחירת טקסט בגרירה */
+  user-select: none;
+  flex-shrink: 1;
+  flex-grow: 0;
+  --tab-bg-color: var(--appBackgroundColorSecondary);
+  
+  /* חישוב דינמי של רוחב */
+  width: clamp(60px, calc((100% - 80px) / var(--tab-count)), 200px);
+  min-width: 60px;
+  max-width: 200px;
 }
 
 /* אפקט גרירה */
@@ -629,6 +645,7 @@ body.with-background * {
   box-shadow: none;
   height: 28px;
   z-index: 2;
+  --tab-bg-color: white;
 }
 
 /* עיגולים בצדדים של הכרטיסייה הפעילה - כמו בגוגל כרום */
@@ -658,12 +675,32 @@ body.with-background * {
 .tab-item-content {
   flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   text-align: right;
   font-weight: 400;
   order: 2;
   color: #5f6368;
+  position: relative;
+  min-width: 0;
+}
+
+/* אפקט שקיפות בסוף הטקסט - רק כשהטקסט נחתך */
+.tab-item-content::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, var(--tab-bg-color, var(--appBackgroundColorSecondary)));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* הצג את האפקט רק כשהטקסט ארוך מהמכולה */
+.tab-item-content[data-overflow="true"]::after {
+  opacity: 1;
 }
 
 .tab-item.active .tab-item-content {
@@ -746,6 +783,7 @@ body.with-background * {
 
 [data-theme="dark"] .new-tab-btn {
   color: #9aa0a6;
+  background: #1f1812;
 }
 
 [data-theme="dark"] .new-tab-btn:hover {
@@ -1604,6 +1642,7 @@ body.with-background * {
 [data-theme="dark"] .tab-item {
   background: transparent;
   color: #a68a5c;
+  --tab-bg-color: #1f1812;
 }
 
 /* קו מפריד במצב כהה */
@@ -1613,6 +1652,7 @@ body.with-background * {
 
 [data-theme="dark"] .tab-item.active {
   background: #202124;
+  --tab-bg-color: #202124;
   box-shadow: none;
 }
 

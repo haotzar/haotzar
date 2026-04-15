@@ -42,7 +42,8 @@
   direction: rtl;
   overflow: hidden;
   max-height: 100%;
-  gap: 24px;
+  gap: 16px;
+  padding: 0 16px;
 }
 
 /* תוכן ראשי - ימין */
@@ -56,8 +57,9 @@
 
 /* פאנל צד - שמאל */
 .search-side-panel {
-  flex: 0 0 400px;
-  width: 400px;
+  flex: 0 0 min(400px, 35%);
+  width: min(400px, 35%);
+  min-width: 300px;
   display: flex;
   flex-direction: column;
   background: white;
@@ -66,6 +68,21 @@
   box-shadow: 0 2px 12px rgba(92, 61, 46, 0.08);
   overflow: hidden;
   transition: all 0.3s ease;
+}
+
+/* במסכים קטנים - הסתר את הפאנל */
+@media (max-width: 1024px) {
+  .search-side-panel {
+    flex: 0 0 min(350px, 40%);
+    width: min(350px, 40%);
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-side-panel {
+    display: none;
+  }
 }
 
 .side-panel-content {
@@ -575,143 +592,6 @@
   min-width: 36px;
 }
 
- .mcp-connect-btn {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   width: 44px;
-   height: 36px;
-   background: transparent;
-   border: none;
-   border-radius: 8px;
-   color: #8b6f47;
-   cursor: pointer;
-   transition: all 0.2s ease;
-   flex-shrink: 0;
-   min-width: 44px;
-   font-size: 12px;
-   font-weight: 700;
-   letter-spacing: 0.5px;
- }
-
- .mcp-connect-btn:hover {
-   background: rgba(92, 61, 46, 0.1);
-   color: #5c3d2e;
- }
-
- .mcp-connect-btn.connected {
-   background: rgba(16, 124, 16, 0.08);
-   color: #107c10;
- }
-
- .mcp-connect-overlay {
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   bottom: 0;
-   z-index: 120;
-   background: rgba(0, 0, 0, 0.35);
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   padding: 20px;
- }
-
- .mcp-connect-content {
-   width: min(520px, 100%);
-   background: white;
-   border: 1px solid rgba(92, 61, 46, 0.2);
-   border-radius: 12px;
-   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-   padding: 16px;
- }
-
- .mcp-connect-header {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   gap: 12px;
-   margin-bottom: 12px;
- }
-
- .mcp-connect-title {
-   font-size: 16px;
-   font-weight: 700;
-   color: #5c3d2e;
- }
-
- .mcp-connect-close {
-   width: 32px;
-   height: 32px;
-   border: 1px solid rgba(92, 61, 46, 0.2);
-   border-radius: 8px;
-   background: rgba(255, 255, 255, 0.9);
-   cursor: pointer;
-   color: #8b6f47;
-   display: flex;
-   align-items: center;
-   justify-content: center;
- }
-
- .mcp-connect-section {
-   display: flex;
-   flex-direction: column;
-   gap: 8px;
- }
-
- .mcp-connect-label {
-   font-size: 13px;
-   font-weight: 600;
-   color: #5c3d2e;
- }
-
- .mcp-connect-input {
-   width: 100%;
-   padding: 10px 12px;
-   border: 1px solid rgba(92, 61, 46, 0.25);
-   border-radius: 10px;
-   font-size: 14px;
-   outline: none;
- }
-
- .mcp-connect-input:focus {
-   border-color: rgba(92, 61, 46, 0.5);
- }
-
- .mcp-connect-error {
-   font-size: 12px;
-   color: #d13438;
- }
-
- .mcp-connect-actions {
-   display: flex;
-   justify-content: flex-end;
-   gap: 10px;
-   margin-top: 14px;
- }
-
- .mcp-connect-action-btn {
-   height: 36px;
-   padding: 0 14px;
-   border-radius: 10px;
-   border: 1px solid rgba(92, 61, 46, 0.2);
-   background: #5c3d2e;
-   color: white;
-   cursor: pointer;
-   font-weight: 700;
- }
-
- .mcp-connect-action-btn.secondary {
-   background: transparent;
-   color: #5c3d2e;
- }
-
- .mcp-connect-action-btn:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
- }
-
 .advanced-settings-btn span {
   display: none;
 }
@@ -1177,147 +1057,6 @@
 [data-theme="dark"] .no-results-text {
   color: #c4a574;
 }
-
- .ai-question-panel {
-   margin: 10px 0 14px 0;
-   padding: 12px;
-   background: rgba(255, 255, 255, 0.88);
-   border-radius: 12px;
-   border: 1px solid rgba(92, 61, 46, 0.12);
-   box-shadow: 0 2px 12px rgba(92, 61, 46, 0.06);
-   backdrop-filter: blur(10px);
- }
-
- .ai-question-header {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   gap: 12px;
-   margin-bottom: 10px;
- }
-
- .ai-question-title {
-   font-size: 14px;
-   font-weight: 700;
-   color: #5c3d2e;
- }
-
- .ai-question-action {
-   height: 34px;
-   padding: 0 14px;
-   border-radius: 10px;
-   border: 1px solid rgba(92, 61, 46, 0.2);
-   background: #5c3d2e;
-   color: white;
-   cursor: pointer;
-   font-weight: 700;
- }
-
- .ai-question-action:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
- }
-
- .ai-question-input {
-   width: 100%;
-   min-height: 72px;
-   resize: vertical;
-   padding: 10px 12px;
-   border-radius: 10px;
-   border: 1px solid rgba(92, 61, 46, 0.22);
-   font-size: 13px;
-   color: #5c3d2e;
-   background: rgba(255, 255, 255, 0.95);
-   outline: none;
-   box-sizing: border-box;
- }
-
- .ai-question-input:focus {
-   border-color: rgba(92, 61, 46, 0.45);
- }
-
- .ai-question-error {
-   margin-top: 8px;
-   font-size: 12px;
-   color: #d13438;
- }
-
- .ai-answer-panel {
-   margin-top: 10px;
-   padding-top: 10px;
-   border-top: 1px solid rgba(92, 61, 46, 0.12);
- }
-
- .ai-answer-text {
-   font-size: 13px;
-   line-height: 1.6;
-   white-space: pre-wrap;
-   color: #202124;
- }
-
- .ai-sources {
-   margin-top: 10px;
- }
-
- .ai-sources-title {
-   font-size: 12px;
-   font-weight: 700;
-   color: #8b6f47;
-   margin-bottom: 6px;
- }
-
- .ai-sources-list {
-   display: flex;
-   flex-direction: column;
-   gap: 6px;
- }
-
- .ai-source-item {
-   text-align: right;
-   direction: rtl;
-   padding: 8px 10px;
-   border-radius: 10px;
-   border: 1px solid rgba(92, 61, 46, 0.14);
-   background: rgba(92, 61, 46, 0.04);
-   color: #5c3d2e;
-   cursor: pointer;
- }
-
- .ai-source-item:hover {
-   background: rgba(92, 61, 46, 0.08);
- }
-
- .ai-source-item:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
- }
-
- [data-theme="dark"] .ai-question-panel {
-   background: rgba(0, 0, 0, 0.55);
-   border-color: rgba(92, 61, 46, 0.35);
-   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
- }
-
- [data-theme="dark"] .ai-question-title {
-   color: #c4a574;
- }
-
- [data-theme="dark"] .ai-question-input {
-   background: rgba(255, 255, 255, 0.06);
-   border-color: rgba(196, 165, 116, 0.25);
-   color: #ffffff;
- }
-
- [data-theme="dark"] .ai-answer-text {
-   color: rgba(255, 255, 255, 0.92);
- }
-
- [data-theme="dark"] .ai-source-item {
-   background: rgba(255, 255, 255, 0.06);
-   border-color: rgba(196, 165, 116, 0.18);
-   color: #c4a574;
- }
-
  [data-theme="dark"] .ai-source-item:hover {
    background: rgba(255, 255, 255, 0.09);
  }
@@ -1601,40 +1340,6 @@
   border-color: #8b6f47;
   color: white;
 }
-
- [data-theme="dark"] .mcp-connect-content {
-   background: #1a1a1a;
-   border-color: rgba(92, 61, 46, 0.35);
- }
-
- [data-theme="dark"] .mcp-connect-title,
- [data-theme="dark"] .mcp-connect-label {
-   color: #c4a574;
- }
-
- [data-theme="dark"] .mcp-connect-input {
-   background: rgba(255, 255, 255, 0.06);
-   border-color: rgba(196, 165, 116, 0.25);
-   color: #ffffff;
- }
-
- [data-theme="dark"] .mcp-connect-close {
-   background: rgba(255, 255, 255, 0.06);
-   border-color: rgba(196, 165, 116, 0.25);
-   color: #c4a574;
- }
-
- [data-theme="dark"] .mcp-connect-btn {
-   background: rgba(255, 255, 255, 0.06);
-   border-color: rgba(196, 165, 116, 0.25);
-   color: #c4a574;
- }
-
- [data-theme="dark"] .mcp-connect-btn:hover {
-   background: #8b6f47;
-   border-color: #8b6f47;
-   color: white;
- }
 
 [data-theme="dark"] .advanced-options-content {
   background: rgba(0, 0, 0, 0.85);

@@ -241,7 +241,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
         input.webkitdirectory = true;
         input.multiple = true;
         
-        input.onchange = (e) => {
+        input.onchange = async (e) => {
           const files = Array.from(e.target.files);
           if (files.length > 0) {
             const folderPath = files[0].webkitRelativePath.split('/')[0];

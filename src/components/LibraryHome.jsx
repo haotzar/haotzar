@@ -35,10 +35,10 @@ const LibraryHome = ({
   onDeleteWorkspace,
   onRenameWorkspace,
   onOpenCalendar,
-  onOpenParasha
+  onOpenParasha,
+  onOpenLibrary // פונקציה לפתיחת הספרייה הרגילה
 }) => {
   const [previewBook, setPreviewBook] = useState(null);
-  const [showLibrary, setShowLibrary] = useState(false);
   const [showTopics, setShowTopics] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [zmanimInfo, setZmanimInfo] = useState(getZmanimInfo());
@@ -66,11 +66,6 @@ const LibraryHome = ({
   // סגירת תצוגה מקדימה
   const handleClosePreview = () => {
     setPreviewBook(null);
-  };
-
-  // פתיחה/סגירה של הספרייה
-  const toggleLibrary = () => {
-    setShowLibrary(!showLibrary);
   };
 
   // פתיחה/סגירה של נושאים
@@ -273,7 +268,7 @@ const LibraryHome = ({
         <div className="library-center-content">
           {/* כרטיסי פעולות */}
           <div className="action-cards-container">
-            <div className="action-card" onClick={toggleLibrary}>
+            <div className="action-card" onClick={onOpenLibrary}>
               <LibraryRegular className="action-card-icon" />
               <div className="action-card-title">ספרייה</div>
             </div>
@@ -320,29 +315,6 @@ const LibraryHome = ({
           </div>
         </div>
       </div>
-
-      {/* דיאלוג ספרייה */}
-      {showLibrary && (
-        <div className="library-dialog-overlay" onClick={toggleLibrary}>
-          <div className="library-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="library-dialog-header">
-              <h2>ספרייה</h2>
-              <button className="library-dialog-close" onClick={toggleLibrary}>
-                ✕
-              </button>
-            </div>
-            <div className="library-dialog-content">
-              <FileTree 
-                files={allFiles}
-                onFileClick={(file) => {
-                  onBookClick(file);
-                  toggleLibrary();
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* דיאלוג נושאים */}
       {showTopics && (

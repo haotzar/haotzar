@@ -8,8 +8,6 @@ import TextViewer from './TextViewer';
 import meilisearchEngine from './utils/meilisearchEngine';
 import booksMetadata from './utils/booksMetadata';
 import { autoConvertSearch } from './utils/hebrewConverter';
-import { getSetting, updateSetting } from './utils/settingsManager';
-import { askWithMcpGeminiMeili } from './utils/mcpGeminiMeili';
 import './SearchPage.css';
 
 const SearchPage = ({
@@ -60,53 +58,6 @@ const SearchPage = ({
   const [previewContext, setPreviewContext] = useState(null);
   const [previewSearchQuery, setPreviewSearchQuery] = useState(''); // שמור את ה-query בזמן פתיחת התצוגה
 
-  const [showMcpConnect, setShowMcpConnect] = useState(false);
-  const [geminiApiKeyDraft, setGeminiApiKeyDraft] = useState('');
-  const [geminiApiKeySaved, setGeminiApiKeySaved] = useState(() => getSetting('geminiApiKey', ''));
-  const [mcpConnectError, setMcpConnectError] = useState('');
-
-  const [aiQuestion, setAiQuestion] = useState('');
-  const [aiAnswer, setAiAnswer] = useState('');
-  const [aiSources, setAiSources] = useState([]);
-  const [aiIsAsking, setAiIsAsking] = useState(false);
-  const [aiError, setAiError] = useState('');
-
-  const handleAskAi = async () => {
-    const q = (aiQuestion || '').trim();
-    if (!q) return;
-
-    setAiIsAsking(true);
-    setAiError('');
-    setAiAnswer('');
-    setAiSources([]);
-
-    try {
-      const { answer, contexts } = await askWithMcpGeminiMeili(q, {
-        topK: 8,
-        searchOptions: {
-          accuracy: searchAccuracy,
-          matchingStrategy,
-          cropLength,
-          specificBook,
-          selectedIndexes,
-          maxResults: 80,
-        },
-      });
-
-      setAiAnswer(answer || '');
-      setAiSources(contexts || []);
-    } catch (e) {
-      const msg = e?.message || 'שגיאה לא ידועה';
-      if (msg.toLowerCase().includes('missing gemini api key')) {
-        setAiError('חסר Gemini API Key. לחץ על MCP כדי להוסיף מפתח.');
-      } else {
-        setAiError(msg);
-      }
-    } finally {
-      setAiIsAsking(false);
-    }
-  };
-
   // שמור את searchContext כ-memoized כדי למנוע יצירת אובייקט חדש בכל רינדור
   const memoizedSearchContext = useMemo(() => ({
     searchQuery: previewSearchQuery,
@@ -121,13 +72,6 @@ const SearchPage = ({
       setPreviewSearchQuery('');
     }
   }, [searchResults]);
-
-  useEffect(() => {
-    if (showMcpConnect) {
-      setGeminiApiKeyDraft(geminiApiKeySaved || '');
-      setMcpConnectError('');
-    }
-  }, [showMcpConnect, geminiApiKeySaved]);
 
   // קטגוריות ראשיות
   const categories = [
@@ -400,14 +344,6 @@ const SearchPage = ({
               >
                 <SettingsRegular />
               </button>
-
-              <button
-                className={`mcp-connect-btn ${geminiApiKeySaved ? 'connected' : ''}`}
-                onClick={() => setShowMcpConnect(true)}
-                title={geminiApiKeySaved ? 'מחובר ל-MCP (Gemini)' : 'חיבור ל-MCP (Gemini)'}
-              >
-                MCP
-              </button>
             </div>
             
             {/* השלמה אוטומטית - רק חיפושים אחרונים */}
@@ -602,68 +538,6 @@ const SearchPage = ({
               </div>
             )}
 
-            {showMcpConnect && (
-              <div className="mcp-connect-overlay">
-                <div className="mcp-connect-content">
-                  <div className="mcp-connect-header">
-                    <div className="mcp-connect-title">חיבור ל‑MCP (Gemini)</div>
-                    <button
-                      className="mcp-connect-close"
-                      onClick={() => setShowMcpConnect(false)}
-                      title="סגור"
-                    >
-                      ×
-                    </button>
-                  </div>
-
-                  <div className="mcp-connect-section">
-                    <label className="mcp-connect-label">Gemini API Key</label>
-                    <input
-                      type="password"
-                      className="mcp-connect-input"
-                      placeholder="הדבק API Key כאן"
-                      value={geminiApiKeyDraft}
-                      onChange={(e) => setGeminiApiKeyDraft(e.target.value)}
-                      autoComplete="off"
-                      spellCheck={false}
-                    />
-                    {mcpConnectError && <div className="mcp-connect-error">{mcpConnectError}</div>}
-                  </div>
-
-                  <div className="mcp-connect-actions">
-                    <button
-                      className="mcp-connect-action-btn secondary"
-                      onClick={() => {
-                        updateSetting('geminiApiKey', '');
-                        setGeminiApiKeySaved('');
-                        setGeminiApiKeyDraft('');
-                        setMcpConnectError('');
-                        setShowMcpConnect(false);
-                      }}
-                      disabled={!geminiApiKeySaved}
-                    >
-                      נתק
-                    </button>
-                    <button
-                      className="mcp-connect-action-btn"
-                      onClick={() => {
-                        const trimmed = (geminiApiKeyDraft || '').trim();
-                        if (!trimmed) {
-                          setMcpConnectError('נא להזין API Key');
-                          return;
-                        }
-                        updateSetting('geminiApiKey', trimmed);
-                        setGeminiApiKeySaved(trimmed);
-                        setMcpConnectError('');
-                        setShowMcpConnect(false);
-                      }}
-                    >
-                      שמור
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
           </div>
         </div>
@@ -702,70 +576,6 @@ const SearchPage = ({
           })()}
         </div>
       )}
-
-      <div className="ai-question-panel">
-        <div className="ai-question-header">
-          <div className="ai-question-title">שאל את ה‑AI</div>
-          <button
-            className="ai-question-action"
-            onClick={handleAskAi}
-            disabled={aiIsAsking || !(aiQuestion || '').trim()}
-          >
-            {aiIsAsking ? 'שואל...' : 'שאל'}
-          </button>
-        </div>
-
-        <textarea
-          className="ai-question-input"
-          placeholder="שאל שאלה לוגית, והמערכת תחפש במאגר ותציע תשובה עם מקורות..."
-          value={aiQuestion}
-          onChange={(e) => setAiQuestion(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              handleAskAi();
-            }
-          }}
-          rows={3}
-          disabled={aiIsAsking}
-        />
-
-        {aiError && <div className="ai-question-error">{aiError}</div>}
-
-        {(aiAnswer || (aiSources && aiSources.length > 0)) && (
-          <div className="ai-answer-panel">
-            {aiAnswer && <div className="ai-answer-text">{aiAnswer}</div>}
-
-            {aiSources && aiSources.length > 0 && (
-              <div className="ai-sources">
-                <div className="ai-sources-title">מקורות</div>
-                <div className="ai-sources-list">
-                  {aiSources.map((s, idx) => (
-                    <button
-                      key={`${s.fileId || s.filePath || s.fileName}-${idx}`}
-                      className="ai-source-item"
-                      onClick={() => {
-                        const filePath = s.filePath;
-                        if (!filePath) return;
-
-                        const file = allFiles?.find((f) => f?.path === filePath);
-                        if (file) {
-                          handleFileClick(file);
-                        }
-                      }}
-                      disabled={!s.filePath}
-                      title={s.filePath || s.fileName}
-                    >
-                      {idx + 1}. {s.fileName}
-                      {s.pageNum ? ` (עמוד ${s.pageNum})` : ''}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* הודעה כשאין תוצאות בכלל */}
       {hasSearched && searchResults.length === 0 && !isSearching && (

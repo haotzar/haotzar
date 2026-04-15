@@ -157,19 +157,12 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   
-  // דיאלוג ספרייה ב-empty state
-  const [showLibraryDialog, setShowLibraryDialog] = useState(false);
-  
   // דיאלוג כרטיסיות פתוחות
   const [showTabsDialog, setShowTabsDialog] = useState(false);
   
   // Split View - תצוגה מפוצלת
   const [isSelectingSecondTab, setIsSelectingSecondTab] = useState(false);
   const [splitViewFirstTab, setSplitViewFirstTab] = useState(null);
-  
-  const toggleLibrary = () => {
-    setShowLibraryDialog(!showLibraryDialog);
-  };
   
   // ספרים מוצמדים
   const [pinnedBooks, setPinnedBooks] = useState(() => getSetting('pinnedBooks', []));
@@ -217,6 +210,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem('library_sidebarOpen', isLibrarySidebarOpen);
   }, [isLibrarySidebarOpen]);
+
+  // עדכון מספר הכרטיסיות ל-CSS
+  useEffect(() => {
+    const container = document.querySelector('.tabs-container');
+    if (container) {
+      container.style.setProperty('--tab-count', openTabs.length);
+    }
+  }, [openTabs.length]);
 
   // הסרת מסך טעינה כשהאפליקציה מוכנה
   useEffect(() => {
@@ -1069,7 +1070,7 @@ function App() {
     loadFiles();
   }, []);
 
-  const handleFileClick = (file, searchContext = null) => {
+  const handleFileClick = async (file, searchContext = null) => {
     console.log('🔍 handleFileClick:', { 
       fileName: file.name, 
       fileType: file.type,
@@ -1119,6 +1120,52 @@ function App() {
       setActiveTabId(file.id);
     } else {
       console.log('📑 Opening new tab');
+      
+      // בדוק אם יש יותר מ-9 כרטיסיות והצג התראה
+      if (openTabs.length >= 9) {
+        // בדוק אם המשתמש ביקש לא להציג שוב
+        const dontShowAgain = getSetting('dontShowTabsWarning', false);
+        if (!dontShowAgain) {
+          const result = await customConfirm(
+            'יש לך הרבה כרטיסיות פתוחות.\nמומלץ ליצור שולחן עבודה חדש לניהול טוב יותר.',
+            {
+              title: 'ליצור שולחן עבודה חדש?',
+              type: 'question',
+              showDontShowAgain: true,
+              buttons: [
+                { label: 'ביטול', value: 'cancel', primary: false },
+                { label: 'פתח בכל אופן', value: 'continue', primary: false },
+                { label: 'צור שולחן עבודה', value: 'workspace', primary: true }
+              ]
+            }
+          );
+          
+          // שמור את ההעדפה אם המשתמש סימן "אל תציג שוב"
+          if (result.dontShowAgain) {
+            updateSetting('dontShowTabsWarning', true);
+          }
+          
+          if (result.value === 'workspace') {
+            // צור שולחן עבודה חדש
+            const workspaceNumbers = workspaces
+              .map(w => {
+                const match = w.name.match(/^שולחן עבודה (\d+)$/);
+                return match ? parseInt(match[1]) : 0;
+              })
+              .filter(n => n > 0);
+            
+            const nextNumber = workspaceNumbers.length > 0 ? Math.max(...workspaceNumbers) + 1 : 1;
+            const name = `שולחן עבודה ${nextNumber}`;
+            
+            createWorkspace(name);
+            return; // אל תפתח כרטיסייה חדשה
+          } else if (result.value === 'cancel') {
+            return; // אל תפתח כרטיסייה חדשה
+          }
+          // אם result.value === 'continue', המשך לפתוח כרטיסייה
+        }
+      }
+      
       let newTabs;
       
       // הסר סיומת קובץ משם הכרטיסייה
@@ -1155,10 +1202,58 @@ function App() {
   };
 
   // פתיחת כרטיסיית חיפוש חדשה
-  const handleNewSearchTab = () => {
+  const handleNewSearchTab = async () => {
     // סגור תצוגה מקדימה של תיקייה כשפותחים כרטיסייה חדשה
     if (folderPreview) {
       closeFolderPreview();
+    }
+
+    // עבור לתצוגת ספרים
+    setCurrentView('books');
+
+    // בדוק אם יש יותר מ-9 כרטיסיות והצג התראה
+    if (openTabs.length >= 9) {
+      // בדוק אם המשתמש ביקש לא להציג שוב
+      const dontShowAgain = getSetting('dontShowTabsWarning', false);
+      if (!dontShowAgain) {
+        const result = await customConfirm(
+          'יש לך הרבה כרטיסיות פתוחות.\nמומלץ ליצור שולחן עבודה חדש לניהול טוב יותר.',
+          {
+            title: 'ליצור שולחן עבודה חדש?',
+            type: 'question',
+            showDontShowAgain: true,
+            buttons: [
+              { label: 'ביטול', value: 'cancel', primary: false },
+              { label: 'פתח בכל אופן', value: 'continue', primary: false },
+              { label: 'צור שולחן עבודה', value: 'workspace', primary: true }
+            ]
+          }
+        );
+        
+        // שמור את ההעדפה אם המשתמש סימן "אל תציג שוב"
+        if (result.dontShowAgain) {
+          updateSetting('dontShowTabsWarning', true);
+        }
+        
+        if (result.value === 'workspace') {
+          // צור שולחן עבודה חדש
+          const workspaceNumbers = workspaces
+            .map(w => {
+              const match = w.name.match(/^שולחן עבודה (\d+)$/);
+              return match ? parseInt(match[1]) : 0;
+            })
+            .filter(n => n > 0);
+          
+          const nextNumber = workspaceNumbers.length > 0 ? Math.max(...workspaceNumbers) + 1 : 1;
+          const name = `שולחן עבודה ${nextNumber}`;
+          
+          createWorkspace(name);
+          return; // אל תפתח כרטיסייה חדשה
+        } else if (result.value === 'cancel') {
+          return; // אל תפתח כרטיסייה חדשה
+        }
+        // אם result.value === 'continue', המשך לפתוח כרטיסייה
+      }
     }
 
     // צור ID ייחודי לכל כרטיסיית חיפוש
@@ -2520,7 +2615,22 @@ function App() {
                     ) : (
                       <DocumentTextRegular className="tab-icon" />
                     )}
-                    <span className="tab-item-content">{tab.name}</span>
+                    <span 
+                      className="tab-item-content"
+                      ref={(el) => {
+                        if (el) {
+                          // בדוק אם הטקסט נחתך
+                          const isOverflowing = el.scrollWidth > el.clientWidth;
+                          if (isOverflowing) {
+                            el.setAttribute('data-overflow', 'true');
+                          } else {
+                            el.removeAttribute('data-overflow');
+                          }
+                        }
+                      }}
+                    >
+                      {tab.name}
+                    </span>
                     <button
                       className="tab-close-btn"
                       onClick={(e) => handleCloseTab(tab.id, e)}
@@ -2899,7 +3009,11 @@ function App() {
                           </div>
                           <div 
                             className="empty-state-card"
-                            onClick={toggleLibrary}
+                            onClick={() => {
+                              setCurrentView('books');
+                              setFolderPreview(null); // אפס תצוגת תיקייה כדי להציג שורש
+                              setIsLibrarySidebarOpen(true);
+                            }}
                             title="פתח ספרייה"
                           >
                             <LibraryRegular className="empty-state-card-icon" />
@@ -2933,6 +3047,11 @@ function App() {
                     onRenameWorkspace={renameWorkspace}
                     onOpenCalendar={() => handleOpenTool('calendar')}
                     onOpenParasha={() => handleOpenTool('parasha')}
+                    onOpenLibrary={() => {
+                      setCurrentView('books');
+                      setFolderPreview(null); // אפס תצוגת תיקייה כדי להציג שורש
+                      setIsLibrarySidebarOpen(true);
+                    }}
                   />
                 )}
                 
@@ -3103,29 +3222,6 @@ function App() {
           </div>
         )}
 
-        {/* דיאלוג ספרייה ב-empty state */}
-        {showLibraryDialog && (
-          <div className="library-dialog-overlay" onClick={toggleLibrary}>
-            <div className="library-dialog" onClick={(e) => e.stopPropagation()}>
-              <div className="library-dialog-header">
-                <h2>ספרייה</h2>
-                <button className="library-dialog-close" onClick={toggleLibrary}>
-                  ✕
-                </button>
-              </div>
-              <div className="library-dialog-content">
-                <FileTree 
-                  files={allFiles}
-                  onFileClick={(file) => {
-                    handleFileClick(file);
-                    toggleLibrary();
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
         {/* קומפוננט התראות מותאם אישית */}
         <CustomAlert />
         
