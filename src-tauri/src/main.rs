@@ -206,10 +206,24 @@ fn start_meilisearch(port: u16, app: tauri::AppHandle, state: tauri::State<Mutex
     let meili_exe = meili_dir.join("meilisearch.exe");
     let db_path = meili_dir.join("data.ms");
     
-    // בדוק אם הקובץ קיים
-    if !meili_exe.exists() {
-        return Err(format!("Meilisearch not found at: {}", meili_exe.display()));
-    }
+    // אם הקובץ לא קיים ב-AppData, נסה למצוא אותו בתיקיית המקור
+    let meili_exe_path = if meili_exe.exists() {
+        meili_exe
+    } else {
+        // נסה למצוא את meilisearch.exe בתיקיית המקור (לפיתוח)
+        let resource_dir = app.path_resolver()
+            .resource_dir()
+            .ok_or_else(|| "Failed to get resource dir".to_string())?;
+        
+        let source_meili = resource_dir.join("meilisearch").join("meilisearch.exe");
+        
+        if source_meili.exists() {
+            println!("📁 Using Meilisearch from resources: {}", source_meili.display());
+            source_meili
+        } else {
+            return Err(format!("Meilisearch not found at: {} or {}", meili_exe.display(), source_meili.display()));
+        }
+    };
     
     // צור תיקיית data אם לא קיימת
     if !db_path.exists() {
@@ -218,7 +232,7 @@ fn start_meilisearch(port: u16, app: tauri::AppHandle, state: tauri::State<Mutex
     }
     
     // הפעל את Meilisearch
-    let child = Command::new(&meili_exe)
+    let child = Command::new(&meili_exe_path)
         .arg("--db-path")
         .arg(&db_path)
         .arg("--http-addr")
@@ -231,7 +245,7 @@ fn start_meilisearch(port: u16, app: tauri::AppHandle, state: tauri::State<Mutex
     
     meili_state.process = Some(child);
     
-    println!("✅ Meilisearch started on port {}", port);
+    println!("✅ Meilisearch started on port {} from {}", port, meili_exe_path.display());
     
     Ok(serde_json::json!({
         "success": true,

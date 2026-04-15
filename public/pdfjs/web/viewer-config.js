@@ -8,13 +8,25 @@
   
   // Detect environment
   const isElectron = typeof window !== 'undefined' && window.electron !== undefined;
+  const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
   const isDevelopment = window.location.protocol === 'http:' && window.location.hostname === 'localhost';
   const isFileProtocol = window.location.protocol === 'file:';
+  const isTauriProtocol = window.location.protocol === 'tauri:' || window.location.protocol === 'https:';
   
   // Configure worker path based on environment
   let workerPath;
   
-  if (isElectron && !isDevelopment) {
+  if (isTauri && isDevelopment) {
+    // Tauri development mode - use Vite dev server
+    // The viewer.html is loaded from http://localhost:5173/pdfjs/web/viewer.html
+    // So ../build/pdf.worker.mjs resolves to http://localhost:5173/pdfjs/build/pdf.worker.mjs
+    workerPath = '../build/pdf.worker.mjs';
+    console.log('🦀 Tauri development mode - worker path:', workerPath);
+  } else if (isTauri) {
+    // Tauri production - use absolute path from asset protocol
+    workerPath = '/pdfjs/build/pdf.worker.mjs';
+    console.log('🦀 Tauri production mode - worker path:', workerPath, { protocol: window.location.protocol });
+  } else if (isElectron && !isDevelopment) {
     // Production Electron build
     // In packaged apps the renderer typically runs on file:// and Vite base is './'.
     // Leading '/' would resolve to file:///pdfjs/... which does not exist on Windows.
