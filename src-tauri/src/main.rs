@@ -3,6 +3,13 @@
 
 use tauri::{Manager, GlobalShortcutManager};
 use std::path::PathBuf;
+use std::process::{Command, Child};
+use std::sync::Mutex;
+
+// מצב גלובלי לשמירת תהליך Meilisearch
+struct MeilisearchState {
+    process: Option<Child>,
+}
 
 // Command לקבלת נתיב AppData
 #[tauri::command]
@@ -98,6 +105,158 @@ fn scan_folder(path: String) -> Result<Vec<FileInfo>, String> {
     Ok(files)
 }
 
+// Command לסריקת מספר תיקיות בבת אחת
+#[tauri::command]
+fn scan_books_in_paths(paths: Vec<String>) -> Result<Vec<String>, String> {
+    use std::fs;
+    
+    let mut all_files = Vec::new();
+    let mut file_count = 0;
+    const MAX_FILES: usize = 5000;
+    
+    fn scan_dir(dir: &PathBuf, files: &mut Vec<String>, file_count: &mut usize, depth: usize) -> Result<(), String> {
+        if depth > 5 || *file_count >= MAX_FILES {
+            return Ok(());
+        }
+        
+        let entries = match fs::read_dir(dir) {
+            Ok(e) => e,
+            Err(_) => return Ok(()), // דלג על תיקיות שאין גישה אליהן
+        };
+        
+        for entry in entries {
+            if *file_count >= MAX_FILES {
+                break;
+            }
+            
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            
+            let path = entry.path();
+            let file_name = entry.file_name().to_string_lossy().to_string().to_lowercase();
+            
+            // דלג על תיקיות מערכת
+            if file_name.starts_with('.') || 
+               file_name == "node_modules" || 
+               file_name == "$recycle.bin" ||
+               file_name == "system volume information" {
+                continue;
+            }
+            
+            if path.is_dir() {
+                let _ = scan_dir(&path, files, file_count, depth + 1);
+            } else if path.is_file() {
+                if let Some(ext) = path.extension() {
+                    let ext_str = ext.to_string_lossy().to_lowercase();
+                    if ext_str == "pdf" || ext_str == "txt" {
+                        files.push(path.to_string_lossy().to_string());
+                        *file_count += 1;
+                    }
+                }
+            }
+        }
+        
+        Ok(())
+    }
+    
+    for path_str in paths {
+        let path_buf = PathBuf::from(&path_str);
+        if path_buf.exists() {
+            let _ = scan_dir(&path_buf, &mut all_files, &mut file_count, 0);
+        }
+    }
+    
+    println!("📁 Scanned {} files from {} paths", all_files.len(), paths.len());
+    
+    Ok(all_files)
+}
+
+// Command להפעלת Meilisearch
+#[tauri::command]
+fn start_meilisearch(port: u16, app: tauri::AppHandle, state: tauri::State<Mutex<MeilisearchState>>) -> Result<serde_json::Value, String> {
+    let mut meili_state = state.lock().unwrap();
+    
+    // בדוק אם כבר רץ
+    if let Some(ref mut process) = meili_state.process {
+        match process.try_wait() {
+            Ok(None) => {
+                // התהליך עדיין רץ
+                return Ok(serde_json::json!({
+                    "success": true,
+                    "message": "Already running"
+                }));
+            }
+            _ => {
+                // התהליך נסגר
+                meili_state.process = None;
+            }
+        }
+    }
+    
+    // קבל נתיב AppData
+    let app_data = app.path_resolver()
+        .app_data_dir()
+        .ok_or_else(|| "Failed to get app data path".to_string())?;
+    
+    let meili_dir = app_data.join("meilisearch");
+    let meili_exe = meili_dir.join("meilisearch.exe");
+    let db_path = meili_dir.join("data.ms");
+    
+    // בדוק אם הקובץ קיים
+    if !meili_exe.exists() {
+        return Err(format!("Meilisearch not found at: {}", meili_exe.display()));
+    }
+    
+    // צור תיקיית data אם לא קיימת
+    if !db_path.exists() {
+        std::fs::create_dir_all(&db_path)
+            .map_err(|e| format!("Failed to create data directory: {}", e))?;
+    }
+    
+    // הפעל את Meilisearch
+    let child = Command::new(&meili_exe)
+        .arg("--db-path")
+        .arg(&db_path)
+        .arg("--http-addr")
+        .arg(format!("127.0.0.1:{}", port))
+        .arg("--no-analytics")
+        .arg("--max-indexing-memory")
+        .arg("1GB")
+        .spawn()
+        .map_err(|e| format!("Failed to start Meilisearch: {}", e))?;
+    
+    meili_state.process = Some(child);
+    
+    println!("✅ Meilisearch started on port {}", port);
+    
+    Ok(serde_json::json!({
+        "success": true,
+        "message": "Started successfully"
+    }))
+}
+
+// Command לעצירת Meilisearch
+#[tauri::command]
+fn stop_meilisearch(state: tauri::State<Mutex<MeilisearchState>>) -> Result<serde_json::Value, String> {
+    let mut meili_state = state.lock().unwrap();
+    
+    if let Some(mut process) = meili_state.process.take() {
+        let _ = process.kill();
+        println!("🛑 Meilisearch stopped");
+        
+        Ok(serde_json::json!({
+            "success": true
+        }))
+    } else {
+        Ok(serde_json::json!({
+            "success": true,
+            "message": "Not running"
+        }))
+    }
+}
+
 #[derive(serde::Serialize)]
 struct FileInfo {
     id: String,
@@ -109,10 +268,14 @@ struct FileInfo {
 
 fn main() {
     tauri::Builder::default()
+        .manage(Mutex::new(MeilisearchState { process: None }))
         .invoke_handler(tauri::generate_handler![
             get_app_data_path,
             get_books_path,
-            scan_folder
+            scan_folder,
+            scan_books_in_paths,
+            start_meilisearch,
+            stop_meilisearch
         ])
         .setup(|app| {
             let window = app.get_window("main").unwrap();
@@ -176,7 +339,13 @@ fn main() {
                 });
 
             println!("✅ DevTools shortcuts registered: F12, Ctrl+Shift+I, Ctrl+Shift+J");
-            println!("✅ Tauri commands registered: get_app_data_path, get_books_path, scan_folder");
+            println!("✅ Tauri commands registered:");
+            println!("   - get_app_data_path");
+            println!("   - get_books_path");
+            println!("   - scan_folder");
+            println!("   - scan_books_in_paths");
+            println!("   - start_meilisearch");
+            println!("   - stop_meilisearch");
 
             Ok(())
         })

@@ -81,6 +81,7 @@ npm run electron:build:win
 - 🐛 [DEBUGGING.md](DEBUGGING.md) - מדריך דיבוג ופתיחת DevTools
 - 🧪 [TAURI-DEVTOOLS-TEST.md](TAURI-DEVTOOLS-TEST.md) - בדיקת DevTools ב-Tauri
 - 🔧 [TAURI-ERRORS-FIXED.md](TAURI-ERRORS-FIXED.md) - תיקון שגיאות Tauri נפוצות
+- 🔨 [TAURI-REBUILD-INSTRUCTIONS.md](TAURI-REBUILD-INSTRUCTIONS.md) - הוראות בנייה מחדש
 - ⚡ [QUICK-START-DEVTOOLS.md](QUICK-START-DEVTOOLS.md) - התחלה מהירה לדיבוג
 
 הקובץ המבוצע יווצר בתיקייה `release/`
