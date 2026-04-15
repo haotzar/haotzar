@@ -260,24 +260,6 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
       }
     }
 
-    // תיקיית היסטוריה
-    if (recentBooks && recentBooks.length > 0) {
-      virtualFolders.push({
-        name: 'היסטוריה',
-        type: 'folder',
-        path: 'virtual-history',
-        isVirtual: true,
-        virtualType: 'history',
-        children: recentBooks.map((book, index) => ({
-          name: book.name.replace(/\.(pdf|txt|html|docx?)$/i, ''), // הסר סיומת
-          type: 'file',
-          path: book.path,
-          fullData: book,
-          isVirtual: true
-        }))
-      });
-    }
-
     // תיקיית ספרים מוצמדים (אם יש)
     if (pinnedBooks && pinnedBooks.length > 0) {
       virtualFolders.push({

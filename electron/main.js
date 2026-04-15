@@ -1,5 +1,5 @@
 
-const { app, BrowserWindow, shell, ipcMain, protocol } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, protocol, globalShortcut } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const fs = require('fs');
@@ -455,6 +455,35 @@ function openInEdge(url) {
   });
 }
 
+// רישום קיצורי מקלדת גלובליים
+function registerGlobalShortcuts() {
+  // Ctrl+H - פתיחת היסטוריה
+  globalShortcut.register('CommandOrControl+H', () => {
+    console.log('🔍 Ctrl+H נלחץ (Electron)');
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send('shortcut-history');
+    }
+  });
+
+  // Ctrl+T - פתיחת כרטיסיית חיפוש חדשה
+  globalShortcut.register('CommandOrControl+T', () => {
+    console.log('🔍 Ctrl+T נלחץ (Electron)');
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send('shortcut-new-tab');
+    }
+  });
+
+  // Ctrl+W - סגירת כרטיסייה
+  globalShortcut.register('CommandOrControl+W', () => {
+    console.log('🔍 Ctrl+W נלחץ (Electron)');
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send('shortcut-close-tab');
+    }
+  });
+
+  console.log('✅ קיצורי מקלדת גלובליים נרשמו');
+}
+
 // רשום את local-file כ-standard scheme - חייב להיות לפני app.whenReady!
 protocol.registerSchemesAsPrivileged([
   {
@@ -489,6 +518,9 @@ app.whenReady().then(() => {
   
   // פתח את החלון
   createWindow();
+  
+  // רישום קיצורי מקלדת גלובליים
+  registerGlobalShortcuts();
   
   // העתק Meilisearch binary אם צריך - בפרלל
   setupMeilisearch();
@@ -1373,6 +1405,10 @@ function setupIpcHandlers() {
 
 // סגירת האפליקציה כשכל החלונות נסגרים (למעט macOS)
 app.on('window-all-closed', () => {
+  // בטל רישום קיצורי מקלדת
+  globalShortcut.unregisterAll();
+  console.log('❌ קיצורי מקלדת בוטלו');
+  
   // סגור Meilisearch ונקה client
   if (meilisearchProcess) {
     meilisearchProcess.kill();

@@ -9,7 +9,8 @@ import {
   PanelLeftRegular,
   ChevronUpRegular,
   ChevronDownRegular,
-  DismissRegular
+  DismissRegular,
+  HistoryRegular
 } from '@fluentui/react-icons';
 import './TextViewerTopBar.css';
 
@@ -29,7 +30,8 @@ const TextViewerTopBar = ({
   currentSearchIndex = -1,
   onNextSearchResult = null,
   onPrevSearchResult = null,
-  onCloseSearch = null
+  onCloseSearch = null,
+  onHistoryClick
 }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -222,6 +224,14 @@ const TextViewerTopBar = ({
             <ZoomInRegular />
           </button>
         </div>
+        
+        <button
+          className="text-viewer-top-bar-btn"
+          onClick={onHistoryClick}
+          title="היסטוריה (Ctrl+H)"
+        >
+          <HistoryRegular />
+        </button>
         
         <button
           className="text-viewer-top-bar-btn"

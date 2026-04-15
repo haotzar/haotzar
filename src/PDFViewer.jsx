@@ -6,7 +6,7 @@ import PDFTopBar from './components/PDFTopBar';
 import PDFContextMenu from './components/PDFContextMenu';
 import './PDFViewer.css';
 
-const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLocateBook, onPdfClick }) => {
+const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLocateBook, onPdfClick, onHistoryClick }) => {
   const iframeRef = useRef(null);
   const pdfBlobUrlRef = useRef(null); // לשמירת Blob URL לניקוי
   const [viewerUrl, setViewerUrl] = useState('');
@@ -907,6 +907,7 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
             onToggleToolbar={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
+            onHistoryClick={onHistoryClick}
           />
           <div className="pdf-viewer-content">
             <iframe

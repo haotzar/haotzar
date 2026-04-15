@@ -9,7 +9,7 @@ import TextContextMenu from './components/TextContextMenu';
 import { convertOtzariaBookToText } from './utils/otzariaIntegration';
 import './TextViewer.css';
 
-const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = null, bookType = null, onLinkClick = null, onSearchRequest = null }) => {
+const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = null, bookType = null, onLinkClick = null, onSearchRequest = null, onHistoryClick }) => {
     const [htmlContent, setHtmlContent] = useState('');
     const [pages, setPages] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -815,6 +815,7 @@ const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = n
                     onNextSearchResult={handleNextSearchResult}
                     onPrevSearchResult={handlePrevSearchResult}
                     onCloseSearch={handleCloseSearch}
+                    onHistoryClick={onHistoryClick}
                 />
             )}
             

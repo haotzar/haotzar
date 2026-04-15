@@ -31,6 +31,7 @@ import {
   SquareMultipleRegular,
   ArrowClockwiseRegular,
   ChevronDownRegular,
+  HistoryRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
@@ -69,6 +70,7 @@ import LibrarySidebar from './components/LibrarySidebar';
 import FileTree from './components/FileTree';
 import BookPreview from './components/BookPreview';
 import FolderPreview from './components/FolderPreview';
+import HistoryTab from './components/HistoryTab';
 import { loadSettings, saveSettings, updateSetting, getSetting } from './utils/settingsManager';
 import otzariaDB from './utils/otzariaDB';
 import { buildOtzariaVirtualTree, searchOtzariaBooks, clearOtzariaTreeCache } from './utils/otzariaIntegration';
@@ -1297,13 +1299,49 @@ function App() {
     saveTabsState(newTabs, searchTabId);
   };
 
+  // פתיחת כרטיסיית היסטוריה
+  const openHistoryTab = () => {
+    // סגור תצוגה מקדימה של תיקייה אם פתוחה
+    if (folderPreview) {
+      closeFolderPreview();
+    }
+
+    // עבור לתצוגת ספרים
+    setCurrentView('books');
+
+    // בדוק אם כבר יש כרטיסיית היסטוריה פתוחה
+    const existingHistoryTab = openTabs.find(tab => tab.type === 'history');
+    if (existingHistoryTab) {
+      // אם כבר יש כרטיסייה - עבור אליה
+      setActiveTabId(existingHistoryTab.id);
+      return;
+    }
+
+    // צור כרטיסיית היסטוריה חדשה
+    const historyTabId = `history-tab-${Date.now()}`;
+    const historyTab = {
+      id: historyTabId,
+      name: 'היסטוריה',
+      type: 'history'
+    };
+    
+    const newTabs = [...openTabs, historyTab];
+    setOpenTabs(newTabs);
+    setActiveTabId(historyTabId);
+    saveTabsState(newTabs, historyTabId);
+  };
+
   // עדכון רשימת ספרים שנפתחו לאחרונה
   const updateRecentBooks = (file) => {
     const recent = [...recentBooks];
     // הסר את הספר אם הוא כבר ברשימה
     const filtered = recent.filter(book => book.id !== file.id);
-    // הוסף את הספר בתחילת הרשימה
-    const updated = [file, ...filtered].slice(0, 100); // שמור 100 ספרים אחרונים
+    // הוסף את הספר בתחילת הרשימה עם תאריך פתיחה
+    const bookWithTimestamp = {
+      ...file,
+      lastOpened: Date.now()
+    };
+    const updated = [bookWithTimestamp, ...filtered].slice(0, 100); // שמור 100 ספרים אחרונים
     setRecentBooks(updated);
     updateSetting('recentBooks', updated);
   };
@@ -2392,6 +2430,125 @@ function App() {
     }
   }, [contextMenu]);
 
+  // טיפול בקיצורי מקלדת גלובליים
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // בדוק אם המשתמש מקליד בשדה קלט
+      const isInputField = e.target.tagName === 'INPUT' || 
+                          e.target.tagName === 'TEXTAREA' || 
+                          e.target.isContentEditable;
+      
+      // רשימת קיצורים שאנחנו רוצים לתפוס
+      const isOurShortcut = e.ctrlKey && (
+        e.key.toLowerCase() === 'h' ||
+        e.key.toLowerCase() === 't' ||
+        e.key.toLowerCase() === 'w'
+      );
+      
+      // אם זה הקיצור שלנו ולא בשדה קלט - תפוס אותו מיד
+      if (isOurShortcut && !isInputField) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      } else {
+        return; // לא הקיצור שלנו - תן לאירוע להמשיך
+      }
+      
+      // Ctrl+H - פתיחת כרטיסיית היסטוריה
+      if (e.key.toLowerCase() === 'h') {
+        console.log('🔍 Ctrl+H נלחץ - פותח כרטיסיית היסטוריה');
+        
+        // סגור תצוגה מקדימה של תיקייה אם פתוחה
+        if (folderPreview) {
+          setFolderPreview(null);
+          localStorage.removeItem('library_lastFolder');
+        }
+
+        // עבור לתצוגת ספרים
+        setCurrentView('books');
+
+        // בדוק אם כבר יש כרטיסיית היסטוריה פתוחה
+        const existingHistoryTab = openTabs.find(tab => tab.type === 'history');
+        if (existingHistoryTab) {
+          // אם כבר יש כרטיסייה - עבור אליה
+          setActiveTabId(existingHistoryTab.id);
+          return;
+        }
+
+        // צור כרטיסיית היסטוריה חדשה
+        const historyTabId = `history-tab-${Date.now()}`;
+        const historyTab = {
+          id: historyTabId,
+          name: 'היסטוריה',
+          type: 'history'
+        };
+        
+        const newTabs = [...openTabs, historyTab];
+        setOpenTabs(newTabs);
+        setActiveTabId(historyTabId);
+        saveTabsState(newTabs, historyTabId);
+      }
+      
+      // Ctrl+T - פתיחת כרטיסיית חיפוש חדשה
+      else if (e.key.toLowerCase() === 't') {
+        console.log('🔍 Ctrl+T נלחץ - פותח כרטיסיית חיפוש');
+        
+        // סגור תצוגה מקדימה של תיקייה
+        if (folderPreview) {
+          setFolderPreview(null);
+          localStorage.removeItem('library_lastFolder');
+        }
+
+        // עבור לתצוגת ספרים
+        setCurrentView('books');
+
+        // צור ID ייחודי לכל כרטיסיית חיפוש
+        const searchTabId = `search-tab-${Date.now()}`;
+        const searchTab = {
+          id: searchTabId,
+          name: 'חיפוש',
+          type: 'search',
+          searchQuery: '',
+          searchResults: []
+        };
+        
+        const newTabs = [...openTabs, searchTab];
+        setOpenTabs(newTabs);
+        setActiveTabId(searchTabId);
+        saveTabsState(newTabs, searchTabId);
+      }
+      
+      // Ctrl+W - סגירת כרטיסייה פעילה
+      else if (e.key.toLowerCase() === 'w') {
+        console.log('🔍 Ctrl+W נלחץ - סוגר כרטיסייה');
+        
+        if (activeTabId && openTabs.length > 0) {
+          const newTabs = openTabs.filter((tab) => tab.id !== activeTabId);
+          setOpenTabs(newTabs);
+
+          let newActiveTabId = null;
+          if (newTabs.length > 0) {
+            newActiveTabId = newTabs[newTabs.length - 1].id;
+            setActiveTabId(newActiveTabId);
+          } else {
+            setActiveTabId(null);
+          }
+
+          saveTabsState(newTabs, newActiveTabId);
+        }
+      }
+    };
+
+    // השתמש ב-capture phase כדי לתפוס את האירוע לפני כולם
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    console.log('✅ מאזין לקיצורי מקלדת הופעל');
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      console.log('❌ מאזין לקיצורי מקלדת הוסר');
+    };
+  }, [activeTabId, openTabs, folderPreview, currentView]);
+
   return (
     <FluentProvider theme={isDark ? customDarkTheme : customLightTheme}>
       <div className="app-layout">
@@ -2608,6 +2765,8 @@ function App() {
                       <SquareMultipleRegular className="tab-icon" />
                     ) : tab.type === 'search' ? (
                       <SearchRegular className="tab-icon" />
+                    ) : tab.type === 'history' ? (
+                      <HistoryRegular className="tab-icon" />
                     ) : tab.type === 'pdf' ? (
                       <DocumentRegular className="tab-icon" />
                     ) : tab.type === 'otzaria' ? (
@@ -2677,6 +2836,8 @@ function App() {
                               <SquareMultipleRegular />
                             ) : tab.type === 'search' ? (
                               <SearchRegular />
+                            ) : tab.type === 'history' ? (
+                              <HistoryRegular />
                             ) : tab.type === 'pdf' ? (
                               <DocumentRegular />
                             ) : tab.type === 'otzaria' ? (
@@ -2803,6 +2964,7 @@ function App() {
                                     searchContext={tab.leftTab.searchContext}
                                     onLocateBook={setHeaderSearchQuery}
                                     onPdfClick={closeHeaderAutocomplete}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : tab.leftTab.type === 'otzaria' ? (
                                   <TextViewer
@@ -2812,6 +2974,7 @@ function App() {
                                     searchContext={tab.leftTab.searchContext}
                                     onLinkClick={handleFileClick}
                                     onSearchRequest={setHeaderSearchQuery}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : tab.leftTab.type === 'text' && tab.leftTab.path ? (
                                   <TextViewer 
@@ -2820,6 +2983,7 @@ function App() {
                                     title={tab.leftTab.name}
                                     searchContext={tab.leftTab.searchContext}
                                     onSearchRequest={setHeaderSearchQuery}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : (
                                   <div className="empty-state">
@@ -2902,6 +3066,7 @@ function App() {
                                     searchContext={tab.rightTab.searchContext}
                                     onLocateBook={setHeaderSearchQuery}
                                     onPdfClick={closeHeaderAutocomplete}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : tab.rightTab.type === 'otzaria' ? (
                                   <TextViewer
@@ -2911,6 +3076,7 @@ function App() {
                                     searchContext={tab.rightTab.searchContext}
                                     onLinkClick={handleFileClick}
                                     onSearchRequest={setHeaderSearchQuery}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : tab.rightTab.type === 'text' && tab.rightTab.path ? (
                                   <TextViewer 
@@ -2919,6 +3085,7 @@ function App() {
                                     title={tab.rightTab.name}
                                     searchContext={tab.rightTab.searchContext}
                                     onSearchRequest={setHeaderSearchQuery}
+                                    onHistoryClick={openHistoryTab}
                                   />
                                 ) : (
                                   <div className="empty-state">
@@ -2963,6 +3130,15 @@ function App() {
                               isActive={activeTabId === tab.id}
                               onAutocompleteChange={setIsAutocompleteOpen}
                             />
+                          ) : tab.type === 'history' ? (
+                            <HistoryTab
+                              recentBooks={recentBooks}
+                              onFileClick={handleFileClick}
+                              onClearHistory={() => {
+                                setRecentBooks([]);
+                                updateSetting('recentBooks', []);
+                              }}
+                            />
                           ) : tab.type === 'pdf' ? (
                             <PDFViewer 
                               key={`${tab.id}-${tab._updateKey || 0}`}
@@ -2971,6 +3147,7 @@ function App() {
                               searchContext={tab.searchContext}
                               onLocateBook={setHeaderSearchQuery}
                               onPdfClick={closeHeaderAutocomplete}
+                              onHistoryClick={openHistoryTab}
                             />
                           ) : tab.type === 'otzaria' ? (
                             <TextViewer
@@ -2980,6 +3157,7 @@ function App() {
                               searchContext={tab.searchContext}
                               onLinkClick={handleFileClick}
                               onSearchRequest={setHeaderSearchQuery}
+                              onHistoryClick={openHistoryTab}
                             />
                           ) : tab.type === 'text' && tab.path ? (
                             <TextViewer 
@@ -2988,6 +3166,7 @@ function App() {
                               title={tab.name}
                               searchContext={tab.searchContext}
                               onSearchRequest={setHeaderSearchQuery}
+                              onHistoryClick={openHistoryTab}
                             />
                           ) : (
                             <div className="empty-state">

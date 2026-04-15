@@ -8,11 +8,12 @@ import {
   PanelRightContractRegular,
   PanelRightExpandRegular,
   ZoomInRegular,
-  ZoomOutRegular
+  ZoomOutRegular,
+  HistoryRegular
 } from '@fluentui/react-icons';
 import './PDFTopBar.css';
 
-const PDFTopBar = ({ currentPage, totalPages, onPageChange, onNextPage, onPrevPage, iframeRef, isToolbarCollapsed, onToggleToolbar, onZoomIn, onZoomOut }) => {
+const PDFTopBar = ({ currentPage, totalPages, onPageChange, onNextPage, onPrevPage, iframeRef, isToolbarCollapsed, onToggleToolbar, onZoomIn, onZoomOut, onHistoryClick }) => {
   const [pageInput, setPageInput] = useState('');
 
   // סגור את דיאלוג החיפוש בלחיצה בכל מקום
@@ -225,6 +226,14 @@ const PDFTopBar = ({ currentPage, totalPages, onPageChange, onNextPage, onPrevPa
             <ZoomInRegular />
           </button>
         </div>
+        
+        <button
+          className="pdf-top-bar-btn"
+          onClick={onHistoryClick}
+          title="היסטוריה (Ctrl+H)"
+        >
+          <HistoryRegular />
+        </button>
         
         <button
           className="pdf-top-bar-btn"
