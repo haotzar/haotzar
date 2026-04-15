@@ -627,114 +627,113 @@ function App() {
               console.log(`✅ נמצאו ${bookFiles.length} קבצים ב-${(performance.now() - scanStart).toFixed(0)}ms`);
               console.log('📋 First 5 files:', bookFiles.slice(0, 5));
             
-            if (bookFiles.length === 0) {
-              console.warn('⚠️ לא נמצאו ספרים');
-              
-              // אל תחזור - תן למשתמש לגשת להגדרות
-              setAllFiles([]);
-              // המשך לטעון את האפליקציה גם בלי ספרים
-            }
-            
-            const pdfFiles = [];
-            const textFiles = [];
-            
-            bookFiles.forEach((filePath, index) => {
-              const fileName = filePath.split(/[/\\]/).pop();
-              const lowerName = fileName.toLowerCase();
-              
-              if (lowerName.endsWith('.pdf')) {
-                pdfFiles.push({
-                  id: `pdf-${index}`,
-                  name: fileName.replace(/\.pdf$/i, ''),
-                  path: filePath,
-                  type: 'pdf',
-                });
-              } else if (lowerName.endsWith('.txt')) {
-                textFiles.push({
-                  id: `txt-${index}`,
-                  name: fileName.replace(/\.txt$/i, ''),
-                  path: filePath,
-                  type: 'text',
-                });
+              if (bookFiles.length === 0) {
+                console.warn('⚠️ לא נמצאו ספרים');
+                
+                // אל תחזור - תן למשתמש לגשת להגדרות
+                setAllFiles([]);
+                // המשך לטעון את האפליקציה גם בלי ספרים
               }
-            });
-            
-            console.log('📊 PDF:', pdfFiles.length, 'TXT:', textFiles.length);
-            
-            if (pdfFiles.length === 0 && textFiles.length === 0) {
-              console.warn('⚠️ לא נמצאו קבצי PDF או TXT');
-              setAllFiles([]);
-              // המשך לטעון את האפליקציה - תן למשתמש לגשת להגדרות
-            } else {
-              const allFiles = [...pdfFiles, ...textFiles];
-              allFiles.sort((a, b) => a.name.localeCompare(b.name, 'he'));
-              console.log('📚 Total files after processing:', allFiles.length);
-              console.log('📚 Sample files:', allFiles.slice(0, 3).map(f => ({ name: f.name, path: f.path })));
-              setAllFiles(allFiles);
               
-              // בניית אינדקס חיפוש מהיר - אסינכרונית
-              console.log('🔨 בונה אינדקס חיפוש...');
-              searchIndex.buildIndex(allFiles).then(() => {
-                console.log('✅ אינדקס חיפוש הושלם');
-              });
-            }
-            console.log('✅ setAllFiles called with', allFiles.length, 'files');
-            
-            // טעינת אינדקס קיים (האינדקס נבנה מראש) - רק אם צריך
-            console.log('📋 בודק אם יש אינדקס חיפוש...');
-            const activeEngine = isElectron && meilisearchEngine.isReady() 
-              ? meilisearchEngine 
-              : searchEngine;
-            
-            if (isElectron && meilisearchEngine.isReady()) {
-              console.log('✅ Meilisearch מוכן לשימוש');
-            } else {
-              // טען אינדקס רק אם המשתמש מחפש
-              console.log('ℹ️ אינדקס חיפוש יטען בעת הצורך');
-            }
-            
-            if (allFiles.length > 0) {
-              const savedState = loadTabsState();
-              if (savedState && savedState.openTabs.length > 0) {
-                const validTabs = savedState.openTabs
-                  .filter(savedTab => {
-                    // אפשר כרטיסיות אוצריא (type === 'otzaria')
-                    if (savedTab.type === 'otzaria') {
-                      return true;
-                    }
-                    // אפשר כרטיסיות רגילות שקיימות ב-allFiles
-                    return allFiles.some(file => file.id === savedTab.id);
-                  })
-                  .map(tab => {
-                    // הסר סיומת קובץ משם הכרטיסייה אם קיימת
-                    if (tab.name && tab.type !== 'search' && tab.type !== 'otzaria') {
-                      return {
-                        ...tab,
-                        name: tab.name.replace(/\.(pdf|txt|html|docx?)$/i, '')
-                      };
-                    }
-                    return tab;
+              const pdfFiles = [];
+              const textFiles = [];
+              
+              bookFiles.forEach((filePath, index) => {
+                const fileName = filePath.split(/[/\\]/).pop();
+                const lowerName = fileName.toLowerCase();
+                
+                if (lowerName.endsWith('.pdf')) {
+                  pdfFiles.push({
+                    id: `pdf-${index}`,
+                    name: fileName.replace(/\.pdf$/i, ''),
+                    path: filePath,
+                    type: 'pdf',
                   });
-                if (validTabs.length > 0) {
-                  setOpenTabs(validTabs);
-                  const activeTabExists = validTabs.some(tab => tab.id === savedState.activeTabId);
-                  setActiveTabId(activeTabExists ? savedState.activeTabId : validTabs[0].id);
-                  return;
+                } else if (lowerName.endsWith('.txt')) {
+                  textFiles.push({
+                    id: `txt-${index}`,
+                    name: fileName.replace(/\.txt$/i, ''),
+                    path: filePath,
+                    type: 'text',
+                  });
                 }
+              });
+              
+              console.log('📊 PDF:', pdfFiles.length, 'TXT:', textFiles.length);
+              
+              if (pdfFiles.length === 0 && textFiles.length === 0) {
+                console.warn('⚠️ לא נמצאו קבצי PDF או TXT');
+                setAllFiles([]);
+                // המשך לטעון את האפליקציה - תן למשתמש לגשת להגדרות
+              } else {
+                const allFiles = [...pdfFiles, ...textFiles];
+                allFiles.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+                console.log('📚 Total files after processing:', allFiles.length);
+                console.log('📚 Sample files:', allFiles.slice(0, 3).map(f => ({ name: f.name, path: f.path })));
+                setAllFiles(allFiles);
+                
+                // בניית אינדקס חיפוש מהיר - אסינכרונית
+                console.log('🔨 בונה אינדקס חיפוש...');
+                searchIndex.buildIndex(allFiles).then(() => {
+                  console.log('✅ אינדקס חיפוש הושלם');
+                });
               }
-              // אם אין כרטיסיות שמורות, אל תפתח כלום - תן למשתמש לבחור
-              setOpenTabs([]);
-              setActiveTabId(null);
-              setCurrentView('books');
-            } else {
-              console.warn('לא נמצאו קבצי PDF או TXT');
+              console.log('✅ setAllFiles called with', allFiles.length, 'files');
+              
+              // טעינת אינדקס קיים (האינדקס נבנה מראש) - רק אם צריך
+              console.log('📋 בודק אם יש אינדקס חיפוש...');
+              const activeEngine = isElectron && meilisearchEngine.isReady() 
+                ? meilisearchEngine 
+                : searchEngine;
+              
+              if (isElectron && meilisearchEngine.isReady()) {
+                console.log('✅ Meilisearch מוכן לשימוש');
+              } else {
+                // טען אינדקס רק אם המשתמש מחפש
+                console.log('ℹ️ אינדקס חיפוש יטען בעת הצורך');
+              }
+              
+              if (allFiles.length > 0) {
+                const savedState = loadTabsState();
+                if (savedState && savedState.openTabs.length > 0) {
+                  const validTabs = savedState.openTabs
+                    .filter(savedTab => {
+                      // אפשר כרטיסיות אוצריא (type === 'otzaria')
+                      if (savedTab.type === 'otzaria') {
+                        return true;
+                      }
+                      // אפשר כרטיסיות רגילות שקיימות ב-allFiles
+                      return allFiles.some(file => file.id === savedTab.id);
+                    })
+                    .map(tab => {
+                      // הסר סיומת קובץ משם הכרטיסייה אם קיימת
+                      if (tab.name && tab.type !== 'search' && tab.type !== 'otzaria') {
+                        return {
+                          ...tab,
+                          name: tab.name.replace(/\.(pdf|txt|html|docx?)$/i, '')
+                        };
+                      }
+                      return tab;
+                    });
+                  if (validTabs.length > 0) {
+                    setOpenTabs(validTabs);
+                    const activeTabExists = validTabs.some(tab => tab.id === savedState.activeTabId);
+                    setActiveTabId(activeTabExists ? savedState.activeTabId : validTabs[0].id);
+                    return;
+                  }
+                }
+                // אם אין כרטיסיות שמורות, אל תפתח כלום - תן למשתמש לבחור
+                setOpenTabs([]);
+                setActiveTabId(null);
+                setCurrentView('books');
+              } else {
+                console.warn('לא נמצאו קבצי PDF או TXT');
+              }
+            } catch (error) {
+              console.error('שגיאה בטעינת קבצים מ-Tauri:', error);
+              console.error('פרטי השגיאה:', error.message);
+              setAllFiles([]);
             }
-          } catch (error) {
-            console.error('שגיאה בטעינת קבצים מ-AppData:', error);
-            console.error('פרטי השגיאה:', error.message);
-            // אם אין תיקיית books, הצג הודעה למשתמש
-            setAllFiles([]);
-          }
         } else if (isElectron) {
           // Electron - טען מתיקיות מוגדרות
           try {
