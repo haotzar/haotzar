@@ -200,8 +200,8 @@ export async function openExternal(url) {
 export async function getAppDataPath() {
   if (isTauri()) {
     try {
-      const { appDataDir } = await import('@tauri-apps/api/path');
-      return await appDataDir();
+      const { invoke } = await import('@tauri-apps/api/tauri');
+      return await invoke('get_app_data_path');
     } catch (error) {
       console.error('❌ Error getting app data path via Tauri:', error);
       throw error;
@@ -210,6 +210,26 @@ export async function getAppDataPath() {
     return window.electron.getUserDataPath();
   } else {
     throw new Error('App data path not available in web mode');
+  }
+}
+
+/**
+ * קבלת נתיב תיקיית books
+ * @returns {Promise<string>} - נתיב תיקיית books
+ */
+export async function getBooksPath() {
+  if (isTauri()) {
+    try {
+      const { invoke } = await import('@tauri-apps/api/tauri');
+      return await invoke('get_books_path');
+    } catch (error) {
+      console.error('❌ Error getting books path via Tauri:', error);
+      throw error;
+    }
+  } else if (isElectron()) {
+    return window.electron.getBooksPath();
+  } else {
+    throw new Error('Books path not available in web mode');
   }
 }
 

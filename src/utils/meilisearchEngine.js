@@ -258,7 +258,7 @@ class MeilisearchEngine {
         // הפעל את השרת דרך Tauri
         try {
           const { invoke } = await import('@tauri-apps/api/tauri');
-          const result = await invoke('start_meilisearch', { port });
+          const result = await invoke('start_meilisearch', { port: this.serverPort });
           if (result.success) {
             this.isRunning = true;
             console.log('✅ Meilisearch הופעל (Tauri)');
