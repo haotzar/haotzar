@@ -116,8 +116,13 @@ class SearchEngine {
       const isTauri = window.__TAURI__ !== undefined;
       
       if (isTauri) {
-        const { readTextFile } = window.__TAURI__.fs;
-        return await readTextFile(path);
+        try {
+          const { readTextFile } = await import('@tauri-apps/api/fs');
+          return await readTextFile(path);
+        } catch (error) {
+          console.error('❌ Error reading file via Tauri:', error);
+          throw error;
+        }
       } else {
         const response = await fetch(path);
         return await response.text();

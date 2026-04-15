@@ -30,13 +30,22 @@ class OtzariaDB {
           console.error('❌ Failed to open DB:', result.error);
         }
         return false;
-      } else if (this.isTauri) {        // ב-Tauri נצטרך להוסיף פונקציה ב-Rust
-        const { invoke } = window.__TAURI__.tauri;
-        const result = await invoke('open_otzaria_db', { path: dbPath });
-        if (result.success) {
-          this.db = true;
-          console.log('✅ מסד נתונים אוצריא נפתח בהצלחה (Tauri)');
-          return true;
+      } else if (this.isTauri) {
+        // ב-Tauri נשתמש ב-invoke לפתיחת DB
+        try {
+          const { invoke } = await import('@tauri-apps/api/tauri');
+          const result = await invoke('open_otzaria_db', { path: dbPath });
+          if (result.success) {
+            this.db = true;
+            console.log('✅ מסד נתונים אוצריא נפתח בהצלחה (Tauri)');
+            return true;
+          } else {
+            console.error('❌ שגיאה בפתיחת DB (Tauri):', result.error);
+            return false;
+          }
+        } catch (error) {
+          console.error('❌ Error opening Otzaria DB via Tauri:', error);
+          return false;
         }
         return false;
       }

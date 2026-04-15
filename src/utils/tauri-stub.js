@@ -1,20 +1,30 @@
 // Stub for Tauri API when running in Electron
-// This prevents errors when dynamic imports try to load @tauri-apps/api
+// This prevents errors when static imports try to load @tauri-apps/api
+// Note: For dynamic imports, use try-catch to detect the actual runtime
 
 export const invoke = async () => {
-  throw new Error('Tauri API not available in Electron');
+  console.warn('⚠️ Tauri API called but not available (running in Electron)');
+  throw new Error('Tauri API not available - running in Electron mode');
 };
 
 export const open = async () => {
-  throw new Error('Tauri API not available in Electron');
+  console.warn('⚠️ Tauri API called but not available (running in Electron)');
+  throw new Error('Tauri API not available - running in Electron mode');
 };
 
 export const readBinaryFile = async () => {
-  throw new Error('Tauri API not available in Electron');
+  console.warn('⚠️ Tauri API called but not available (running in Electron)');
+  throw new Error('Tauri API not available - running in Electron mode');
+};
+
+export const convertFileSrc = (filePath) => {
+  console.warn('⚠️ Tauri API called but not available (running in Electron)');
+  throw new Error('Tauri API not available - running in Electron mode');
 };
 
 export default {
   invoke,
   open,
-  readBinaryFile
+  readBinaryFile,
+  convertFileSrc
 };

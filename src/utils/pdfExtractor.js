@@ -14,8 +14,14 @@ export async function extractTextFromPDF(pdfPath) {
     
     if (isTauri) {
       // קריאת קובץ PDF דרך Tauri API
-      const { readBinaryFile } = window.__TAURI__.fs;
-      pdfData = await readBinaryFile(pdfPath);
+      try {
+        const { readBinaryFile } = await import('@tauri-apps/api/fs');
+        pdfData = await readBinaryFile(pdfPath);
+        console.log('✅ Read PDF file via Tauri API');
+      } catch (error) {
+        console.error('❌ Error reading PDF via Tauri:', error);
+        throw error;
+      }
     } else {
       // במצב פיתוח - טען דרך fetch
       const response = await fetch(pdfPath);
@@ -74,8 +80,14 @@ export async function hasPDFText(pdfPath) {
     
     if (isTauri) {
       // קריאת קובץ PDF דרך Tauri API
-      const { readBinaryFile } = window.__TAURI__.fs;
-      pdfData = await readBinaryFile(pdfPath);
+      try {
+        const { readBinaryFile } = await import('@tauri-apps/api/fs');
+        pdfData = await readBinaryFile(pdfPath);
+        console.log('✅ Read PDF file via Tauri API');
+      } catch (error) {
+        console.error('❌ Error reading PDF via Tauri:', error);
+        throw error;
+      }
     } else {
       // במצב פיתוח - טען דרך fetch
       const response = await fetch(pdfPath);

@@ -33,11 +33,6 @@ import {
   ChevronDownRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
-// import { invoke } from '@tauri-apps/api/tauri'; // Disabled for Electron build
-// Stub for Tauri invoke when building for Electron
-const invoke = async () => {
-  throw new Error('Tauri invoke not available in Electron build');
-};
 import TextViewer from './TextViewer';
 import PDFViewer from './PDFViewer';
 import Settings from './Settings';

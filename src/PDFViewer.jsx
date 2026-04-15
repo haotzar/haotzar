@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-// import { convertFileSrc } from '@tauri-apps/api/tauri'; // Disabled for Electron build
 import PDFNotesPanel from './components/PDFNotesPanel';
 import PDFToolbar from './components/PDFToolbar';
 import PDFTopBar from './components/PDFTopBar';
@@ -60,9 +59,16 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
         }
         
         if (isTauri) {
-          // ב-Tauri, קרא את הקובץ ישירות
-          console.error('❌ Tauri is not supported in this build');
-          return;
+          // ב-Tauri, השתמש ב-convertFileSrc להמרת הנתיב
+          try {
+            const { convertFileSrc } = await import('@tauri-apps/api/tauri');
+            fileUrl = convertFileSrc(pdfPath);
+            console.log('✅ Converted Tauri file path:', fileUrl);
+          } catch (error) {
+            console.error('❌ Error converting Tauri file path:', error);
+            setError('שגיאה בטעינת קובץ PDF: ' + error.message);
+            return;
+          }
         } else if (isElectron) {
           // ב-Electron
           if (isDevelopment) {

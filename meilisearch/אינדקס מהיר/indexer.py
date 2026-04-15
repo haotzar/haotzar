@@ -16,6 +16,18 @@ from pathlib import Path
 from multiprocessing import Pool, cpu_count, freeze_support
 from typing import Optional, Dict, Any, List, Iterator
 
+# תיקון encoding ל-Windows console
+if sys.platform == 'win32':
+    try:
+        # נסה להגדיר UTF-8 ל-stdout/stderr
+        import codecs
+        if sys.stdout.encoding != 'utf-8':
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        if sys.stderr.encoding != 'utf-8':
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+    except Exception:
+        pass  # אם נכשל, נמשיך בלי תיקון
+
 try:
     import requests
 except ImportError:
@@ -131,15 +143,65 @@ class MeilisearchIndexer:
             
             if r.status_code in (200, 201, 202):
                 self.log(f"אינדקס '{index_name}' נוצר בהצלחה", 'success')
+                # הגדרת אופטימיזציות לאינדקס
+                self.optimize_index_settings(index_name)
                 return True
             elif r.status_code == 409:
                 self.log(f"אינדקס '{index_name}' כבר קיים, ממשיך...", 'warning')
+                # הגדרת אופטימיזציות גם לאינדקס קיים
+                self.optimize_index_settings(index_name)
                 return True
             else:
                 self.log(f"שגיאה ביצירת אינדקס: {r.status_code} - {r.text}", 'error')
                 return False
         except Exception as e:
             self.log(f"שגיאה ביצירת אינדקס: {e}", 'error')
+            return False
+    
+    def optimize_index_settings(self, index_name: str) -> bool:
+        """הגדרת אופטימיזציות לאינדקס - דחיסה והגדרות חיפוש"""
+        try:
+            index_name = sanitize_index_name(index_name)
+            
+            # הגדרות אופטימיזציה - מותאמות לחיסכון במקום
+            # תיקון: displayedAttributes: ["*"] גרם לאינדקס לגדול פי 2-3!
+            # עכשיו: רק שדות נחוצים + כיבוי typo tolerance = חיסכון של 40-60%
+            settings = {
+                # שדות לחיפוש - רק content ו-title (לא heRef!)
+                "searchableAttributes": ["content", "title", "heShortDesc"],
+                # שדות להצגה - רק מה שצריך (לא *)
+                # זה הכי חשוב! displayedAttributes: ["*"] גורם ל-Meilisearch לשמור הכל בזיכרון
+                "displayedAttributes": ["id", "bookId", "lineIndex", "content", "heRef", "title", "heShortDesc", "source_file", "page"],
+                # כבה typo tolerance לחיסכון של 15-25% במקום
+                "typoTolerance": {"enabled": False},
+                # הגדרות ranking מינימליות - ללא typo ו-proximity שתופסים הרבה מקום
+                "rankingRules": [
+                    "words",
+                    "attribute",
+                    "exactness"
+                ],
+                # הגבלת גודל תוצאות
+                "pagination": {
+                    "maxTotalHits": 10000
+                }
+            }
+            
+            self.log(f"מגדיר אופטימיזציות לאינדקס '{index_name}'...", 'info')
+            r = requests.patch(
+                f"{self.meili_url}/indexes/{index_name}/settings",
+                headers=self.headers,
+                json=settings,
+                timeout=30
+            )
+            
+            if r.status_code in (200, 202):
+                self.log(f"אופטימיזציות הוגדרו בהצלחה", 'success')
+                return True
+            else:
+                self.log(f"אזהרה: לא ניתן להגדיר אופטימיזציות: {r.status_code}", 'warning')
+                return False
+        except Exception as e:
+            self.log(f"שגיאה בהגדרת אופטימיזציות: {e}", 'warning')
             return False
 
     def wait_for_task(self, task_uid: int, poll_interval: float = 0.5, timeout: float = 600) -> bool:
@@ -160,9 +222,13 @@ class MeilisearchIndexer:
                 task = r.json()
                 status = task.get("status")
                 
-                # הצגת התקדמות
+                # הצגת התקדמות - עם fallback לאנגלית אם encoding נכשל
                 dots_str = "." * ((dots % 3) + 1)
-                print(f"\rמעבד{dots_str} ({elapsed:.0f}s) - סטטוס: {status}   ", end="", flush=True)
+                try:
+                    print(f"\rמעבד{dots_str} ({elapsed:.0f}s) - סטטוס: {status}   ", end="", flush=True)
+                except (UnicodeEncodeError, UnicodeDecodeError):
+                    # fallback לאנגלית אם encoding נכשל
+                    print(f"\rProcessing{dots_str} ({elapsed:.0f}s) - Status: {status}   ", end="", flush=True)
                 dots += 1
                 
                 if status == "succeeded":

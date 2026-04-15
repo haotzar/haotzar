@@ -256,8 +256,21 @@ class MeilisearchEngine {
         }
       } else if (isTauri) {
         // הפעל את השרת דרך Tauri
-        console.error('❌ Tauri is not supported in this build');
-        return false;
+        try {
+          const { invoke } = await import('@tauri-apps/api/tauri');
+          const result = await invoke('start_meilisearch', { port });
+          if (result.success) {
+            this.isRunning = true;
+            console.log('✅ Meilisearch הופעל (Tauri)');
+            return true;
+          } else {
+            console.error('❌ שגיאה בהפעלת Meilisearch (Tauri):', result.error);
+            return false;
+          }
+        } catch (error) {
+          console.error('❌ Error starting Meilisearch via Tauri:', error);
+          return false;
+        }
       }
     } catch (error) {
       console.error('❌ שגיאה בהפעלת Meilisearch:', error);
@@ -1086,7 +1099,13 @@ class MeilisearchEngine {
         await window.electron.stopMeilisearch();
         console.log('🛑 Meilisearch נסגר (Electron)');
       } else if (window.__TAURI__) {
-        console.error('❌ Tauri is not supported in this build');
+        try {
+          const { invoke } = await import('@tauri-apps/api/tauri');
+          await invoke('stop_meilisearch');
+          console.log('🛑 Meilisearch נסגר (Tauri)');
+        } catch (error) {
+          console.error('❌ Error stopping Meilisearch via Tauri:', error);
+        }
       }
       
       // נקה משאבים

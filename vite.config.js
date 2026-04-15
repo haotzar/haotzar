@@ -21,10 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       canvas: false,
-      'path2d-polyfill': false,
-      '@tauri-apps/api/tauri': '/src/utils/tauri-stub.js',
-      '@tauri-apps/api/dialog': '/src/utils/tauri-stub.js',
-      '@tauri-apps/api/fs': '/src/utils/tauri-stub.js'
+      'path2d-polyfill': false
     }
   },
   build: {
@@ -34,10 +31,7 @@ export default defineConfig({
       external: [
         /^books\/.*/,
         /^resources\/.*/,
-        /^index\/.*/,
-        '@tauri-apps/api/tauri',
-        '@tauri-apps/api/dialog',
-        '@tauri-apps/api/fs'
+        /^index\/.*/
       ]
     },
     chunkSizeWarningLimit: 2000,

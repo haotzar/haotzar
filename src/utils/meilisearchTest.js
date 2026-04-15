@@ -44,8 +44,14 @@ export async function startMeilisearchTest() {
       console.log('📦 מפעיל דרך Electron...');
       result = await window.electron.startMeilisearch({ port: 7700 });
     } else if (isTauri) {
-      console.log('📦 Tauri is not supported in this build');
-      return false;
+      try {
+        const { invoke } = await import('@tauri-apps/api/tauri');
+        result = await invoke('start_meilisearch', { port: 7700 });
+        console.log('📦 Meilisearch הופעל דרך Tauri');
+      } catch (error) {
+        console.error('❌ Error starting Meilisearch via Tauri:', error);
+        return false;
+      }
     }
     
     console.log('📡 תגובה:', result);
@@ -87,7 +93,13 @@ export async function stopMeilisearchTest() {
       await window.electron.stopMeilisearch();
       console.log('✅ Meilisearch נסגר (Electron)');
     } else if (isTauri) {
-      console.log('❌ Tauri is not supported in this build');
+      try {
+        const { invoke } = await import('@tauri-apps/api/tauri');
+        await invoke('stop_meilisearch');
+        console.log('✅ Meilisearch נסגר (Tauri)');
+      } catch (error) {
+        console.error('❌ Error stopping Meilisearch via Tauri:', error);
+      }
     }
     
     return true;
