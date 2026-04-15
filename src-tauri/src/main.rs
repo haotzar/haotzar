@@ -319,6 +319,46 @@ fn get_otzaria_db_path(app: tauri::AppHandle) -> Result<String, String> {
     Ok(otzaria_path.to_string_lossy().to_string())
 }
 
+// Command לקריאת קובץ טקסט
+#[tauri::command]
+fn read_text_file(path: String) -> Result<String, String> {
+    use std::fs;
+    
+    // בדוק שהקובץ קיים
+    let file_path = PathBuf::from(&path);
+    if !file_path.exists() {
+        return Err(format!("File not found: {}", path));
+    }
+    
+    // קרא את הקובץ
+    let content = fs::read_to_string(&file_path)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    
+    println!("📖 Read text file: {} ({} bytes)", path, content.len());
+    
+    Ok(content)
+}
+
+// Command לקריאת קובץ PDF כ-bytes
+#[tauri::command]
+fn read_pdf_file(path: String) -> Result<Vec<u8>, String> {
+    use std::fs;
+    
+    // בדוק שהקובץ קיים
+    let file_path = PathBuf::from(&path);
+    if !file_path.exists() {
+        return Err(format!("File not found: {}", path));
+    }
+    
+    // קרא את הקובץ
+    let content = fs::read(&file_path)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    
+    println!("📄 Read PDF file: {} ({} bytes)", path, content.len());
+    
+    Ok(content)
+}
+
 #[derive(serde::Serialize)]
 struct FileInfo {
     id: String,
@@ -339,7 +379,9 @@ fn main() {
             start_meilisearch,
             stop_meilisearch,
             open_books_folder,
-            get_otzaria_db_path
+            get_otzaria_db_path,
+            read_text_file,
+            read_pdf_file
         ])
         .setup(|app| {
             let window = app.get_window("main").unwrap();
@@ -412,6 +454,8 @@ fn main() {
             println!("   - stop_meilisearch");
             println!("   - open_books_folder");
             println!("   - get_otzaria_db_path");
+            println!("   - read_text_file");
+            println!("   - read_pdf_file");
 
             Ok(())
         })

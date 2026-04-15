@@ -72,10 +72,21 @@ const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = n
                     const nameWithoutExt = fileName.replace(/\.[^/.]+$/, ''); // הסרת הסיומת
                     setBookName(nameWithoutExt);
                     
-                    // בדיקה אם אנחנו ב-Electron
+                    // בדיקה אם אנחנו ב-Electron או Tauri
                     const isElectron = window.electron !== undefined;
+                    const isTauri = window.__TAURI__ !== undefined;
                     
-                    if (isElectron) {
+                    if (isTauri) {
+                        // קריאת קובץ דרך Tauri API
+                        try {
+                            const { invoke } = await import('@tauri-apps/api/tauri');
+                            htmlText = await invoke('read_text_file', { path: textPath });
+                            console.log('✅ קובץ נטען דרך Tauri:', textPath);
+                        } catch (error) {
+                            console.error('❌ שגיאה בקריאת קובץ דרך Tauri:', error);
+                            throw error;
+                        }
+                    } else if (isElectron) {
                         // קריאת קובץ דרך Electron API
                         htmlText = window.electron.readFile(textPath);
                     } else {

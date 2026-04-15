@@ -19,7 +19,7 @@
       },
       "fs": {
         "all": true,
-        "scope": ["$APPDATA/**", "$RESOURCE/**", "$APPDATA/haotzer/**"]
+        "scope": ["$APPDATA/**", "$RESOURCE/**", "$APPDATA/haotzer/**", "**"]
       },
       "path": {
         "all": true
