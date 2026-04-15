@@ -32,6 +32,20 @@
       "protocol": {
         "asset": true,
         "assetScope": ["$APPDATA/**", "$RESOURCE/**"]
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      },
+      "globalShortcut": {
+        "all": true
       }
     },
     "bundle": {

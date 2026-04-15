@@ -399,12 +399,43 @@ function createWindow() {
   // בסביבת פיתוח - טען מהשרת המקומי
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
+    // פתח DevTools אוטומטית בפיתוח
+    mainWindow.webContents.openDevTools();
   } else {
     // בסביבת ייצור - טען מקבצים סטטיים
     const distPath = path.join(__dirname, '../dist/index.html');
     console.log('📂 Loading from:', distPath);
     mainWindow.loadFile(distPath);
   }
+
+  // הוסף קיצור מקלדת לפתיחת DevTools (עובד גם ב-production)
+  // Ctrl+Shift+I או F12
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    // F12
+    if (input.key === 'F12') {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow.webContents.openDevTools();
+      }
+    }
+    // Ctrl+Shift+I
+    if (input.control && input.shift && input.key === 'I') {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow.webContents.openDevTools();
+      }
+    }
+    // Ctrl+Shift+J (Chrome style)
+    if (input.control && input.shift && input.key === 'J') {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow.webContents.openDevTools();
+      }
+    }
+  });
 
   // כפיית פתיחת קישורים חיצוניים ב-Edge במקום בדפדפן ברירת המחדל
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -425,6 +456,43 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  // הוסף תפריט הקשר (right-click) עם "Inspect Element"
+  mainWindow.webContents.on('context-menu', (event, params) => {
+    const { Menu, MenuItem } = require('electron');
+    const menu = new Menu();
+
+    // הוסף "Inspect Element" רק אם לחצו על אלמנט
+    if (params.x !== undefined && params.y !== undefined) {
+      menu.append(new MenuItem({
+        label: 'Inspect Element',
+        click: () => {
+          mainWindow.webContents.inspectElement(params.x, params.y);
+        }
+      }));
+
+      menu.append(new MenuItem({ type: 'separator' }));
+    }
+
+    // הוסף אפשרויות נוספות
+    menu.append(new MenuItem({
+      label: 'Open DevTools',
+      accelerator: 'F12',
+      click: () => {
+        mainWindow.webContents.openDevTools();
+      }
+    }));
+
+    menu.append(new MenuItem({
+      label: 'Reload',
+      accelerator: 'Ctrl+R',
+      click: () => {
+        mainWindow.webContents.reload();
+      }
+    }));
+
+    menu.popup();
   });
 }
 

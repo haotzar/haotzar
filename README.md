@@ -76,6 +76,7 @@ npm run electron:build:win
 הקובץ המבוצע יווצר בתיקייה `release/`
 
 > 📖 **למידע מפורט על ההבדלים בין הפלטפורמות**, ראה [PLATFORM-SUPPORT.md](PLATFORM-SUPPORT.md)
+> 🐛 **לדיבוג ופתיחת DevTools**, ראה [DEBUGGING.md](DEBUGGING.md)
 
 הקובץ המבוצע יווצר בתיקייה `release/`
 

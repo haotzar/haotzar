@@ -80,6 +80,7 @@ import booksMetadata from './utils/booksMetadata';
 import { autoConvertSearch } from './utils/hebrewConverter';
 import searchIndex from './utils/searchIndex';
 import './utils/meilisearchTest'; // טוען פונקציות בדיקה ל-window.testMeilisearch
+import './utils/devtools'; // טוען כלי דיבוג ל-window.devtools
 import CustomAlert from './components/CustomAlert';
 import CustomConfirm from './components/CustomConfirm';
 import customConfirm from './utils/customConfirm';
