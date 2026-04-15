@@ -734,6 +734,10 @@ function App() {
               console.error('פרטי השגיאה:', error.message);
               setAllFiles([]);
             }
+          } catch (error) {
+            console.error('שגיאה כללית בטעינת Tauri:', error);
+            setAllFiles([]);
+          }
         } else if (isElectron) {
           // Electron - טען מתיקיות מוגדרות
           try {
