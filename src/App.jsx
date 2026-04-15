@@ -35,27 +35,9 @@ import {
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
-// Tauri API - ייבוא מותנה
-let invoke = null;
-let tauriDialog = null;
-
-// נסה לייבא Tauri API אם זמין
-try {
-  if (typeof window !== 'undefined' && window.__TAURI__) {
-    // Tauri זמין - השתמש ב-window.__TAURI__ API
-    invoke = window.__TAURI__.tauri.invoke;
-    tauriDialog = window.__TAURI__.dialog;
-  }
-} catch (err) {
-  console.warn('Tauri API not available:', err);
-}
-
-// אם Tauri לא זמין, צור stub
-if (!invoke) {
-  invoke = async () => {
-    throw new Error('Tauri invoke not available - using Electron/Browser mode');
-  };
-}
+// Tauri API - ייבוא דינמי במקום גישה ישירה
+// השתמש ב-dynamic imports או platform.js בכל מקום שצריך invoke
+// לא צריך להגדיר invoke גלובלי - זה יגרום לבעיות
 
 import TextViewer from './TextViewer';
 import PDFViewer from './PDFViewer';
@@ -426,9 +408,18 @@ function App() {
             
             // אם אין, נסה את הנתיב הדיפולטיבי
             if (!otzariaPath) {
-              otzariaPath = isElectron 
-                ? window.electron.joinPath(window.electron.getAppPath(), 'books', 'אוצריא', 'seforim.db')
-                : await invoke('get_otzaria_db_path');
+              if (isElectron) {
+                otzariaPath = window.electron.joinPath(window.electron.getAppPath(), 'books', 'אוצריא', 'seforim.db');
+              } else {
+                // Tauri - השתמש ב-dynamic import
+                try {
+                  const { invoke } = await import('@tauri-apps/api/tauri');
+                  otzariaPath = await invoke('get_otzaria_db_path');
+                } catch (error) {
+                  console.error('❌ שגיאה בקבלת נתיב אוצריא:', error);
+                  otzariaPath = null;
+                }
+              }
             }
             
             console.log('📍 נתיב אוצריא:', otzariaPath);
@@ -513,9 +504,18 @@ function App() {
               
               // אם אין, נסה את הנתיב הדיפולטיבי
               if (!otzariaPath) {
-                otzariaPath = isElectron 
-                  ? window.electron.joinPath(window.electron.getAppPath(), 'books', 'אוצריא', 'seforim.db')
-                  : await invoke('get_otzaria_db_path');
+                if (isElectron) {
+                  otzariaPath = window.electron.joinPath(window.electron.getAppPath(), 'books', 'אוצריא', 'seforim.db');
+                } else {
+                  // Tauri - השתמש ב-dynamic import
+                  try {
+                    const { invoke } = await import('@tauri-apps/api/tauri');
+                    otzariaPath = await invoke('get_otzaria_db_path');
+                  } catch (error) {
+                    console.error('❌ שגיאה בקבלת נתיב אוצריא:', error);
+                    return; // צא מה-async function
+                  }
+                }
               }
               
               if (isElectron) {
@@ -590,6 +590,7 @@ function App() {
               if (folder === 'books') {
                 // תיקיית books ברירת המחדל - קבל את הנתיב המלא
                 try {
+                  const { invoke } = await import('@tauri-apps/api/tauri');
                   const booksPath = await invoke('get_books_path');
                   scanPaths.push(booksPath);
                   console.log('📁 תיקיית books:', booksPath);
@@ -620,9 +621,11 @@ function App() {
             }
 
             console.log('📁 סורק תיקיות:', scanPaths);
-            const bookFiles = await invoke('scan_books_in_paths', { paths: scanPaths });
-            console.log(`✅ נמצאו ${bookFiles.length} קבצים ב-${(performance.now() - scanStart).toFixed(0)}ms`);
-            console.log('📋 First 5 files:', bookFiles.slice(0, 5));
+            try {
+              const { invoke } = await import('@tauri-apps/api/tauri');
+              const bookFiles = await invoke('scan_books_in_paths', { paths: scanPaths });
+              console.log(`✅ נמצאו ${bookFiles.length} קבצים ב-${(performance.now() - scanStart).toFixed(0)}ms`);
+              console.log('📋 First 5 files:', bookFiles.slice(0, 5));
             
             if (bookFiles.length === 0) {
               console.warn('⚠️ לא נמצאו ספרים');

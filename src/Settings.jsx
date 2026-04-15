@@ -116,12 +116,14 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                       typeof window.__TAURI__.dialog !== 'undefined';
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API דרך window.__TAURI__
-        const selectedPath = await window.__TAURI__.dialog.open({
-          directory: true,
-          multiple: false,
-          title: 'בחר תיקיית ספרים'
-        });
+        // שימוש ב-Tauri dialog API עם dynamic import
+        try {
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
+            directory: true,
+            multiple: false,
+            title: 'בחר תיקיית ספרים'
+          });
         
         if (selectedPath && typeof selectedPath === 'string') {
           const folderName = selectedPath.split(/[/\\]/).pop();
@@ -190,9 +192,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           }
         }
       } else if (isTauri) {
-        // שימוש ב-Tauri dialog API דרך window.__TAURI__
+        // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const selectedPath = await window.__TAURI__.dialog.open({
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
             directory: true,
             multiple: false,
             title: 'בחר תיקיית ספרים'
@@ -336,9 +339,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API דרך window.__TAURI__
+        // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const selectedPath = await window.__TAURI__.dialog.open({
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
             directory: true,
             multiple: false,
             title: 'בחר תיקייה לאינדקס'
@@ -378,9 +382,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       const isElectron = window.electron !== undefined;
       
       if (isTauri) {
-        // שימוש ב-Tauri dialog API דרך window.__TAURI__
+        // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const selectedPath = await window.__TAURI__.dialog.open({
+          const { open } = await import('@tauri-apps/api/dialog');
+          const selectedPath = await open({
             directory: false,
             multiple: false,
             title: 'בחר קובץ מסד נתונים של אוצריא',

@@ -161,6 +161,8 @@ fn scan_books_in_paths(paths: Vec<String>) -> Result<Vec<String>, String> {
         Ok(())
     }
     
+    let paths_count = paths.len(); // שמור את האורך לפני ה-move
+    
     for path_str in paths {
         let path_buf = PathBuf::from(&path_str);
         if path_buf.exists() {
@@ -168,7 +170,7 @@ fn scan_books_in_paths(paths: Vec<String>) -> Result<Vec<String>, String> {
         }
     }
     
-    println!("📁 Scanned {} files from {} paths", all_files.len(), paths.len());
+    println!("📁 Scanned {} files from {} paths", all_files.len(), paths_count);
     
     Ok(all_files)
 }
