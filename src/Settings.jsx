@@ -125,34 +125,38 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             title: 'בחר תיקיית ספרים'
           });
         
-        if (selectedPath && typeof selectedPath === 'string') {
-          const folderName = selectedPath.split(/[/\\]/).pop();
-          
-          if (!libraryFolders.includes(selectedPath)) {
-            const updatedFolders = [...libraryFolders, selectedPath];
-            setLibraryFolders(updatedFolders);
-            updateSetting('libraryFolders', updatedFolders);
+          if (selectedPath && typeof selectedPath === 'string') {
+            const folderName = selectedPath.split(/[/\\]/).pop();
             
-            // בדוק אם זו תיקיית HebrewBooks
-            const isHebrewBooks = selectedPath.toLowerCase().includes('hebrewbooks') || 
-                                  selectedPath.includes('האוצר');
-            
-            if (isHebrewBooks) {
-              console.log('💾 זיהיתי תיקיית HebrewBooks:', selectedPath);
-              localStorage.setItem('hebrewBooksPath', selectedPath);
-              localStorage.setItem('openHebrewBooksAfterReload', 'true');
-              console.log('✅ דגל HebrewBooks נשמר');
+            if (!libraryFolders.includes(selectedPath)) {
+              const updatedFolders = [...libraryFolders, selectedPath];
+              setLibraryFolders(updatedFolders);
+              updateSetting('libraryFolders', updatedFolders);
+              
+              // בדוק אם זו תיקיית HebrewBooks
+              const isHebrewBooks = selectedPath.toLowerCase().includes('hebrewbooks') || 
+                                    selectedPath.includes('האוצר');
+              
+              if (isHebrewBooks) {
+                console.log('💾 זיהיתי תיקיית HebrewBooks:', selectedPath);
+                localStorage.setItem('hebrewBooksPath', selectedPath);
+                localStorage.setItem('openHebrewBooksAfterReload', 'true');
+                console.log('✅ דגל HebrewBooks נשמר');
+              }
+              
+              customAlert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`, { type: 'success', title: 'הצלחה' });
+              
+              // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
+            } else {
+              customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
             }
-            
-            customAlert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`, { type: 'success', title: 'הצלחה' });
-            
-            // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
-            setTimeout(() => {
-              window.location.reload();
-            }, 100);
-          } else {
-            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
           }
+        } catch (error) {
+          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          customAlert('שגיאה בבחירת תיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
         }
       } else if (isElectron) {
         const result = await window.electron.selectFolder();
