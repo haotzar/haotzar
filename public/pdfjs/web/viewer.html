@@ -39,7 +39,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!-- CRITICAL: Load worker configuration BEFORE pdf.mjs -->
 <script src="viewer-config.js"></script>
 
-<script src="../build/pdf.mjs" type="module"></script>
+<!-- CRITICAL: Load PDF.js dynamically with correct path -->
+<script src="pdf-loader.js"></script>
 
     <link rel="stylesheet" href="viewer.css">
     <link rel="stylesheet" href="custom-outline-style.css">

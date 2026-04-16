@@ -24,6 +24,7 @@
     "build:electron": "cross-env ELECTRON=true node scripts/tools.js pdf:worker && cross-env ELECTRON=true node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "build:tauri": "node scripts/tools.js pdf:worker && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
+    "verify:dist": "node scripts/verify-dist.js",
     "electron": "cross-env NODE_ENV=development electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on -t 30000 http://localhost:5173 && npm run electron\"",
     "electron:build": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --publish never",

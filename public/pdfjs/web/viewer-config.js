@@ -17,17 +17,16 @@
   let workerPath;
   
   if (isTauri && isDevelopment) {
-    // Tauri development mode - use Vite dev server
-    // The viewer.html is loaded from http://localhost:5173/pdfjs/web/viewer.html
-    // So /pdfjs/build/pdf.worker.mjs resolves to http://localhost:5173/pdfjs/build/pdf.worker.mjs
+    // Tauri development mode - use Vite dev server with absolute path
     workerPath = '/pdfjs/build/pdf.worker.mjs';
     console.log('🦀 Tauri development mode - worker path:', workerPath);
   } else if (isTauri) {
-    // Tauri production - use absolute path with asset protocol
-    // In production, files are served via asset:// or https://tauri.localhost
-    // Use absolute path to ensure correct resolution
-    workerPath = '/pdfjs/build/pdf.worker.mjs';
-    console.log('🦀 Tauri production mode - worker path:', workerPath, { protocol: window.location.protocol });
+    // Tauri production - המרת נתיב יחסי לנתיב מוחלט
+    // viewer.html נמצא ב-/pdfjs/web/viewer.html
+    // אז ../build/pdf.worker.mjs צריך להיות /pdfjs/build/pdf.worker.mjs
+    const baseUrl = window.location.origin;
+    workerPath = new URL('/pdfjs/build/pdf.worker.mjs', baseUrl).href;
+    console.log('🦀 Tauri production mode - worker path:', workerPath, { protocol: window.location.protocol, origin: baseUrl });
   } else if (isElectron && !isDevelopment) {
     // Production Electron build
     // In packaged apps the renderer typically runs on file:// and Vite base is './'.

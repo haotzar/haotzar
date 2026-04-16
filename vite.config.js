@@ -32,7 +32,16 @@ export default defineConfig({
         /^books\/.*/,
         /^resources\/.*/,
         /^index\/.*/
-      ]
+      ],
+      output: {
+        // שמור על מבנה התיקיות של pdfjs
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.includes('pdfjs')) {
+            return assetInfo.name;
+          }
+          return 'assets/[name]-[hash][extname]';
+        }
+      }
     },
     chunkSizeWarningLimit: 2000,
     minify: 'esbuild',
