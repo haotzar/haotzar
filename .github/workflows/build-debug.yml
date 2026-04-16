@@ -1,0 +1,346 @@
+name: Build with Debug Checks
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ============================================
+      # DEBUG CHECK 1: Verify source PDF.js files exist
+      # ============================================
+      - name: Check source PDF.js files
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 1: Source PDF.js files in public/ ===" -ForegroundColor Cyan
+          
+          $pdfjsBuild = "public/pdfjs/build"
+          $pdfjsWeb = "public/pdfjs/web"
+          
+          if (Test-Path $pdfjsBuild) {
+            Write-Host "✅ public/pdfjs/build exists" -ForegroundColor Green
+            Get-ChildItem $pdfjsBuild -File | ForEach-Object { 
+              Write-Host "   - $($_.Name) ($([math]::Round($_.Length/1KB, 2)) KB)" 
+            }
+          } else {
+            Write-Host "❌ public/pdfjs/build NOT FOUND" -ForegroundColor Red
+          }
+          
+          if (Test-Path $pdfjsWeb) {
+            Write-Host "✅ public/pdfjs/web exists" -ForegroundColor Green
+            Get-ChildItem $pdfjsWeb -File | Select-Object -First 10 | ForEach-Object { 
+              Write-Host "   - $($_.Name)" 
+            }
+          } else {
+            Write-Host "❌ public/pdfjs/web NOT FOUND" -ForegroundColor Red
+          }
+          
+          # Check for critical files
+          $criticalFiles = @(
+            "public/pdfjs/build/pdf.mjs",
+            "public/pdfjs/build/pdf.worker.mjs",
+            "public/pdfjs/web/viewer.html",
+            "public/pdfjs/web/viewer.mjs",
+            "public/pdfjs/web/custom-search.js",
+            "public/pdfjs/web/custom-outline-style.css"
+          )
+          
+          Write-Host "`n=== Critical Files Check ===" -ForegroundColor Cyan
+          foreach ($file in $criticalFiles) {
+            if (Test-Path $file) {
+              Write-Host "✅ $file" -ForegroundColor Green
+            } else {
+              Write-Host "❌ $file MISSING" -ForegroundColor Red
+            }
+          }
+
+      # ============================================
+      # DEBUG CHECK 2: Check vite.config.js for publicDir
+      # ============================================
+      - name: Check Vite configuration
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 2: Vite Configuration ===" -ForegroundColor Cyan
+          
+          if (Test-Path "vite.config.js") {
+            $content = Get-Content "vite.config.js" -Raw
+            Write-Host "vite.config.js content:" -ForegroundColor Yellow
+            Write-Host $content
+            
+            if ($content -match "publicDir\s*:\s*false") {
+              Write-Host "`n⚠️ WARNING: publicDir is set to false - PDF.js won't be copied!" -ForegroundColor Red
+            } elseif ($content -match "publicDir\s*:\s*['`]public['`]") {
+              Write-Host "`n✅ publicDir is set to 'public' - good" -ForegroundColor Green
+            } else {
+              Write-Host "`nℹ️ publicDir not explicitly set - defaults to 'public'" -ForegroundColor Yellow
+            }
+          } else {
+            Write-Host "❌ vite.config.js not found" -ForegroundColor Red
+          }
+
+      # ============================================
+      # DEBUG CHECK 3: Check tauri.conf.json CSP
+      # ============================================
+      - name: Check Tauri CSP configuration
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 3: Tauri CSP Configuration ===" -ForegroundColor Cyan
+          
+          $tauriConfig = "src-tauri/tauri.conf.json"
+          if (Test-Path $tauriConfig) {
+            $content = Get-Content $tauriConfig -Raw
+            
+            # Extract CSP
+            if ($content -match '"csp"\s*:\s*"([^"]+)"') {
+              $csp = $matches[1]
+              Write-Host "Current CSP:" -ForegroundColor Yellow
+              Write-Host $csp
+              
+              # Check for problematic patterns
+              Write-Host "`n=== CSP Analysis ===" -ForegroundColor Cyan
+              
+              if ($csp -match "nonce-") {
+                Write-Host "⚠️ WARNING: CSP contains nonce-XXX" -ForegroundColor Red
+                Write-Host "   This will cause 'unsafe-inline' to be ignored!" -ForegroundColor Red
+              }
+              
+              if ($csp -match "style-src[^;]*tauri:") {
+                Write-Host "⚠️ WARNING: style-src includes 'tauri:' - may cause issues" -ForegroundColor Yellow
+                Write-Host "   Suggested fix: Remove 'tauri:' and 'asset:' from style-src" -ForegroundColor Yellow
+              }
+              
+              if ($csp -match "style-src[^;]*'unsafe-inline'") {
+                Write-Host "✅ style-src has 'unsafe-inline'" -ForegroundColor Green
+              } else {
+                Write-Host "❌ style-src missing 'unsafe-inline'" -ForegroundColor Red
+              }
+            } else {
+              Write-Host "❌ Could not extract CSP from config" -ForegroundColor Red
+            }
+          } else {
+            Write-Host "❌ tauri.conf.json not found" -ForegroundColor Red
+          }
+
+      # ============================================
+      # DEBUG CHECK 4: Check for inline styles in code
+      # ============================================
+      - name: Check for inline style violations
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 4: Inline Style Violations Check ===" -ForegroundColor Cyan
+          
+          # Check viewer.html for style= attributes
+          Write-Host "`n--- Checking viewer.html for inline styles ---" -ForegroundColor Yellow
+          $viewerHtml = "public/pdfjs/web/viewer.html"
+          if (Test-Path $viewerHtml) {
+            $matches = Select-String -Path $viewerHtml -Pattern 'style\s*=' -AllMatches
+            if ($matches) {
+              Write-Host "⚠️ Found inline styles in viewer.html:" -ForegroundColor Red
+              $matches | ForEach-Object { Write-Host "   Line $($_.LineNumber): $($_.Line -replace '\s+', ' ').Substring(0, [Math]::Min(80, $_.Line.Length))" }
+            } else {
+              Write-Host "✅ No inline styles found in viewer.html" -ForegroundColor Green
+            }
+          }
+          
+          # Check custom-search.js for style manipulations
+          Write-Host "`n--- Checking custom-search.js for style.*opacity/display ---" -ForegroundColor Yellow
+          $customSearch = "public/pdfjs/web/custom-search.js"
+          if (Test-Path $customSearch) {
+            $matches = Select-String -Path $customSearch -Pattern '\.style\.(opacity|display|backgroundColor|setProperty)' -AllMatches
+            if ($matches) {
+              Write-Host "⚠️ Found style manipulations in custom-search.js:" -ForegroundColor Red
+              $matches | ForEach-Object { Write-Host "   Line $($_.LineNumber): $($_.Line -replace '\s+', ' ').Substring(0, [Math]::Min(80, $_.Line.Length))" }
+            } else {
+              Write-Host "✅ No inline style manipulations in custom-search.js" -ForegroundColor Green
+            }
+          }
+          
+          # Check React components for setProperty and element.style
+          Write-Host "`n--- Checking React components for style violations ---" -ForegroundColor Yellow
+          $jsxFiles = Get-ChildItem "src" -Recurse -Include "*.jsx", "*.js" -ErrorAction SilentlyContinue
+          $foundIssues = $false
+          foreach ($file in $jsxFiles) {
+            $matches = Select-String -Path $file.FullName -Pattern 'document\.documentElement\.style\.setProperty|element\.style\.' -AllMatches -ErrorAction SilentlyContinue
+            if ($matches) {
+              $foundIssues = $true
+              Write-Host "⚠️ $($file.FullName):" -ForegroundColor Red
+              $matches | ForEach-Object { Write-Host "   Line $($_.LineNumber)" }
+            }
+          }
+          if (-not $foundIssues) {
+            Write-Host "✅ No setProperty or element.style found in React components" -ForegroundColor Green
+          }
+
+      # ============================================
+      # BUILD STEP
+      # ============================================
+      - name: Build frontend
+        run: npm run build
+
+      # ============================================
+      # DEBUG CHECK 5: Verify PDF.js in dist
+      # ============================================
+      - name: Check dist PDF.js files
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 5: PDF.js files in dist/ after build ===" -ForegroundColor Cyan
+          
+          $distBuild = "dist/pdfjs/build"
+          $distWeb = "dist/pdfjs/web"
+          
+          if (Test-Path $distBuild) {
+            Write-Host "✅ dist/pdfjs/build exists" -ForegroundColor Green
+            Get-ChildItem $distBuild -File | ForEach-Object { 
+              Write-Host "   - $($_.Name) ($([math]::Round($_.Length/1KB, 2)) KB)" 
+            }
+          } else {
+            Write-Host "❌ dist/pdfjs/build NOT FOUND - PDF.js wasn't copied!" -ForegroundColor Red
+          }
+          
+          if (Test-Path $distWeb) {
+            Write-Host "✅ dist/pdfjs/web exists" -ForegroundColor Green
+          } else {
+            Write-Host "❌ dist/pdfjs/web NOT FOUND!" -ForegroundColor Red
+          }
+          
+          # Verify critical files
+          Write-Host "`n=== Verifying critical files in dist ===" -ForegroundColor Cyan
+          $distFiles = @(
+            "dist/pdfjs/build/pdf.mjs",
+            "dist/pdfjs/build/pdf.worker.mjs",
+            "dist/pdfjs/web/viewer.html"
+          )
+          foreach ($file in $distFiles) {
+            if (Test-Path $file) {
+              $size = (Get-Item $file).Length
+              Write-Host "✅ $file ($([math]::Round($size/1KB, 2)) KB)" -ForegroundColor Green
+              
+              # Check if pdf.mjs is actually JS or HTML
+              if ($file -match "pdf\.mjs$") {
+                $firstLine = Get-Content $file -First 1
+                if ($firstLine -match "<\!DOCTYPE|<html|<head") {
+                  Write-Host "   ❌ ERROR: pdf.mjs contains HTML, not JavaScript!" -ForegroundColor Red
+                } else {
+                  Write-Host "   ✅ Content appears to be JavaScript" -ForegroundColor Green
+                }
+              }
+            } else {
+              Write-Host "❌ $file MISSING" -ForegroundColor Red
+            }
+          }
+
+      # ============================================
+      # DEBUG CHECK 6: Check viewer.html content
+      # ============================================
+      - name: Check viewer.html for CSP and styles
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 6: viewer.html content analysis ===" -ForegroundColor Cyan
+          
+          $viewerPath = "dist/pdfjs/web/viewer.html"
+          if (Test-Path $viewerPath) {
+            $content = Get-Content $viewerPath -Raw
+            
+            # Check for inline style blocks
+            if ($content -match '<style[^>]*>') {
+              Write-Host "⚠️ Found inline <style> blocks in viewer.html" -ForegroundColor Yellow
+              $matches = [regex]::Matches($content, '<style[^>]*>[\s\S]*?</style>')
+              Write-Host "   Found $($matches.Count) <style> block(s)" -ForegroundColor Yellow
+            } else {
+              Write-Host "✅ No inline <style> blocks found" -ForegroundColor Green
+            }
+            
+            # Check for style= attributes
+            $styleAttrs = [regex]::Matches($content, '\sstyle\s*=\s*"[^"]*"')
+            if ($styleAttrs.Count -gt 0) {
+              Write-Host "⚠️ Found $($styleAttrs.Count) style= attributes in viewer.html" -ForegroundColor Red
+              $styleAttrs | Select-Object -First 5 | ForEach-Object {
+                Write-Host "   $($_.Value.Substring(0, [Math]::Min(60, $_.Value.Length)))..."
+              }
+            } else {
+              Write-Host "✅ No style= attributes found" -ForegroundColor Green
+            }
+            
+            # Show first 30 lines for context
+            Write-Host "`n=== First 30 lines of viewer.html ===" -ForegroundColor Yellow
+            Get-Content $viewerPath -First 30
+          } else {
+            Write-Host "❌ viewer.html not found in dist" -ForegroundColor Red
+          }
+
+      # ============================================
+      # DEBUG CHECK 7: Check file types
+      # ============================================
+      - name: Verify file MIME types would be correct
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 7: File extension analysis ===" -ForegroundColor Cyan
+          
+          Get-ChildItem "dist/pdfjs/build" -File -ErrorAction SilentlyContinue | ForEach-Object {
+            $ext = $_.Extension
+            $expectedMime = switch ($ext) {
+              ".mjs" { "application/javascript" }
+              ".js" { "application/javascript" }
+              ".wasm" { "application/wasm" }
+              default { "unknown" }
+            }
+            Write-Host "$($_.Name): $ext -> $expectedMime"
+          }
+
+      # ============================================
+      # BUILD TAURI
+      # ============================================
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
+      - name: Build Tauri app
+        run: cargo tauri build
+        working-directory: src-tauri
+
+      # ============================================
+      # DEBUG CHECK 8: Verify bundled app
+      # ============================================
+      - name: Check bundled application
+        shell: pwsh
+        run: |
+          Write-Host "=== CHECK 8: Bundled application contents ===" -ForegroundColor Cyan
+          
+          # Find the MSI/EXE
+          $bundleDir = "src-tauri/target/release/bundle"
+          if (Test-Path $bundleDir) {
+            Write-Host "Bundle directory structure:" -ForegroundColor Yellow
+            Get-ChildItem $bundleDir -Recurse -File | ForEach-Object {
+              Write-Host "   $($_.FullName.Substring($bundleDir.Length)) ($([math]::Round($_.Length/1MB, 2)) MB)"
+            }
+          } else {
+            Write-Host "❌ Bundle directory not found" -ForegroundColor Red
+          }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-artifacts
+          path: |
+            dist/pdfjs/
+            src-tauri/target/release/bundle/
+          retention-days: 5

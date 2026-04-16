@@ -1,4 +1,5 @@
 import { DocumentRegular, DocumentTextRegular, SearchRegular, PersonRegular, BookRegular } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './SearchAutocomplete.css';
 
 const SearchAutocomplete = ({ suggestions, onSelect, searchQuery }) => {
@@ -342,44 +343,49 @@ const SearchAutocomplete = ({ suggestions, onSelect, searchQuery }) => {
             
             {/* אייקון מקור הספר */}
             {bookSource === 'otzaria' && (
-              <img 
-                src="/otzaria-icon.png" 
-                alt="אוצריא" 
-                className="source-badge"
-                title="ספר מאוצריא"
-              />
+              <TooltipWrapper content="ספר מאוצריא">
+                <img 
+                  src="/otzaria-icon.png" 
+                  alt="אוצריא" 
+                  className="source-badge"
+                />
+              </TooltipWrapper>
             )}
             {bookSource === 'hebrewbooks' && (
-              <img 
-                src="/hebrew_books.png" 
-                alt="HebrewBooks" 
-                className="source-badge"
-                title="ספר מ-HebrewBooks"
-              />
+              <TooltipWrapper content="ספר מ-HebrewBooks">
+                <img 
+                  src="/hebrew_books.png" 
+                  alt="HebrewBooks" 
+                  className="source-badge"
+                />
+              </TooltipWrapper>
             )}
             {bookSource === 'ozvehadar' && (
-              <img 
-                src="/Logo-ozveadar.png" 
-                alt="עוז והדר" 
-                className="source-badge"
-                title="ספר מעוז והדר"
-              />
+              <TooltipWrapper content="ספר מעוז והדר">
+                <img 
+                  src="/Logo-ozveadar.png" 
+                  alt="עוז והדר" 
+                  className="source-badge"
+                />
+              </TooltipWrapper>
             )}
             {bookSource === 'kook' && (
-              <img 
-                src="/logo-kook.png" 
-                alt="מוסד הרב קוק" 
-                className="source-badge"
-                title="ספר ממוסד הרב קוק"
-              />
+              <TooltipWrapper content="ספר ממוסד הרב קוק">
+                <img 
+                  src="/logo-kook.png" 
+                  alt="מוסד הרב קוק" 
+                  className="source-badge"
+                />
+              </TooltipWrapper>
             )}
             {bookSource === 'ozer' && (
-              <img 
-                src="/icon.png" 
-                alt="האוצר" 
-                className="source-badge"
-                title="ספר מהאוצר"
-              />
+              <TooltipWrapper content="ספר מהאוצר">
+                <img 
+                  src="/icon.png" 
+                  alt="האוצר" 
+                  className="source-badge"
+                />
+              </TooltipWrapper>
             )}
             
             <SearchRegular className="autocomplete-arrow" />

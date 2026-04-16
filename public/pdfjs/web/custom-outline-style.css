@@ -500,3 +500,16 @@
     color: #e8dcc4 !important;
   }
 }
+
+/* CSP-safe sidebar visibility classes (replaces inline style.opacity) */
+#sidebarContent {
+  transition: opacity 0.2s ease;
+}
+
+#sidebarContent.sidebar-hidden {
+  opacity: 0;
+}
+
+#sidebarContent.sidebar-visible {
+  opacity: 1;
+}

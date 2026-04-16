@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import customConfirm from '../utils/customConfirm';
 import './MetadataEditor.css';
 
@@ -147,9 +148,11 @@ const MetadataEditor = ({ onBack }) => {
       <div className="editor-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {onBack && (
-            <button onClick={onBack} className="btn-back" title="חזור להגדרות">
-              ←
-            </button>
+            <TooltipWrapper content="חזור להגדרות">
+              <button onClick={onBack} className="btn-back">
+                ←
+              </button>
+            </TooltipWrapper>
           )}
           <h1>עורך מטא-דאטה של ספרים</h1>
         </div>

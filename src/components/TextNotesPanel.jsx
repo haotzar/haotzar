@@ -5,6 +5,7 @@ import {
   DeleteRegular,
   NoteRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import customAlert from '../utils/customAlert';
 import customConfirm from '../utils/customConfirm';
 import './TextNotesPanel.css';
@@ -171,11 +172,12 @@ const TextNotesPanel = ({ bookName, currentLineIndex, onClose, autoOpenCreate = 
   return (
     <div className="text-notes-panel-sidebar" ref={panelRef} style={{ width: `${panelWidth}px` }}>
       {/* Resize Handle */}
-      <div 
-        className="panel-resize-handle"
-        onMouseDown={() => setIsResizing(true)}
-        title="גרור לשינוי רוחב"
-      />
+      <TooltipWrapper content="גרור לשינוי רוחב">
+        <div 
+          className="panel-resize-handle"
+          onMouseDown={() => setIsResizing(true)}
+        />
+      </TooltipWrapper>
       
       {/* Header */}
       <div className="notes-sidebar-header">
@@ -184,9 +186,11 @@ const TextNotesPanel = ({ bookName, currentLineIndex, onClose, autoOpenCreate = 
           <h3 className="header-title">הערות אישיות</h3>
           <span className="notes-count">({notes.length})</span>
         </div>
-        <button className="close-panel-btn" onClick={onClose} title="סגור">
-          <DismissRegular />
-        </button>
+        <TooltipWrapper content="סגור">
+          <button className="close-panel-btn" onClick={onClose}>
+            <DismissRegular />
+          </button>
+        </TooltipWrapper>
       </div>
 
       {/* Content */}
@@ -250,13 +254,14 @@ const TextNotesPanel = ({ bookName, currentLineIndex, onClose, autoOpenCreate = 
               <div key={note.id} className="note-item">
                 <div className="note-item-header">
                   <h4 className="note-item-title">{note.title}</h4>
-                  <button
-                    className="delete-note-btn"
-                    onClick={() => handleDeleteNote(note.id)}
-                    title="מחק הערה"
-                  >
-                    <DeleteRegular />
-                  </button>
+                  <TooltipWrapper content="מחק הערה">
+                    <button
+                      className="delete-note-btn"
+                      onClick={() => handleDeleteNote(note.id)}
+                    >
+                      <DeleteRegular />
+                    </button>
+                  </TooltipWrapper>
                 </div>
                 <p className="note-item-content">{note.content}</p>
                 <div className="note-item-footer">

@@ -15,6 +15,7 @@ import {
   GridRegular,
   ListRegular,
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import PDFThumbnail from './PDFThumbnail';
 import TextViewer from '../TextViewer';
 import { getOtzariaRootFolder, getOtzariaCategoryById, getOtzariaCategoryByPath, clearOtzariaTreeCache } from '../utils/otzariaIntegration';
@@ -632,20 +633,22 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
             <div className="preview-controls">
               {/* כפתורי החלפת תצוגה - רשימה/כרטיסים */}
               <div className="view-mode-controls">
-                <button
-                  className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
-                  onClick={() => setViewMode('list')}
-                  title="תצוגת רשימה"
-                >
-                  <ListRegular />
-                </button>
-                <button
-                  className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                  onClick={() => setViewMode('grid')}
-                  title="תצוגת כרטיסים"
-                >
-                  <GridRegular />
-                </button>
+                <TooltipWrapper content="תצוגת רשימה">
+                  <button
+                    className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
+                    onClick={() => setViewMode('list')}
+                  >
+                    <ListRegular />
+                  </button>
+                </TooltipWrapper>
+                <TooltipWrapper content="תצוגת כרטיסים">
+                  <button
+                    className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <GridRegular />
+                  </button>
+                </TooltipWrapper>
               </div>
               
               {/* כפתור החלפת מצב - רק כשהחלונית פתוחה */}
@@ -823,7 +826,7 @@ const FolderPreview = ({ folder, onClose, onFileClick, onFolderClick, allFiles }
                           key={previewFile.path}
                           src={previewUrl}
                           className="pdf-preview-iframe"
-                          title="תצוגה מקדימה"
+                          aria-label="תצוגה מקדימה"
                         />
                       ) : (
                         <div className="folder-preview-panel-empty">

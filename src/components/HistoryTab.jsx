@@ -6,6 +6,7 @@ import {
   SearchRegular,
   DismissRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './HistoryTab.css';
 
 const HistoryTab = ({ recentBooks = [], onFileClick, onClearHistory }) => {
@@ -144,13 +145,14 @@ const HistoryTab = ({ recentBooks = [], onFileClick, onClearHistory }) => {
         <div className="history-title-row">
           <h1 className="history-main-title">היסטוריה</h1>
           <div className="history-actions">
-            <button
-              className="history-clear-btn"
-              onClick={onClearHistory}
-              title="נקה היסטוריה"
-            >
-              נקה היסטוריה
-            </button>
+            <TooltipWrapper content="נקה היסטוריה">
+              <button
+                className="history-clear-btn"
+                onClick={onClearHistory}
+              >
+                נקה היסטוריה
+              </button>
+            </TooltipWrapper>
           </div>
         </div>
         
@@ -165,13 +167,14 @@ const HistoryTab = ({ recentBooks = [], onFileClick, onClearHistory }) => {
               className="history-search-input"
             />
             {searchQuery && (
-              <button
-                className="search-clear-btn"
-                onClick={() => setSearchQuery('')}
-                title="נקה חיפוש"
-              >
-                <DismissRegular />
-              </button>
+              <TooltipWrapper content="נקה חיפוש">
+                <button
+                  className="search-clear-btn"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <DismissRegular />
+                </button>
+              </TooltipWrapper>
             )}
           </div>
         </div>

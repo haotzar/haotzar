@@ -8,6 +8,7 @@ import {
   GridRegular,
   ListRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './FileTree.css';
 
 const FileTreeNode = ({ node, onFileClick, onFolderClick, level = 0, viewMode, searchTerm }) => {
@@ -368,20 +369,22 @@ const FileTree = ({ files, onFileClick }) => {
           />
           
           <div className="view-mode-buttons">
-            <button
-              className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              title="תצוגת רשימה"
-            >
-              <ListRegular />
-            </button>
-            <button
-              className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              title="תצוגת רשת"
-            >
-              <GridRegular />
-            </button>
+            <TooltipWrapper content="תצוגת רשימה">
+              <button
+                className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+              >
+                <ListRegular />
+              </button>
+            </TooltipWrapper>
+            <TooltipWrapper content="תצוגת רשת">
+              <button
+                className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+              >
+                <GridRegular />
+              </button>
+            </TooltipWrapper>
           </div>
         </div>
       </div>

@@ -35,12 +35,12 @@
     console.log('⚠️ Could not clear global preference:', e);
   }
 
-  // הסתר את הסיידבר עד שהוא מוכן
+  // הסתר את הסיידבר עד שהוא מוכן (CSP-safe with CSS classes)
   const hideSidebarUntilReady = function() {
     const sidebarContent = document.getElementById('sidebarContent');
     if (sidebarContent) {
-      sidebarContent.style.opacity = '0';
-      sidebarContent.style.transition = 'opacity 0.2s ease';
+      sidebarContent.classList.add('sidebar-hidden');
+      sidebarContent.classList.remove('sidebar-visible');
     }
   };
 
@@ -91,10 +91,11 @@
         }
       }
       
-      // הצג את הסיידבר
+      // הצג את הסיידבר (CSP-safe with CSS classes)
       const sidebarContent = document.getElementById('sidebarContent');
       if (sidebarContent) {
-        sidebarContent.style.opacity = '1';
+        sidebarContent.classList.remove('sidebar-hidden');
+        sidebarContent.classList.add('sidebar-visible');
       }
     };
     

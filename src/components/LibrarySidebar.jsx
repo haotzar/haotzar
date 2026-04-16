@@ -12,6 +12,7 @@ import {
   HistoryRegular,
   HomeRegular,
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './LibrarySidebar.css';
 import { buildOtzariaVirtualTree, buildHebrewBooksVirtualTree } from '../utils/otzariaIntegration';
 import { getSetting } from '../utils/settingsManager';
@@ -585,57 +586,61 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
     <div className={`library-sidebar ${!isOpen ? 'collapsed' : ''}`}>
       <div className="library-sidebar-header">
         {/* חץ למעלה */}
-        <button
-          className="library-sidebar-nav-btn"
-          onClick={navigateUp}
-          disabled={!canNavigateUp}
-          aria-label="למעלה"
-          title="תיקייה אב"
-          type="button"
-        >
-          <ChevronUpRegular />
-        </button>
+        <TooltipWrapper content="תיקייה אב">
+          <button
+            className="library-sidebar-nav-btn"
+            onClick={navigateUp}
+            disabled={!canNavigateUp}
+            aria-label="למעלה"
+            type="button"
+          >
+            <ChevronUpRegular />
+          </button>
+        </TooltipWrapper>
         
         {/* פס הפרדה */}
         <div className="library-sidebar-divider"></div>
         
         {/* חיצי ניווט קדימה/אחורה */}
         <div className="library-sidebar-navigation">
-          <button
-            className="library-sidebar-nav-btn"
-            onClick={navigateForward}
-            disabled={!canNavigateForward}
-            aria-label="קדימה"
-            title="קדימה"
-            type="button"
-          >
-            <ChevronLeftRegular style={{ transform: 'rotate(180deg)' }} />
-          </button>
-          <button
-            className="library-sidebar-nav-btn"
-            onClick={navigateBack}
-            disabled={!canNavigateBack}
-            aria-label="אחורה"
-            title="אחורה"
-            type="button"
-          >
-            <ChevronLeftRegular />
-          </button>
+          <TooltipWrapper content="קדימה">
+            <button
+              className="library-sidebar-nav-btn"
+              onClick={navigateForward}
+              disabled={!canNavigateForward}
+              aria-label="קדימה"
+              type="button"
+            >
+              <ChevronLeftRegular style={{ transform: 'rotate(180deg)' }} />
+            </button>
+          </TooltipWrapper>
+          <TooltipWrapper content="אחורה">
+            <button
+              className="library-sidebar-nav-btn"
+              onClick={navigateBack}
+              disabled={!canNavigateBack}
+              aria-label="אחורה"
+              type="button"
+            >
+              <ChevronLeftRegular />
+            </button>
+          </TooltipWrapper>
         </div>
         
         {/* פס הפרדה */}
         <div className="library-sidebar-divider"></div>
         
         {/* כפתור בית */}
-        <button
-          className="library-sidebar-nav-btn library-sidebar-home-btn"
-          onClick={handleHomeClick}
-          aria-label="בית - ספרייה ראשית"
-          title="בית"
-          type="button"
-        >
-          <HomeRegular />
-        </button>
+        <TooltipWrapper content="בית">
+          <button
+            className="library-sidebar-nav-btn library-sidebar-home-btn"
+            onClick={handleHomeClick}
+            aria-label="בית - ספרייה ראשית"
+            type="button"
+          >
+            <HomeRegular />
+          </button>
+        </TooltipWrapper>
       </div>
 
       <div className="library-sidebar-content">
@@ -656,17 +661,18 @@ const LibrarySidebar = ({ allFiles, pinnedBooks = [], onFileClick, onUnpinBook, 
                   <DocumentRegular />
                 </span>
                 <span className="sidebar-tree-label">{book.name}</span>
-                <button
-                  className="unpin-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUnpinBook(book.id);
-                  }}
-                  title="בטל הצמדה"
-                  aria-label="בטל הצמדה"
-                >
-                  <PinOffRegular style={{ fontSize: '14px' }} />
-                </button>
+                <TooltipWrapper content="בטל הצמדה">
+                  <button
+                    className="unpin-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUnpinBook(book.id);
+                    }}
+                    aria-label="בטל הצמדה"
+                  >
+                    <PinOffRegular style={{ fontSize: '14px' }} />
+                  </button>
+                </TooltipWrapper>
               </div>
             ))}
             <div className="pinned-books-divider"></div>

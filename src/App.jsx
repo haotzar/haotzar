@@ -53,6 +53,7 @@ import FileTree from './components/FileTree';
 import BookPreview from './components/BookPreview';
 import FolderPreview from './components/FolderPreview';
 import HistoryTab from './components/HistoryTab';
+import TooltipWrapper from './components/TooltipWrapper';
 import { loadSettings, saveSettings, updateSetting, getSetting } from './utils/settingsManager';
 import otzariaDB from './utils/otzariaDB';
 import { buildOtzariaVirtualTree, searchOtzariaBooks, clearOtzariaTreeCache } from './utils/otzariaIntegration';
@@ -2743,14 +2744,15 @@ function App() {
               {openTabs.length > 0 && currentView === 'books' && (
                 <div className="tabs-container">
                 {/* כפתור רשימת כרטיסיות */}
-                <button
-                  className="search-tabs-btn"
-                  onClick={() => setShowTabsDialog(!showTabsDialog)}
-                  title="רשימת כרטיסיות (Ctrl+Shift+A)"
-                  aria-label="רשימת כרטיסיות"
-                >
-                  <ChevronDownRegular />
-                </button>
+                <TooltipWrapper content="רשימת כרטיסיות (Ctrl+Shift+A)">
+                  <button
+                    className="search-tabs-btn"
+                    onClick={() => setShowTabsDialog(!showTabsDialog)}
+                    aria-label="רשימת כרטיסיות"
+                  >
+                    <ChevronDownRegular />
+                  </button>
+                </TooltipWrapper>
                 {openTabs.map((tab) => (
                   <div
                     key={tab.id}
@@ -2807,14 +2809,15 @@ function App() {
                   </div>
                 ))}
                 {/* כפתור + לכרטיסייה חדשה */}
-                <button
-                  className="new-tab-btn"
-                  onClick={handleNewSearchTab}
-                  title="כרטיסיית חיפוש חדשה"
-                  aria-label="כרטיסייה חדשה"
-                >
-                  +
-                </button>
+                <TooltipWrapper content="כרטיסיית חיפוש חדשה">
+                  <button
+                    className="new-tab-btn"
+                    onClick={handleNewSearchTab}
+                    aria-label="כרטיסייה חדשה"
+                  >
+                    +
+                  </button>
+                </TooltipWrapper>
               </div>
               )}
 
@@ -3185,26 +3188,28 @@ function App() {
                     ) : (
                       <div className="empty-state">
                         <div className="empty-state-cards">
-                          <div 
-                            className="empty-state-card"
-                            onClick={handleNewSearchTab}
-                            title="פתח חיפוש"
-                          >
-                            <SearchRegular className="empty-state-card-icon" />
-                            <span className="empty-state-card-title">חיפוש</span>
-                          </div>
-                          <div 
-                            className="empty-state-card"
-                            onClick={() => {
-                              setCurrentView('books');
-                              setFolderPreview(null); // אפס תצוגת תיקייה כדי להציג שורש
-                              setIsLibrarySidebarOpen(true);
-                            }}
-                            title="פתח ספרייה"
-                          >
-                            <LibraryRegular className="empty-state-card-icon" />
-                            <span className="empty-state-card-title">ספרייה</span>
-                          </div>
+                          <TooltipWrapper content="פתח חיפוש">
+                            <div 
+                              className="empty-state-card"
+                              onClick={handleNewSearchTab}
+                            >
+                              <SearchRegular className="empty-state-card-icon" />
+                              <span className="empty-state-card-title">חיפוש</span>
+                            </div>
+                          </TooltipWrapper>
+                          <TooltipWrapper content="פתח ספרייה">
+                            <div 
+                              className="empty-state-card"
+                              onClick={() => {
+                                setCurrentView('books');
+                                setFolderPreview(null); // אפס תצוגת תיקייה כדי להציג שורש
+                                setIsLibrarySidebarOpen(true);
+                              }}
+                            >
+                              <LibraryRegular className="empty-state-card-icon" />
+                              <span className="empty-state-card-title">ספרייה</span>
+                            </div>
+                          </TooltipWrapper>
                         </div>
                         <Text size={500} style={{ marginTop: '32px', opacity: 0.7 }}>
                           לחץ על הספרייה לבחירת ספר או על החיפוש לחיפוש בתוכן

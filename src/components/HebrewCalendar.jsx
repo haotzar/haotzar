@@ -8,6 +8,7 @@ import {
   ClockRegular,
   LocationRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './HebrewCalendar.css';
 
 const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -514,24 +515,29 @@ const HebrewCalendarComponent = ({ onDateSelect, onMonthChange }) => {
                     {dayInfo.date.getDate()}
                   </div>
                   {dayInfo.isCurrentMonth && (
-                    <button
-                      className="zmanim-icon-btn"
-                      onClick={(e) => openZmanimDialog(dayInfo.date, e)}
-                      title="זמני היום"
-                    >
-                      <ClockRegular />
-                    </button>
+                    <TooltipWrapper content="זמני היום">
+                      <button
+                        className="zmanim-icon-btn"
+                        onClick={(e) => openZmanimDialog(dayInfo.date, e)}
+                      >
+                        <ClockRegular />
+                      </button>
+                    </TooltipWrapper>
                   )}
                 </div>
                 {hasHoliday && (
-                  <div className="holiday-indicator" title={dayInfo.hebrewInfo.holidays[0].render('he')}>
-                    •
-                  </div>
+                  <TooltipWrapper content={dayInfo.hebrewInfo.holidays[0].render('he')}>
+                    <div className="holiday-indicator">
+                      •
+                    </div>
+                  </TooltipWrapper>
                 )}
                 {hasParsha && (
-                  <div className="parsha-name" title={`פרשת ${hasParsha}`}>
-                    {hasParsha}
-                  </div>
+                  <TooltipWrapper content={`פרשת ${hasParsha}`}>
+                    <div className="parsha-name">
+                      {hasParsha}
+                    </div>
+                  </TooltipWrapper>
                 )}
               </div>
             );
@@ -554,19 +560,20 @@ const HebrewCalendarComponent = ({ onDateSelect, onMonthChange }) => {
                   </div>
                   <div className="city-selector-inline">
                     <LocationRegular className="city-icon-inline" />
-                    <select 
-                      id="city-select"
-                      value={selectedCity} 
-                      onChange={(e) => handleCityChange(e.target.value)}
-                      className="city-select-inline"
-                      title="בחר עיר לחישוב זמנים"
-                    >
-                      {availableCities.map((city) => (
-                        <option key={city.name} value={city.name}>
-                          {city.hebrewName}
-                        </option>
-                      ))}
-                    </select>
+                    <TooltipWrapper content="בחר עיר לחישוב זמנים">
+                      <select 
+                        id="city-select"
+                        value={selectedCity} 
+                        onChange={(e) => handleCityChange(e.target.value)}
+                        className="city-select-inline"
+                      >
+                        {availableCities.map((city) => (
+                          <option key={city.name} value={city.name}>
+                            {city.hebrewName}
+                          </option>
+                        ))}
+                      </select>
+                    </TooltipWrapper>
                   </div>
                 </div>
                 {zmanimData.parsha && (

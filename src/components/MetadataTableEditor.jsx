@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import customAlert from '../utils/customAlert';
 import customConfirm from '../utils/customConfirm';
 import './MetadataTableEditor.css';
@@ -182,9 +183,11 @@ const MetadataTableEditor = ({ onBack }) => {
       <div className="table-header">
         <div className="header-right">
           {onBack && (
-            <button onClick={onBack} className="btn-back" title="חזור להגדרות">
-              ← חזור
-            </button>
+            <TooltipWrapper content="חזור להגדרות">
+              <button onClick={onBack} className="btn-back">
+                ← חזור
+              </button>
+            </TooltipWrapper>
           )}
           <h1>עורך מטא-דאטה - תצוגת טבלה</h1>
           {isModified && <span className="modified-badge">● שונה</span>}
@@ -222,20 +225,22 @@ const MetadataTableEditor = ({ onBack }) => {
             {books.map((book, rowIndex) => (
               <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'even' : 'odd'}>
                 <td className="col-actions">
-                  <button 
-                    onClick={() => duplicateRow(rowIndex)} 
-                    className="btn-icon" 
-                    title="שכפל"
-                  >
-                    📋
-                  </button>
-                  <button 
-                    onClick={() => deleteRow(rowIndex)} 
-                    className="btn-icon btn-delete" 
-                    title="מחק"
-                  >
-                    🗑️
-                  </button>
+                  <TooltipWrapper content="שכפל">
+                    <button 
+                      onClick={() => duplicateRow(rowIndex)} 
+                      className="btn-icon"
+                    >
+                      📋
+                    </button>
+                  </TooltipWrapper>
+                  <TooltipWrapper content="מחק">
+                    <button 
+                      onClick={() => deleteRow(rowIndex)} 
+                      className="btn-icon btn-delete"
+                    >
+                      🗑️
+                    </button>
+                  </TooltipWrapper>
                 </td>
                 
                 <td 

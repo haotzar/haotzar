@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SearchRegular, ArrowSwapRegular, DismissRegular } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './AramaicDictionary.css';
 
 const AramaicDictionary = () => {
@@ -116,13 +117,14 @@ const AramaicDictionary = () => {
               <span className={direction === 'aramaic-hebrew' ? 'active' : ''}>
                 ארמית
               </span>
-              <button 
-                className="swap-button"
-                onClick={handleSwapDirection}
-                title="החלף כיוון"
-              >
-                <ArrowSwapRegular />
-              </button>
+              <TooltipWrapper content="החלף כיוון">
+                <button 
+                  className="swap-button"
+                  onClick={handleSwapDirection}
+                >
+                  <ArrowSwapRegular />
+                </button>
+              </TooltipWrapper>
               <span className={direction === 'hebrew-aramaic' ? 'active' : ''}>
                 עברית
               </span>
@@ -167,13 +169,14 @@ const AramaicDictionary = () => {
                 dir="rtl"
               />
               {searchTerm && (
-                <button 
-                  className="clear-button"
-                  onClick={handleClear}
-                  title="נקה"
-                >
-                  <DismissRegular />
-                </button>
+                <TooltipWrapper content="נקה">
+                  <button 
+                    className="clear-button"
+                    onClick={handleClear}
+                  >
+                    <DismissRegular />
+                  </button>
+                </TooltipWrapper>
               )}
             </div>
           </div>

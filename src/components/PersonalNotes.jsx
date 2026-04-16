@@ -10,6 +10,7 @@ import {
   CalendarRegular,
   TagRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import customAlert from '../utils/customAlert';
 import customConfirm from '../utils/customConfirm';
 import './PersonalNotes.css';
@@ -288,20 +289,22 @@ const PersonalNotes = () => {
                   <div className="note-card-header">
                     <h3 className="note-title">{note.title}</h3>
                     <div className="note-actions">
-                      <button
-                        className="note-action-btn edit"
-                        onClick={() => handleEditNote(note)}
-                        title="ערוך"
-                      >
-                        <EditRegular />
-                      </button>
-                      <button
-                        className="note-action-btn delete"
-                        onClick={() => handleDeleteNote(note.id)}
-                        title="מחק"
-                      >
-                        <DeleteRegular />
-                      </button>
+                      <TooltipWrapper content="ערוך">
+                        <button
+                          className="note-action-btn edit"
+                          onClick={() => handleEditNote(note)}
+                        >
+                          <EditRegular />
+                        </button>
+                      </TooltipWrapper>
+                      <TooltipWrapper content="מחק">
+                        <button
+                          className="note-action-btn delete"
+                          onClick={() => handleDeleteNote(note.id)}
+                        >
+                          <DeleteRegular />
+                        </button>
+                      </TooltipWrapper>
                     </div>
                   </div>
                   

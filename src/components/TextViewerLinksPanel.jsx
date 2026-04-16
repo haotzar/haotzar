@@ -5,6 +5,7 @@ import {
   ChevronLeftRegular,
   ChevronRightRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './TextViewerLinksPanel.css';
 
 const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLinkClick, panelType = 'commentaries' }) => {
@@ -429,25 +430,27 @@ const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLin
   return (
     <div className="text-viewer-links-panel" ref={panelRef} style={{ width: `${panelWidth}px` }}>
       {/* Resize Handle */}
-      <div 
-        className="panel-resize-handle"
-        onMouseDown={() => setIsResizing(true)}
-        title="גרור לשינוי רוחב"
-      />
+      <TooltipWrapper content="גרור לשינוי רוחב">
+        <div 
+          className="panel-resize-handle"
+          onMouseDown={() => setIsResizing(true)}
+        />
+      </TooltipWrapper>
       
       <div className="links-panel-header">
         <h3>{panelTitle} ({totalCount})</h3>
         {currentLineIndex !== null && currentLineIndex !== undefined && (
           <span className="current-line-indicator">שורה {currentLineIndex + 1}</span>
         )}
-        <button
-          className="links-panel-close"
-          onClick={onClose}
-          aria-label="סגור"
-          title="סגור"
-        >
-          <DismissRegular />
-        </button>
+        <TooltipWrapper content="סגור">
+          <button
+            className="links-panel-close"
+            onClick={onClose}
+            aria-label="סגור"
+          >
+            <DismissRegular />
+          </button>
+        </TooltipWrapper>
       </div>
 
       <div className="links-panel-content">
@@ -470,12 +473,13 @@ const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLin
               {loadingContent ? (
                 <div className="content-loading">טוען תוכן...</div>
               ) : (
-                <div 
-                  className="link-content-text"
-                  onClick={handleOpenBook}
-                  dangerouslySetInnerHTML={{ __html: linkContent }}
-                  title="לחץ לפתיחת הספר"
-                />
+                <TooltipWrapper content="לחץ לפתיחת הספר">
+                  <div 
+                    className="link-content-text"
+                    onClick={handleOpenBook}
+                    dangerouslySetInnerHTML={{ __html: linkContent }}
+                  />
+                </TooltipWrapper>
               )}
             </div>
           </div>
@@ -485,13 +489,14 @@ const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLin
             {/* רשימת הטאבים */}
             <div className="tabs-bar">
               {showScrollButtons.left && (
-                <button 
-                  className="tab-scroll-btn tab-scroll-left"
-                  onClick={() => scrollTabs('left')}
-                  title="גלול שמאלה"
-                >
-                  <ChevronLeftRegular />
-                </button>
+                <TooltipWrapper content="גלול שמאלה">
+                  <button 
+                    className="tab-scroll-btn tab-scroll-left"
+                    onClick={() => scrollTabs('left')}
+                  >
+                    <ChevronLeftRegular />
+                  </button>
+                </TooltipWrapper>
               )}
               <div className="tabs-list" ref={tabsListRef}>
                 {openTabs.map((tab, index) => (
@@ -501,33 +506,36 @@ const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLin
                     onClick={() => setActiveTabIndex(index)}
                   >
                     <span className="tab-title">{tab.bookTitle}</span>
-                    <button
-                      className="tab-close-btn"
-                      onClick={(e) => closeTab(index, e)}
-                      title="סגור"
-                    >
-                      ✕
-                    </button>
+                    <TooltipWrapper content="סגור">
+                      <button
+                        className="tab-close-btn"
+                        onClick={(e) => closeTab(index, e)}
+                      >
+                        ✕
+                      </button>
+                    </TooltipWrapper>
                   </div>
                 ))}
               </div>
               {showScrollButtons.right && (
-                <button 
-                  className="tab-scroll-btn tab-scroll-right"
-                  onClick={() => scrollTabs('right')}
-                  title="גלול ימינה"
-                >
-                  <ChevronRightRegular />
-                </button>
+                <TooltipWrapper content="גלול ימינה">
+                  <button 
+                    className="tab-scroll-btn tab-scroll-right"
+                    onClick={() => scrollTabs('right')}
+                  >
+                    <ChevronRightRegular />
+                  </button>
+                </TooltipWrapper>
               )}
               {openTabs.length < 3 && (
-                <button
-                  className="tab-add-btn"
-                  onClick={handleAddTab}
-                  title="הוסף מפרש"
-                >
-                  +
-                </button>
+                <TooltipWrapper content="הוסף מפרש">
+                  <button
+                    className="tab-add-btn"
+                    onClick={handleAddTab}
+                  >
+                    +
+                  </button>
+                </TooltipWrapper>
               )}
             </div>
             
@@ -544,12 +552,13 @@ const TextViewerLinksPanel = ({ bookId, currentLineIndex, isOpen, onClose, onLin
                           <div className="link-content-section-header">
                             <span>קטע {index + 1} - שורה {item.lineIndex + 1}</span>
                           </div>
-                          <div 
-                            className="link-content-text"
-                            onClick={() => handleOpenBookAtLine(item.link)}
-                            dangerouslySetInnerHTML={{ __html: item.content }}
-                            title="לחץ לפתיחת הספר בשורה זו"
-                          />
+                          <TooltipWrapper content="לחץ לפתיחת הספר בשורה זו">
+                            <div 
+                              className="link-content-text"
+                              onClick={() => handleOpenBookAtLine(item.link)}
+                              dangerouslySetInnerHTML={{ __html: item.content }}
+                            />
+                          </TooltipWrapper>
                         </div>
                       ))}
                     </div>

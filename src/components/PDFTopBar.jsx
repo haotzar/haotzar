@@ -11,6 +11,7 @@ import {
   ZoomOutRegular,
   HistoryRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './PDFTopBar.css';
 
 const PDFTopBar = ({ currentPage, totalPages, onPageChange, onNextPage, onPrevPage, iframeRef, isToolbarCollapsed, onToggleToolbar, onZoomIn, onZoomOut, onHistoryClick }) => {
@@ -157,99 +158,109 @@ const PDFTopBar = ({ currentPage, totalPages, onPageChange, onNextPage, onPrevPa
   return (
     <div className="pdf-top-bar">
       <div className="pdf-top-bar-right">
-        <button
-          className="pdf-top-bar-btn"
-          onClick={handleToggleSidebar}
-          title="תוכן עניינים (F9)"
-        >
-          <PanelLeftRegular />
-        </button>
+        <TooltipWrapper content="תוכן עניינים (F9)">
+          <button
+            className="pdf-top-bar-btn"
+            onClick={handleToggleSidebar}
+          >
+            <PanelLeftRegular />
+          </button>
+        </TooltipWrapper>
 
-        <button
-          className="pdf-top-bar-btn"
-          onClick={handleOpenSearch}
-          title="חיפוש (Ctrl F)"
-        >
-          <SearchRegular />
-        </button>
+        <TooltipWrapper content="חיפוש (Ctrl F)">
+          <button
+            className="pdf-top-bar-btn"
+            onClick={handleOpenSearch}
+          >
+            <SearchRegular />
+          </button>
+        </TooltipWrapper>
       </div>
       
       <div className="pdf-page-controls">
-        <button
-          className="pdf-page-nav-btn"
-          onClick={onNextPage}
-          disabled={currentPage >= totalPages}
-          title="עמוד הבא (→)"          
-        >
-          <ChevronLeftRegular />
-        </button>
+        <TooltipWrapper content="עמוד הבא (→)">
+          <button
+            className="pdf-page-nav-btn"
+            onClick={onNextPage}
+            disabled={currentPage >= totalPages}
+          >
+            <ChevronLeftRegular />
+          </button>
+        </TooltipWrapper>
         
-        <input
-          type="text"
-          className="pdf-page-input"
-          placeholder={currentPage.toString()}
-          value={pageInput}
-          onChange={handlePageInputChange}
-          onKeyDown={handlePageInputKeyDown}
-          onBlur={handlePageInputBlur}
-          title="מספר עמוד"
-        />
+        <TooltipWrapper content="מספר עמוד">
+          <input
+            type="text"
+            className="pdf-page-input"
+            placeholder={currentPage.toString()}
+            value={pageInput}
+            onChange={handlePageInputChange}
+            onKeyDown={handlePageInputKeyDown}
+            onBlur={handlePageInputBlur}
+          />
+        </TooltipWrapper>
         <span className="pdf-page-separator">/</span>
         <span className="pdf-page-total">{totalPages}</span>
         
-        <button
-          className="pdf-page-nav-btn"
-          onClick={onPrevPage}
-          disabled={currentPage <= 1}
-          title="עמוד קודם (←)"
-        >
-          <ChevronRightRegular />
-        </button>
+        <TooltipWrapper content="עמוד קודם (←)">
+          <button
+            className="pdf-page-nav-btn"
+            onClick={onPrevPage}
+            disabled={currentPage <= 1}
+          >
+            <ChevronRightRegular />
+          </button>
+        </TooltipWrapper>
       </div>
 
 
       <div className="pdf-top-bar-left">
         <div className="pdf-zoom-controls">
-          <button
-            className="pdf-top-bar-btn pdf-zoom-btn"
-            onClick={onZoomOut}
-            title="הקטן (Ctrl -)"
-          >
-            <ZoomOutRegular />
-          </button>
+          <TooltipWrapper content="הקטן (Ctrl -)">
+            <button
+              className="pdf-top-bar-btn pdf-zoom-btn"
+              onClick={onZoomOut}
+            >
+              <ZoomOutRegular />
+            </button>
+          </TooltipWrapper>
           
-          <button
-            className="pdf-top-bar-btn pdf-zoom-btn"
-            onClick={onZoomIn}
-            title="הגדל (Ctrl +)"
-          >
-            <ZoomInRegular />
-          </button>
+          <TooltipWrapper content="הגדל (Ctrl +)">
+            <button
+              className="pdf-top-bar-btn pdf-zoom-btn"
+              onClick={onZoomIn}
+            >
+              <ZoomInRegular />
+            </button>
+          </TooltipWrapper>
         </div>
         
-        <button
-          className="pdf-top-bar-btn"
-          onClick={onHistoryClick}
-          title="היסטוריה (Ctrl+H)"
-        >
-          <HistoryRegular />
-        </button>
+        <TooltipWrapper content="היסטוריה (Ctrl+H)">
+          <button
+            className="pdf-top-bar-btn"
+            onClick={onHistoryClick}
+          >
+            <HistoryRegular />
+          </button>
+        </TooltipWrapper>
         
-        <button
-          className="pdf-top-bar-btn"
-          onClick={handlePrint}
-          title="הדפס (Ctrl P)"
-        >
-          <PrintRegular />
-        </button>
+        <TooltipWrapper content="הדפס (Ctrl P)">
+          <button
+            className="pdf-top-bar-btn"
+            onClick={handlePrint}
+          >
+            <PrintRegular />
+          </button>
+        </TooltipWrapper>
         
-        <button
-          className="pdf-top-bar-btn pdf-toolbar-toggle-btn"
-          onClick={onToggleToolbar}
-          title={isToolbarCollapsed ? 'הצג סרגל כלים' : 'הסתר סרגל כלים'}
-        >
-          {isToolbarCollapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />}
-        </button>
+        <TooltipWrapper content={isToolbarCollapsed ? 'הצג סרגל כלים' : 'הסתר סרגל כלים'}>
+          <button
+            className="pdf-top-bar-btn pdf-toolbar-toggle-btn"
+            onClick={onToggleToolbar}
+          >
+            {isToolbarCollapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />}
+          </button>
+        </TooltipWrapper>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { DismissRegular } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import PDFViewer from '../PDFViewer';
 import TextViewer from '../TextViewer';
 import './BookPreview.css';
@@ -26,9 +27,11 @@ const BookPreview = ({ selectedBook, onClose }) => {
     <div className="book-preview-container">
       <div className="preview-header">
         <h3 className="preview-title">{selectedBook.name}</h3>
-        <button className="preview-close-btn" onClick={onClose} title="סגור תצוגה מקדימה">
-          <DismissRegular />
-        </button>
+        <TooltipWrapper content="סגור תצוגה מקדימה">
+          <button className="preview-close-btn" onClick={onClose}>
+            <DismissRegular />
+          </button>
+        </TooltipWrapper>
       </div>
       
       <div className="preview-content">
