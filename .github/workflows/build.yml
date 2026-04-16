@@ -63,6 +63,8 @@ jobs:
 
     - name: Build Electron app
       run: npm run electron:build:win
+      env:
+        USE_HARD_LINKS: false
 
     - name: Upload Electron artifacts (non-release)
       uses: actions/upload-artifact@v4

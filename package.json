@@ -112,7 +112,14 @@
       "runAfterFinish": true,
       "menuCategory": true,
       "displayLanguageSelector": false,
-      "language": "1037"
+      "language": "1037",
+      "differentialPackage": true,
+      "unicode": true,
+      "warningsAsErrors": false
+    },
+    "nsisWeb": {
+      "appPackageUrl": "https://github.com/[username]/haotzer/releases/download/latest/${productName}-Setup-${version}.${ext}",
+      "artifactName": "${productName}-WebSetup-${version}.${ext}"
     }
   },
   "dependencies": {
