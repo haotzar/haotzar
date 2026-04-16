@@ -59,7 +59,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["meilisearch/meilisearch.exe"],
+      "resources": ["../meilisearch/meilisearch.exe"],
       "externalBin": [],
       "copyright": "",
       "category": "Education",

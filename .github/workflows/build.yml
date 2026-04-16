@@ -154,14 +154,30 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Verify Tauri icons exist
+    - name: Verify required files exist
       run: |
+        Write-Host "Checking required files..."
+        
+        # Check Tauri icons
         if (-not (Test-Path "src-tauri/icons/icon.ico")) {
           Write-Host "❌ Error: Tauri icons are missing!"
           Write-Host "Please ensure all required icons exist in src-tauri/icons/"
           exit 1
         } else {
           Write-Host "✅ Tauri icons exist"
+        }
+        
+        # Check Meilisearch executable
+        if (-not (Test-Path "meilisearch/meilisearch.exe")) {
+          Write-Host "❌ Error: meilisearch.exe not found at meilisearch/meilisearch.exe"
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Directory contents:"
+          Get-ChildItem -Recurse -Filter "meilisearch.exe" | ForEach-Object { Write-Host "  Found: $($_.FullName)" }
+          exit 1
+        } else {
+          Write-Host "✅ meilisearch.exe exists at meilisearch/meilisearch.exe"
+          $fileSize = (Get-Item "meilisearch/meilisearch.exe").Length / 1MB
+          Write-Host "   File size: $([math]::Round($fileSize, 2)) MB"
         }
       shell: pwsh
       continue-on-error: false
