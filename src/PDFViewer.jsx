@@ -260,9 +260,6 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                 
                 // timeout אחרי 5 שניות
                 setTimeout(() => clearInterval(checkPdfLoaded), 5000);
-                
-              } catch (e) {
-                console.error('❌ Could not setup preview mode:', e);
               }
             };
             
