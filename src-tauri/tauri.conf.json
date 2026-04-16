@@ -86,7 +86,7 @@
       }
     },
     "security": {
-      "csp": "default-src 'self' asset: tauri: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' asset: tauri: https:; worker-src 'self' blob: asset: tauri: https:; style-src 'self' 'unsafe-inline' asset: tauri: https:; img-src 'self' data: https: asset: tauri: blob:; font-src 'self' data: asset: tauri: https:; connect-src 'self' http://localhost:* https://localhost:* asset: tauri: https:; media-src 'self' data: asset: tauri: https:;"
+      "csp": null
     },
     "windows": [
       {

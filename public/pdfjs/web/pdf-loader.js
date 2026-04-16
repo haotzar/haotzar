@@ -17,8 +17,10 @@
     // Tauri development - use absolute path
     pdfPath = '/pdfjs/build/pdf.mjs';
   } else if (isTauri) {
-    // Tauri production - use full URL
-    pdfPath = new URL('/pdfjs/build/pdf.mjs', window.location.origin).href;
+    // Tauri production - use relative path (works better than absolute)
+    // viewer.html is at /pdfjs/web/viewer.html
+    // so ../build/pdf.mjs resolves correctly
+    pdfPath = '../build/pdf.mjs';
   } else if (isElectron) {
     // Electron - use relative path
     pdfPath = '../build/pdf.mjs';
@@ -28,6 +30,7 @@
   }
   
   console.log('📦 PDF.js path:', pdfPath);
+  console.log('📦 Current location:', window.location.href);
   
   // Create and inject script tag
   const script = document.createElement('script');
@@ -41,13 +44,20 @@
   script.onerror = (error) => {
     console.error('❌ Failed to load PDF.js:', error);
     console.error('   Tried path:', pdfPath);
+    console.error('   Resolved to:', new URL(pdfPath, window.location.href).href);
     
-    // Try fallback with relative path
-    if (pdfPath !== '../build/pdf.mjs') {
-      console.log('🔄 Trying fallback path: ../build/pdf.mjs');
+    // Try absolute path as fallback
+    if (!pdfPath.startsWith('/')) {
+      console.log('🔄 Trying absolute path: /pdfjs/build/pdf.mjs');
       const fallbackScript = document.createElement('script');
       fallbackScript.type = 'module';
-      fallbackScript.src = '../build/pdf.mjs';
+      fallbackScript.src = '/pdfjs/build/pdf.mjs';
+      
+      fallbackScript.onerror = () => {
+        console.error('❌ Absolute path also failed');
+        console.error('   PDF.js cannot be loaded - viewer will not work');
+      };
+      
       document.head.appendChild(fallbackScript);
     }
   };
