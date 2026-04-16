@@ -276,35 +276,7 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                 
                 console.log('🔧 Configuring PDF.js sidebar...');
                 
-                // הסתר את כל ה-toolbar container
-                const toolbarContainer = doc.getElementById('toolbarContainer');
-                if (toolbarContainer) {
-                  toolbarContainer.style.display = 'none';
-                }
-                
-                // הסתר את הסרגל המשני
-                const secondaryToolbar = doc.getElementById('secondaryToolbarContainer');
-                if (secondaryToolbar) {
-                  secondaryToolbar.style.display = 'none';
-                }
-                
-                // הסתר את ה-viewer header (הפס האפור)
-                const viewerHeader = doc.querySelector('.toolbar');
-                if (viewerHeader) {
-                  viewerHeader.style.display = 'none';
-                }
-                
-                // התאם את ה-viewer container להתחיל מלמעלה
-                const viewerContainer = doc.getElementById('viewerContainer');
-                if (viewerContainer) {
-                  viewerContainer.style.top = '0';
-                }
-                
-                // התאם את ה-findbar להיות בראש
-                const findbar = doc.getElementById('findbar');
-                if (findbar) {
-                  findbar.style.top = '0';
-                }
+                doc.documentElement.classList.add('haotzar-clean-ui');
                 
                 // בדוק את מצב הסיידבר והטאבים
                 const thumbnailButton = doc.getElementById('viewThumbnail');
@@ -354,23 +326,6 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                   console.log('📖 Outline view display:', window.getComputedStyle(outlineView).display);
                   console.log('📖 Outline view has content:', outlineView.children.length > 0);
                 }
-                
-                // הוסף CSS כללי להסתרת הסרגל
-                const style = doc.createElement('style');
-                style.textContent = `
-                  #toolbarContainer,
-                  .toolbar,
-                  #toolbarViewer {
-                    display: none !important;
-                  }
-                  #viewerContainer {
-                    top: 0 !important;
-                  }
-                  #findbar {
-                    top: 0 !important;
-                  }
-                `;
-                doc.head.appendChild(style);
                 
                 console.log('✅ PDF.js sidebar configuration complete');
               } catch (e) {

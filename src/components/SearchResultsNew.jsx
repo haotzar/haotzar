@@ -11,24 +11,6 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
   const resultsPerPage = 30;
   const maxPages = 10;
 
-  // חישוב מיקום התצוגה המקדימה - מתחת לכרטיסיות
-  useEffect(() => {
-    const updatePreviewPosition = () => {
-      const tabsContainer = document.querySelector('.tabs-container');
-      if (tabsContainer) {
-        const rect = tabsContainer.getBoundingClientRect();
-        const topPosition = rect.bottom;
-        document.documentElement.style.setProperty('--preview-top-position', `${topPosition}px`);
-      }
-    };
-
-    updatePreviewPosition();
-    window.addEventListener('resize', updatePreviewPosition);
-    
-    return () => {
-      window.removeEventListener('resize', updatePreviewPosition);
-    };
-  }, []);
 
   // קיבוץ תוצאות לפי ספר
   const groupedResults = useMemo(() => {

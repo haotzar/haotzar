@@ -142,9 +142,9 @@ const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = n
                             if (lineElement) {
                                 lineElement.scrollIntoView({ behavior: 'auto', block: 'start' });
                                 // הדגש את השורה
-                                lineElement.style.backgroundColor = 'rgba(212, 175, 55, 0.3)';
+                                lineElement.classList.add('temp-line-highlight');
                                 setTimeout(() => {
-                                    lineElement.style.backgroundColor = '';
+                                    lineElement.classList.remove('temp-line-highlight');
                                 }, 2000);
                                 console.log('✅ ניווט הושלם לשורה', targetLine);
                             } else {
@@ -694,9 +694,9 @@ const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = n
                 highlightSearchResults(searchTerm);
                 
                 // הדגש את השורה הנוכחית
-                lineElement.style.backgroundColor = 'rgba(255, 235, 59, 0.3)';
+                lineElement.classList.add('temp-line-highlight');
                 setTimeout(() => {
-                    lineElement.style.backgroundColor = '';
+                    lineElement.classList.remove('temp-line-highlight');
                 }, 2000);
             }
         }, 100);

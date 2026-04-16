@@ -30,7 +30,7 @@
   position: fixed;
   left: 24px;
   right: calc(66.666% + 24px);
-  top: calc(var(--preview-top-position, 100px) + 24px);
+  top: 120px;
   bottom: 24px;
   width: auto;
   background: white;
