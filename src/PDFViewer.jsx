@@ -212,75 +212,9 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                   pdfWindow.PDFViewerApplication.pdfSidebar.close();
                   console.log('✅ Closed sidebar');
                 }
-                
-                // הוסף CSS גלובלי למצב תצוגה מקדימה מיד
-                const style = doc.createElement('style');
-                style.id = 'preview-mode-style';
-                style.textContent = `
-                  /* הסתר את כל הכלים והסיידבר */
-                  #toolbarContainer,
-                  #secondaryToolbarContainer,
-                  #sidebarContainer,
-                  #findbar,
-                  #outerContainer.sidebarOpen #sidebarContainer {
-                    display: none !important;
-                  }
-                  
-                  /* הגדרות outerContainer - ללא סיידבר */
-                  #outerContainer {
-                    left: 0 !important;
-                  }
-                  
-                  /* הגדרות viewer container - תופס את כל הרוחב */
-                  #viewerContainer {
-                    top: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    overflow: hidden !important;
-                  }
-                  
-                  /* הגדרות viewer - מרכז את התוכן */
-                  #viewer {
-                    overflow: hidden !important;
-                    display: flex !important;
-                    justify-content: center !important;
-                    align-items: flex-start !important;
-                    padding: 20px !important;
-                  }
-                  
-                  /* הצג רק את העמוד הראשון */
-                  .page:not(:first-child) {
-                    display: none !important;
-                  }
-                  
-                  /* מרכז את העמוד הראשון */
-                  .page:first-child {
-                    margin: 0 auto !important;
-                    display: block !important;
-                  }
-                  
-                  /* הסתר spread layers */
-                  .spreadLayer {
-                    display: none !important;
-                  }
-                  
-                  /* הסתר scroll indicators */
-                  .scrollbar {
-                    display: none !important;
-                  }
-                  
-                  /* הסתר annotationLayer של עמודים אחרים */
-                  .page:not(:first-child) .annotationLayer {
-                    display: none !important;
-                  }
-                  
-                  /* הסתר textLayer של עמודים אחרים */
-                  .page:not(:first-child) .textLayer {
-                    display: none !important;
-                  }
-                `;
-                doc.head.appendChild(style);
-                console.log('✅ Preview mode CSS added');
+
+                doc.documentElement.classList.add('preview-mode');
+                console.log('✅ Preview mode class added');
                 
                 // המתן לטעינת ה-PDF ואז הגדר תצוגת עמוד בודד
                 const checkPdfLoaded = setInterval(() => {
@@ -310,11 +244,6 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                         setTimeout(() => {
                           const pages = doc.querySelectorAll('.page');
                           console.log(`📄 Found ${pages.length} pages, hiding all except first`);
-                          pages.forEach((page, index) => {
-                            if (index > 0) {
-                              page.style.display = 'none';
-                            }
-                          });
                         }, 100);
                       });
                       
@@ -325,7 +254,9 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
                       }, 100);
                     }
                   }
-                }, 50);
+                }, 200);
+              } catch (error) {
+                console.error('❌ Error setting up preview mode:', error);
                 
                 // timeout אחרי 5 שניות
                 setTimeout(() => clearInterval(checkPdfLoaded), 5000);
