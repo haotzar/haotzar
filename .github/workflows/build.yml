@@ -138,13 +138,13 @@ jobs:
       run: |
         # Create directories if they don't exist
         if (-not (Test-Path "books")) { New-Item -ItemType Directory -Path "books" }
-        if (-not (Test-Path "resources/meilisearch")) { New-Item -ItemType Directory -Path "resources/meilisearch" -Force }
+        if (-not (Test-Path "meilisearch")) { New-Item -ItemType Directory -Path "meilisearch" -Force }
         "Placeholder for books directory" | Out-File -FilePath "books/README.txt"
         
         # Download Meilisearch directly
         $version = "v1.5.1"
         $url = "https://github.com/meilisearch/meilisearch/releases/download/$version/meilisearch-windows-amd64.exe"
-        $output = "resources/meilisearch/meilisearch.exe"
+        $output = "meilisearch/meilisearch.exe"
         
         Write-Host "Downloading Meilisearch $version..."
         Invoke-WebRequest -Uri $url -OutFile $output
