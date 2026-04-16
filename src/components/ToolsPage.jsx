@@ -9,6 +9,7 @@ import {
   ChevronRightRegular,
   ChevronLeftRegular,
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import GematriaTool from './GematriaTool';
 import HebrewCalendarComponent from './HebrewCalendar';
 import UnitConverter from './UnitConverter';
@@ -108,15 +109,19 @@ const ToolsPage = ({ initialTool = 'gematria' }) => {
               )}
               {currentMonth && (
                 <div className="current-month-container">
-                  <button className="month-nav-btn" onClick={calendarNavigation.next} title="חודש הבא">
-                    <ChevronLeftRegular />
-                  </button>
+                  <TooltipWrapper content="חודש הבא">
+                    <button className="month-nav-btn" onClick={calendarNavigation.next}>
+                      <ChevronLeftRegular />
+                    </button>
+                  </TooltipWrapper>
                   <div className="current-month-display">
                     {currentMonth}
                   </div>
-                  <button className="month-nav-btn" onClick={calendarNavigation.prev} title="חודש קודם">
-                    <ChevronRightRegular />
-                  </button>
+                  <TooltipWrapper content="חודש קודם">
+                    <button className="month-nav-btn" onClick={calendarNavigation.prev}>
+                      <ChevronRightRegular />
+                    </button>
+                  </TooltipWrapper>
                 </div>
               )}
               <div className="tool-header-text">

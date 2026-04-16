@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SearchRegular, DeleteRegular, SettingsRegular, DismissRegular } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './GematriaTool.css';
 
 const GematriaTool = () => {
@@ -284,13 +285,14 @@ const GematriaTool = () => {
             </div>
           )}
 
-          <button 
-            className="settings-btn" 
-            onClick={() => setShowSettings(true)}
-            title="הגדרות"
-          >
-            <SettingsRegular />
-          </button>
+          <TooltipWrapper content="הגדרות">
+            <button 
+              className="settings-btn" 
+              onClick={() => setShowSettings(true)}
+            >
+              <SettingsRegular />
+            </button>
+          </TooltipWrapper>
         </div>
 
         {/* הודעות */}

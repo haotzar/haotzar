@@ -9,6 +9,7 @@ import {
   TextAlignLeftRegular
 } from '@fluentui/react-icons';
 import { useState, useEffect } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import './TextViewerToolbar.css';
 
 const TextViewerToolbar = ({ 
@@ -202,18 +203,18 @@ const TextViewerToolbar = ({
 
           const IconComponent = item.icon;
           return (
-            <button
-              key={item.id}
-              className={`toolbar-item ${item.className || ''}`}
-              onClick={item.onClick}
-              title={item.tooltip}
-              aria-label={item.label}
-            >
-              <IconComponent className="toolbar-icon" />
-              {item.badge && (
-                <span className="toolbar-badge">{item.badge}</span>
-              )}
-            </button>
+            <TooltipWrapper key={item.id} content={item.tooltip}>
+              <button
+                className={`toolbar-item ${item.className || ''}`}
+                onClick={item.onClick}
+                aria-label={item.label}
+              >
+                <IconComponent className="toolbar-icon" />
+                {item.badge && (
+                  <span className="toolbar-badge">{item.badge}</span>
+                )}
+              </button>
+            </TooltipWrapper>
           );
         })}
       </div>

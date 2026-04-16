@@ -13,6 +13,7 @@ import {
   BookOpenRegular
 } from '@fluentui/react-icons';
 import { useEffect, useState } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import './PDFToolbar.css';
 
 const PDFToolbar = ({ 
@@ -474,18 +475,18 @@ const PDFToolbar = ({
 
           const IconComponent = item.icon;
           return (
-            <button
-              key={item.id}
-              className="toolbar-item"
-              onClick={item.onClick}
-              title={item.tooltip}
-              aria-label={item.label}
-            >
-              <IconComponent className="toolbar-icon" />
-              {item.badge && (
-                <span className="toolbar-badge">{item.badge}</span>
-              )}
-            </button>
+            <TooltipWrapper key={item.id} content={item.tooltip}>
+              <button
+                className="toolbar-item"
+                onClick={item.onClick}
+                aria-label={item.label}
+              >
+                <IconComponent className="toolbar-icon" />
+                {item.badge && (
+                  <span className="toolbar-badge">{item.badge}</span>
+                )}
+              </button>
+            </TooltipWrapper>
           );
         })}
       </div>

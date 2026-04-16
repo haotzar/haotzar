@@ -7,6 +7,7 @@ import {
   BeakerRegular,
   ScalesRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './UnitConverter.css';
 
 const UnitConverter = () => {
@@ -168,30 +169,33 @@ const UnitConverter = () => {
         {/* ניווט צד ימין */}
         <div className="converter-sidebar">
           <div className="category-cards">
-            <button
-              className={`category-card ${category === 'length' ? 'active' : ''}`}
-              onClick={() => handleCategoryChange('length')}
-              title="אורך"
-            >
-              <RulerRegular className="category-icon" />
-              <div className="category-name">אורך</div>
-            </button>
-            <button
-              className={`category-card ${category === 'volume' ? 'active' : ''}`}
-              onClick={() => handleCategoryChange('volume')}
-              title="נפח"
-            >
-              <BeakerRegular className="category-icon" />
-              <div className="category-name">נפח</div>
-            </button>
-            <button
-              className={`category-card ${category === 'weight' ? 'active' : ''}`}
-              onClick={() => handleCategoryChange('weight')}
-              title="משקל"
-            >
-              <ScalesRegular className="category-icon" />
-              <div className="category-name">משקל</div>
-            </button>
+            <TooltipWrapper content="אורך">
+              <button
+                className={`category-card ${category === 'length' ? 'active' : ''}`}
+                onClick={() => handleCategoryChange('length')}
+              >
+                <RulerRegular className="category-icon" />
+                <div className="category-name">אורך</div>
+              </button>
+            </TooltipWrapper>
+            <TooltipWrapper content="נפח">
+              <button
+                className={`category-card ${category === 'volume' ? 'active' : ''}`}
+                onClick={() => handleCategoryChange('volume')}
+              >
+                <BeakerRegular className="category-icon" />
+                <div className="category-name">נפח</div>
+              </button>
+            </TooltipWrapper>
+            <TooltipWrapper content="משקל">
+              <button
+                className={`category-card ${category === 'weight' ? 'active' : ''}`}
+                onClick={() => handleCategoryChange('weight')}
+              >
+                <ScalesRegular className="category-icon" />
+                <div className="category-name">משקל</div>
+              </button>
+            </TooltipWrapper>
           </div>
         </div>
 
@@ -274,13 +278,14 @@ const UnitConverter = () => {
 
             {/* כפתור החלפה */}
             <div className="converter-swap">
-              <button
-                className="swap-btn"
-                onClick={swapUnits}
-                title="החלף יחידות"
-              >
-                <ArrowSwapRegular />
-              </button>
+              <TooltipWrapper content="החלף יחידות">
+                <button
+                  className="swap-btn"
+                  onClick={swapUnits}
+                >
+                  <ArrowSwapRegular />
+                </button>
+              </TooltipWrapper>
             </div>
 
             {/* מיכל פלט */}
@@ -326,13 +331,14 @@ const UnitConverter = () => {
           <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
             <div className="dialog-header">
               <h3>טבלת המרות</h3>
-              <button
-                className="dialog-close-btn"
-                onClick={() => setShowTableDialog(false)}
-                title="סגור"
-              >
-                <DismissRegular />
-              </button>
+              <TooltipWrapper content="סגור">
+                <button
+                  className="dialog-close-btn"
+                  onClick={() => setShowTableDialog(false)}
+                >
+                  <DismissRegular />
+                </button>
+              </TooltipWrapper>
             </div>
             <div className="dialog-body">
               <div className="table-scroll">

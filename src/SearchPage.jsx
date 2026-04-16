@@ -1,5 +1,6 @@
 import { SearchRegular, DocumentRegular, DocumentTextRegular, SettingsRegular, EyeRegular } from '@fluentui/react-icons';
 import { useState, useEffect, useMemo } from 'react';
+import TooltipWrapper from './components/TooltipWrapper';
 import SearchResultsNew from './components/SearchResultsNew';
 import CategoryFilter from './components/CategoryFilter';
 import IndexSelector from './components/IndexSelector';
@@ -337,13 +338,14 @@ const SearchPage = ({
               )}
               
               {/* כפתור הגדרות מתקדמות */}
-              <button
-                className={`advanced-settings-btn ${showAdvanced ? 'active' : ''}`}
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                title="הגדרות מתקדמות"
-              >
-                <SettingsRegular />
-              </button>
+              <TooltipWrapper content="הגדרות מתקדמות">
+                <button
+                  className={`advanced-settings-btn ${showAdvanced ? 'active' : ''}`}
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                >
+                  <SettingsRegular />
+                </button>
+              </TooltipWrapper>
             </div>
             
             {/* השלמה אוטומטית - רק חיפושים אחרונים */}
@@ -379,16 +381,17 @@ const SearchPage = ({
                             {search}
                           </div>
                         </div>
-                        <button
-                          className="recent-search-remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeRecentSearch(search);
-                          }}
-                          title="הסר"
-                        >
-                          ×
-                        </button>
+                        <TooltipWrapper content="הסר">
+                          <button
+                            className="recent-search-remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeRecentSearch(search);
+                            }}
+                          >
+                            ×
+                          </button>
+                        </TooltipWrapper>
                       </div>
                     ))}
                   </div>
@@ -438,16 +441,17 @@ const SearchPage = ({
                       
                       <div className="advanced-option-half">
                         <label className="advanced-section-label">אורך הקשר (מילים)</label>
-                        <input
-                          type="number"
-                          className="advanced-text-input"
-                          min="50"
-                          max="500"
-                          step="10"
-                          value={cropLength}
-                          onChange={(e) => setCropLength(Number(e.target.value))}
-                          title={`מספר המילים המוצגות בכל תוצאה (כרגע: ${cropLength} מילים)`}
-                        />
+                        <TooltipWrapper content={`מספר המילים המוצגות בכל תוצאה (כרגע: ${cropLength} מילים)`}>
+                          <input
+                            type="number"
+                            className="advanced-text-input"
+                            min="50"
+                            max="500"
+                            step="10"
+                            value={cropLength}
+                            onChange={(e) => setCropLength(Number(e.target.value))}
+                          />
+                        </TooltipWrapper>
                       </div>
                     </div>
                   </div>

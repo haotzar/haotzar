@@ -1,0 +1,5 @@
+/* Fluent UI Tooltip customizations for RTL support */
+.fui-Tooltip {
+  direction: rtl;
+  text-align: right;
+}

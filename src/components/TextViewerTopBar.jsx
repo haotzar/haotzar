@@ -12,6 +12,7 @@ import {
   DismissRegular,
   HistoryRegular
 } from '@fluentui/react-icons';
+import TooltipWrapper from './TooltipWrapper';
 import './TextViewerTopBar.css';
 
 const TextViewerTopBar = ({ 
@@ -116,21 +117,23 @@ const TextViewerTopBar = ({
   return (
     <div className="text-viewer-top-bar">
       <div className="text-viewer-top-bar-right">
-        <button
-          className="text-viewer-top-bar-btn"
-          onClick={onToggleOutline}
-          title={`תוכן עניינים (${outlineCount} פריטים)`}
-        >
-          <PanelLeftRegular />
-        </button>
+        <TooltipWrapper content={`תוכן עניינים (${outlineCount} פריטים)`}>
+          <button
+            className="text-viewer-top-bar-btn"
+            onClick={onToggleOutline}
+          >
+            <PanelLeftRegular />
+          </button>
+        </TooltipWrapper>
 
-        <button
-          className="text-viewer-top-bar-btn"
-          onClick={handleOpenSearch}
-          title="חיפוש (Ctrl F)"
-        >
-          <SearchRegular />
-        </button>
+        <TooltipWrapper content="חיפוש (Ctrl F)">
+          <button
+            className="text-viewer-top-bar-btn"
+            onClick={handleOpenSearch}
+          >
+            <SearchRegular />
+          </button>
+        </TooltipWrapper>
 
         {showSearch && (
           <div className="text-search-box">
@@ -150,36 +153,40 @@ const TextViewerTopBar = ({
                 <span className="search-result-count">
                   {currentSearchIndex + 1} / {searchResults.length}
                 </span>
-                <button
-                  className="text-search-nav-btn"
-                  onClick={onPrevSearchResult}
-                  title="תוצאה קודמת (Shift+Enter)"
-                >
-                  <ChevronUpRegular />
-                </button>
-                <button
-                  className="text-search-nav-btn"
-                  onClick={onNextSearchResult}
-                  title="תוצאה הבאה (Enter)"
-                >
-                  <ChevronDownRegular />
-                </button>
+                <TooltipWrapper content="תוצאה קודמת (Shift+Enter)">
+                  <button
+                    className="text-search-nav-btn"
+                    onClick={onPrevSearchResult}
+                  >
+                    <ChevronUpRegular />
+                  </button>
+                </TooltipWrapper>
+                <TooltipWrapper content="תוצאה הבאה (Enter)">
+                  <button
+                    className="text-search-nav-btn"
+                    onClick={onNextSearchResult}
+                  >
+                    <ChevronDownRegular />
+                  </button>
+                </TooltipWrapper>
               </div>
             )}
-            <button
-              className="text-search-submit"
-              onClick={handleSearchSubmit}
-              title="חפש"
-            >
-              <SearchRegular />
-            </button>
-            <button
-              className="text-search-close"
-              onClick={handleOpenSearch}
-              title="סגור (Esc)"
-            >
-              <DismissRegular />
-            </button>
+            <TooltipWrapper content="חפש">
+              <button
+                className="text-search-submit"
+                onClick={handleSearchSubmit}
+              >
+                <SearchRegular />
+              </button>
+            </TooltipWrapper>
+            <TooltipWrapper content="סגור (Esc)">
+              <button
+                className="text-search-close"
+                onClick={handleOpenSearch}
+              >
+                <DismissRegular />
+              </button>
+            </TooltipWrapper>
           </div>
         )}
       </div>
@@ -190,14 +197,15 @@ const TextViewerTopBar = ({
             {currentHeadingPath.map((headingItem, index) => (
               <span key={index}>
                 {index > 0 && <span className="book-title-separator">›</span>}
-                <span 
-                  className={index === currentHeadingPath.length - 1 ? "book-title-heading-current" : "book-title-heading-parent"}
-                  onClick={() => onHeadingClick && onHeadingClick(headingItem.lineIndex)}
-                  style={{ cursor: onHeadingClick ? 'pointer' : 'default' }}
-                  title={`קפוץ ל: ${headingItem.title}`}
-                >
-                  {headingItem.title}
-                </span>
+                <TooltipWrapper content={`קפוץ ל: ${headingItem.title}`}>
+                  <span 
+                    className={index === currentHeadingPath.length - 1 ? "book-title-heading-current" : "book-title-heading-parent"}
+                    onClick={() => onHeadingClick && onHeadingClick(headingItem.lineIndex)}
+                    style={{ cursor: onHeadingClick ? 'pointer' : 'default' }}
+                  >
+                    {headingItem.title}
+                  </span>
+                </TooltipWrapper>
               </span>
             ))}
           </>
@@ -208,46 +216,51 @@ const TextViewerTopBar = ({
 
       <div className="text-viewer-top-bar-left">
         <div className="text-zoom-controls">
-          <button
-            className="text-viewer-top-bar-btn text-zoom-btn"
-            onClick={onZoomOut}
-            title="הקטן (Ctrl -)"
-          >
-            <ZoomOutRegular />
-          </button>
+          <TooltipWrapper content="הקטן (Ctrl -)">
+            <button
+              className="text-viewer-top-bar-btn text-zoom-btn"
+              onClick={onZoomOut}
+            >
+              <ZoomOutRegular />
+            </button>
+          </TooltipWrapper>
           
-          <button
-            className="text-viewer-top-bar-btn text-zoom-btn"
-            onClick={onZoomIn}
-            title="הגדל (Ctrl +)"
-          >
-            <ZoomInRegular />
-          </button>
+          <TooltipWrapper content="הגדל (Ctrl +)">
+            <button
+              className="text-viewer-top-bar-btn text-zoom-btn"
+              onClick={onZoomIn}
+            >
+              <ZoomInRegular />
+            </button>
+          </TooltipWrapper>
         </div>
         
-        <button
-          className="text-viewer-top-bar-btn"
-          onClick={onHistoryClick}
-          title="היסטוריה (Ctrl+H)"
-        >
-          <HistoryRegular />
-        </button>
+        <TooltipWrapper content="היסטוריה (Ctrl+H)">
+          <button
+            className="text-viewer-top-bar-btn"
+            onClick={onHistoryClick}
+          >
+            <HistoryRegular />
+          </button>
+        </TooltipWrapper>
         
-        <button
-          className="text-viewer-top-bar-btn"
-          onClick={handlePrint}
-          title="הדפס (Ctrl P)"
-        >
-          <PrintRegular />
-        </button>
+        <TooltipWrapper content="הדפס (Ctrl P)">
+          <button
+            className="text-viewer-top-bar-btn"
+            onClick={handlePrint}
+          >
+            <PrintRegular />
+          </button>
+        </TooltipWrapper>
         
-        <button
-          className="text-viewer-top-bar-btn text-toolbar-toggle-btn"
-          onClick={onToggleToolbar}
-          title={isToolbarCollapsed ? 'הצג סרגל כלים' : 'הסתר סרגל כלים'}
-        >
-          {isToolbarCollapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />}
-        </button>
+        <TooltipWrapper content={isToolbarCollapsed ? 'הצג סרגל כלים' : 'הסתר סרגל כלים'}>
+          <button
+            className="text-viewer-top-bar-btn text-toolbar-toggle-btn"
+            onClick={onToggleToolbar}
+          >
+            {isToolbarCollapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />}
+          </button>
+        </TooltipWrapper>
       </div>
     </div>
   );

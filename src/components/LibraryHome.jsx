@@ -15,6 +15,7 @@ import {
   AddRegular
 } from '@fluentui/react-icons';
 import { useState, useEffect } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import Bookshelf from './Bookshelf';
 import FileTree from './FileTree';
 import BookPreview from './BookPreview';
@@ -244,17 +245,19 @@ const LibraryHome = ({
             </div>
           </div>
           
-          <div className="zmanim-footer-info" onClick={onOpenCalendar} style={{ cursor: 'pointer' }} title="לחץ לפתיחת לוח השנה">
-            <CalendarRegular className="footer-icon" />
-            <div className="footer-text">
-              <span>{zmanimInfo.hebrewDate}</span>
-              <span>
-                {zmanimInfo.parsha}
-                {zmanimInfo.dafYomi && zmanimInfo.parsha && ' • '}
-                {zmanimInfo.dafYomi}
-              </span>
+          <TooltipWrapper content="לחץ לפתיחת לוח השנה">
+            <div className="zmanim-footer-info" onClick={onOpenCalendar} style={{ cursor: 'pointer' }}>
+              <CalendarRegular className="footer-icon" />
+              <div className="footer-text">
+                <span>{zmanimInfo.hebrewDate}</span>
+                <span>
+                  {zmanimInfo.parsha}
+                  {zmanimInfo.dafYomi && zmanimInfo.parsha && ' • '}
+                  {zmanimInfo.dafYomi}
+                </span>
+              </div>
             </div>
-          </div>
+          </TooltipWrapper>
         </div>
 
         {/* כותרת */}
@@ -294,13 +297,14 @@ const LibraryHome = ({
         <div className="workspaces-sidebar">
           <div className="workspaces-sidebar-header">
             <h3>שולחנות עבודה</h3>
-            <button
-              className="workspace-add-sidebar-btn"
-              onClick={handleCreateWorkspace}
-              title="צור שולחן עבודה חדש"
-            >
-              <AddRegular />
-            </button>
+            <TooltipWrapper content="צור שולחן עבודה חדש">
+              <button
+                className="workspace-add-sidebar-btn"
+                onClick={handleCreateWorkspace}
+              >
+                <AddRegular />
+              </button>
+            </TooltipWrapper>
           </div>
           
           <div className="workspaces-sidebar-content">

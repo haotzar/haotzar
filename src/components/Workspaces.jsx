@@ -1,5 +1,6 @@
 import { AddRegular, DeleteRegular, EditRegular, FolderRegular } from '@fluentui/react-icons';
 import { useState } from 'react';
+import TooltipWrapper from './TooltipWrapper';
 import customConfirm from '../utils/customConfirm';
 import './Workspaces.css';
 
@@ -59,32 +60,34 @@ const Workspaces = ({ workspaces, currentWorkspace, onSelectWorkspace, onCreateW
                   </div>
                 </div>
                 <div className="workspace-actions">
-                  <button
-                    className="workspace-action-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEdit(workspace);
-                    }}
-                    title="שנה שם"
-                  >
-                    <EditRegular />
-                  </button>
-                  <button
-                    className="workspace-action-btn delete"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const shouldDelete = await customConfirm(
-                        `למחוק את שולחן העבודה "${workspace.name}"?`,
-                        { type: 'warning', title: 'אישור מחיקה' }
-                      );
-                      if (shouldDelete) {
-                        onDeleteWorkspace(workspace.id);
-                      }
-                    }}
-                    title="מחק"
-                  >
-                    <DeleteRegular />
-                  </button>
+                  <TooltipWrapper content="שנה שם">
+                    <button
+                      className="workspace-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEdit(workspace);
+                      }}
+                    >
+                      <EditRegular />
+                    </button>
+                  </TooltipWrapper>
+                  <TooltipWrapper content="מחק">
+                    <button
+                      className="workspace-action-btn delete"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const shouldDelete = await customConfirm(
+                          `למחוק את שולחן העבודה "${workspace.name}"?`,
+                          { type: 'warning', title: 'אישור מחיקה' }
+                        );
+                        if (shouldDelete) {
+                          onDeleteWorkspace(workspace.id);
+                        }
+                      }}
+                    >
+                      <DeleteRegular />
+                    </button>
+                  </TooltipWrapper>
                 </div>
               </>
             )}
