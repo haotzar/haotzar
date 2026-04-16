@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { initializePDFWorker } from '../utils/pdfWorkerLoader';
 import './SimplePDFPreview.css';
-
-// הגדר את ה-worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const SimplePDFPreview = ({ pdfPath }) => {
   const canvasRef = useRef(null);
@@ -19,6 +16,12 @@ const SimplePDFPreview = ({ pdfPath }) => {
       try {
         setLoading(true);
         setError(null);
+
+        // אתחל את ה-worker אם עדיין לא אותחל
+        const workerReady = await initializePDFWorker();
+        if (!workerReady) {
+          throw new Error('לא ניתן לאתחל את PDF.js worker');
+        }
 
         // קרא את הקובץ
         const isElectron = window.electron !== undefined;

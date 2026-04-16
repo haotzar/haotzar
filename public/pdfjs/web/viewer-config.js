@@ -19,14 +19,14 @@
   if (isTauri && isDevelopment) {
     // Tauri development mode - use Vite dev server
     // The viewer.html is loaded from http://localhost:5173/pdfjs/web/viewer.html
-    // So ../build/pdf.worker.mjs resolves to http://localhost:5173/pdfjs/build/pdf.worker.mjs
-    workerPath = '../build/pdf.worker.mjs';
+    // So /pdfjs/build/pdf.worker.mjs resolves to http://localhost:5173/pdfjs/build/pdf.worker.mjs
+    workerPath = '/pdfjs/build/pdf.worker.mjs';
     console.log('🦀 Tauri development mode - worker path:', workerPath);
   } else if (isTauri) {
-    // Tauri production - use asset protocol with relative path
+    // Tauri production - use absolute path with asset protocol
     // In production, files are served via asset:// or https://tauri.localhost
-    // Use relative path from viewer.html location
-    workerPath = '../build/pdf.worker.mjs';
+    // Use absolute path to ensure correct resolution
+    workerPath = '/pdfjs/build/pdf.worker.mjs';
     console.log('🦀 Tauri production mode - worker path:', workerPath, { protocol: window.location.protocol });
   } else if (isElectron && !isDevelopment) {
     // Production Electron build

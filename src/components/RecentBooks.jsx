@@ -1,10 +1,8 @@
 import { DocumentRegular } from '@fluentui/react-icons';
 import { useState, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { initializePDFWorker } from '../utils/pdfWorkerLoader';
 import './RecentBooks.css';
-
-// הגדרת worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 const THUMBNAILS_CACHE_KEY = 'book-thumbnails-cache';
 
@@ -26,6 +24,13 @@ const RecentBooks = ({ recentBooks, onBookClick }) => {
   // חילוץ תמונה ממוזערת של העמוד הראשון
   useEffect(() => {
     const loadThumbnails = async () => {
+      // אתחל את ה-worker אם עדיין לא אותחל
+      const workerReady = await initializePDFWorker();
+      if (!workerReady) {
+        console.error('לא ניתן לאתחל את PDF.js worker');
+        return;
+      }
+
       const newThumbnails = { ...thumbnails };
       let hasNewThumbnails = false;
       

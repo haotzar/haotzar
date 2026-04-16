@@ -1,12 +1,16 @@
 import * as pdfjsLib from 'pdfjs-dist';
-
-// הגדרת worker path - שימוש ב-worker מקומי מתיקיית public
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+import { initializePDFWorker } from './pdfWorkerLoader';
 
 // חילוץ טקסט מקובץ PDF
 export async function extractTextFromPDF(pdfPath) {
   try {
     console.log(`📄 מחלץ טקסט מ-PDF: ${pdfPath}`);
+    
+    // אתחל את ה-worker אם עדיין לא אותחל
+    const workerReady = await initializePDFWorker();
+    if (!workerReady) {
+      throw new Error('לא ניתן לאתחל את PDF.js worker');
+    }
     
     // בדיקה אם אנחנו ב-Tauri
     const isTauri = window.__TAURI__ !== undefined;
@@ -74,6 +78,12 @@ export async function extractTextFromPDF(pdfPath) {
 // בדיקה אם קובץ PDF מכיל טקסט
 export async function hasPDFText(pdfPath) {
   try {
+    // אתחל את ה-worker אם עדיין לא אותחל
+    const workerReady = await initializePDFWorker();
+    if (!workerReady) {
+      throw new Error('לא ניתן לאתחל את PDF.js worker');
+    }
+
     // בדיקה אם אנחנו ב-Tauri
     const isTauri = window.__TAURI__ !== undefined;
     let pdfData;

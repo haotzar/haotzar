@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { initializePDFWorker } from '../utils/pdfWorkerLoader';
 import './PDFThumbnail.css';
 
 const PDFThumbnail = ({ pdfPath }) => {
@@ -12,17 +13,20 @@ const PDFThumbnail = ({ pdfPath }) => {
         setLoading(true);
         setError(null);
 
+        // אתחל את ה-worker אם עדיין לא אותחל
+        const workerReady = await initializePDFWorker();
+        if (!workerReady) {
+          throw new Error('לא ניתן לאתחל את PDF.js worker');
+        }
+
         // קרא את הקובץ
         const isElectron = window.electron !== undefined;
         const arrayBuffer = isElectron 
           ? window.electron.readFileAsBuffer(pdfPath)
           : await fetch(pdfPath).then(r => r.arrayBuffer());
 
-        // טען את PDF.js מה-window (כבר נטען ב-viewer)
+        // טען את PDF.js
         const pdfjsLib = await import('pdfjs-dist');
-        
-        // השתמש ב-worker מ-CDN שתואם לגרסה
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
         // טען את ה-PDF
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
