@@ -25,9 +25,33 @@
 
 ## דרישות מערכת
 
+### Desktop
 - Windows 10/11
-- Node.js 16+
-- Rust (עבור Tauri - אופציונלי)
+- macOS 10.15+
+- Linux (Ubuntu 22.04+, Debian 11+, Fedora 36+)
+
+### פיתוח
+- Node.js 18+
+- Rust 1.70+ (עבור Tauri)
+
+### Linux Dependencies (Tauri v2)
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  libgtk-3-dev \
+  libwebkit2gtk-4.1-dev \
+  libappindicator3-dev \
+  librsvg2-dev \
+  patchelf \
+  libsoup-3.0-dev \
+  libjavascriptcoregtk-4.1-dev
+```
+
+### Mobile
+- Android: Android Studio + NDK
+- iOS: Xcode 14+ (רק על macOS)
+
+> 💡 **בעיות בהתקנה?** ראה [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## התקנה ופיתוח
 

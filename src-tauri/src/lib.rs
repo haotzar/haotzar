@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
 use std::path::PathBuf;
 use std::process::{Command, Child};
 use std::sync::Mutex;
@@ -389,7 +390,6 @@ pub fn run() {
         .setup(|app| {
             #[cfg(desktop)]
             {
-                use tauri::Manager;
                 let window = app.get_webview_window("main").unwrap();
                 
                 // פתח DevTools אוטומטית בפיתוח
@@ -410,6 +410,11 @@ pub fn run() {
                 println!("   - get_otzaria_db_path");
                 println!("   - read_text_file");
                 println!("   - read_pdf_file");
+            }
+
+            #[cfg(mobile)]
+            {
+                println!("✅ Tauri mobile app initialized");
             }
 
             Ok(())

@@ -44,7 +44,14 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev
 
       - name: install frontend dependencies
         run: npm install
@@ -118,6 +125,18 @@ jobs:
       - name: setup Android SDK
         uses: android-actions/setup-android@v3
       
+      - name: install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev
+      
       - name: install Android NDK
         run: |
           sdkmanager "ndk;26.1.10909125"
@@ -153,29 +172,44 @@ jobs:
 
   build-ios:
     runs-on: macos-latest
-    # iOS build ירוץ רק אם יש APPLE_DEVELOPMENT_TEAM secret
-    # אי אפשר לבדוק secrets ישירות, אז נשתמש ב-continue-on-error
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       
+      - name: check if iOS build should run
+        id: should_build_ios
+        run: |
+          if [ -n "${{ secrets.APPLE_DEVELOPMENT_TEAM }}" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "✅ APPLE_DEVELOPMENT_TEAM is set - iOS build will run"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "⏭️ APPLE_DEVELOPMENT_TEAM is not set - skipping iOS build"
+            echo "💡 To enable iOS builds, add APPLE_DEVELOPMENT_TEAM to repository secrets"
+            echo "📚 See MOBILE-SETUP.md for instructions"
+          fi
+      
       - name: setup node
+        if: steps.should_build_ios.outputs.should_run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
       
       - name: install Rust stable
+        if: steps.should_build_ios.outputs.should_run == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
       
       - name: install frontend dependencies
+        if: steps.should_build_ios.outputs.should_run == 'true'
         run: npm install
       
       - name: download meilisearch
+        if: steps.should_build_ios.outputs.should_run == 'true'
         run: npm run download:meilisearch
       
       - name: check if iOS project exists
+        if: steps.should_build_ios.outputs.should_run == 'true'
         id: check_ios
         run: |
           if [ -d "src-tauri/gen/apple" ]; then
@@ -185,15 +219,17 @@ jobs:
           fi
       
       - name: init iOS project (if not exists)
-        if: steps.check_ios.outputs.exists == 'false'
+        if: steps.should_build_ios.outputs.should_run == 'true' && steps.check_ios.outputs.exists == 'false'
         run: npm run tauri ios init
       
       - name: build ios
+        if: steps.should_build_ios.outputs.should_run == 'true'
         run: npm run tauri ios build
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
       
       - name: upload IPA
+        if: steps.should_build_ios.outputs.should_run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
