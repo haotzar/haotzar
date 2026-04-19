@@ -50,15 +50,43 @@ function ensureDir(dirPath) {
 }
 
 function copyPdfWorker() {
-  const source = path.join(__dirname, '../node_modules/pdfjs-dist/build/pdf.worker.min.mjs');
-  const dest = path.join(__dirname, '../public/pdf.worker.min.mjs');
+  const sourceDir = path.join(__dirname, '../node_modules/pdfjs-dist/build');
+  const destDir = path.join(__dirname, '../public/pdfjs/build');
+
+  const filesToCopy = [
+    'pdf.worker.min.mjs',
+    'pdf.mjs',
+    'pdf.worker.mjs',
+    'pdf.mjs.map',
+    'pdf.worker.mjs.map'
+  ];
 
   try {
-    ensureDir(path.dirname(dest));
-    fs.copyFileSync(source, dest);
-    console.log('✅ PDF.js worker הועתק בהצלחה ל-public/');
+    ensureDir(destDir);
+    
+    let copiedCount = 0;
+    for (const file of filesToCopy) {
+      const source = path.join(sourceDir, file);
+      const dest = path.join(destDir, file);
+      
+      if (fs.existsSync(source)) {
+        fs.copyFileSync(source, dest);
+        copiedCount++;
+      } else {
+        console.warn(`⚠️  קובץ לא נמצא: ${file}`);
+      }
+    }
+    
+    // Also copy to public root for backward compatibility
+    const legacySource = path.join(sourceDir, 'pdf.worker.min.mjs');
+    const legacyDest = path.join(__dirname, '../public/pdf.worker.min.mjs');
+    if (fs.existsSync(legacySource)) {
+      fs.copyFileSync(legacySource, legacyDest);
+    }
+    
+    console.log(`✅ ${copiedCount} קבצי PDF.js הועתקו בהצלחה ל-public/pdfjs/build/`);
   } catch (error) {
-    console.error('❌ שגיאה בהעתקת PDF.js worker:', error);
+    console.error('❌ שגיאה בהעתקת קבצי PDF.js:', error);
     process.exit(1);
   }
 }

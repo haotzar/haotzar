@@ -5,7 +5,7 @@
   "identifier": "com.haotzer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build:tauri",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
