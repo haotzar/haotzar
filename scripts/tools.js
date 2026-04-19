@@ -65,10 +65,24 @@ function copyPdfWorker() {
 
 function downloadMeilisearch() {
   const MEILISEARCH_VERSION = 'v1.5.1';
-  const PLATFORM = process.platform === 'win32' ? 'windows' : process.platform;
-  const ARCH = process.arch === 'x64' ? 'amd64' : 'arm64';
+  let PLATFORM = process.platform;
+  
+  // Convert Node.js platform names to Meilisearch release names
+  if (PLATFORM === 'win32') {
+    PLATFORM = 'windows';
+  } else if (PLATFORM === 'darwin') {
+    PLATFORM = 'macos';
+  }
+  
+  let ARCH = process.arch === 'x64' ? 'amd64' : 'arm64';
+  
+  // Special handling for macOS ARM
+  let archSuffix = ARCH;
+  if (PLATFORM === 'macos' && ARCH === 'arm64') {
+    archSuffix = 'apple-silicon';
+  }
 
-  const downloadUrl = `https://github.com/meilisearch/meilisearch/releases/download/${MEILISEARCH_VERSION}/meilisearch-${PLATFORM}-${ARCH}${PLATFORM === 'windows' ? '.exe' : ''}`;
+  const downloadUrl = `https://github.com/meilisearch/meilisearch/releases/download/${MEILISEARCH_VERSION}/meilisearch-${PLATFORM}-${archSuffix}${PLATFORM === 'windows' ? '.exe' : ''}`;
 
   const outputDir = path.join(__dirname, '..', 'resources', 'meilisearch');
   const outputFile = path.join(outputDir, PLATFORM === 'windows' ? 'meilisearch.exe' : 'meilisearch');
