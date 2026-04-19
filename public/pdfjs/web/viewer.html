@@ -39,12 +39,17 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!-- CRITICAL: Load worker configuration BEFORE pdf.mjs -->
 <script src="viewer-config.js"></script>
 
-<!-- CRITICAL: Load PDF.js dynamically with correct path -->
-<script src="pdf-loader.js"></script>
-
     <link rel="stylesheet" href="viewer.css">
     <link rel="stylesheet" href="custom-outline-style.css">
 
+  <!-- CRITICAL: Load PDF.js library BEFORE viewer.mjs -->
+  <script type="module">
+    // Import and expose PDF.js to global scope
+    import * as pdfjsLib from '../build/pdf.mjs';
+    globalThis.pdfjsLib = pdfjsLib;
+    console.log('✅ PDF.js loaded and exposed to globalThis');
+  </script>
+  
   <script src="viewer.mjs" type="module"></script>
   <script src="custom-search.js"></script>
   <script src="electron-origin-patch.js"></script>
