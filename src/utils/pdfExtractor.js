@@ -19,7 +19,7 @@ export async function extractTextFromPDF(pdfPath) {
     if (isTauri) {
       // קריאת קובץ PDF דרך Tauri API
       try {
-        const { readBinaryFile } = await import('@tauri-apps/api/fs');
+        const { readBinaryFile } = await import('@tauri-apps/plugin-fs');
         pdfData = await readBinaryFile(pdfPath);
         console.log('✅ Read PDF file via Tauri API');
       } catch (error) {
@@ -91,7 +91,7 @@ export async function hasPDFText(pdfPath) {
     if (isTauri) {
       // קריאת קובץ PDF דרך Tauri API
       try {
-        const { readBinaryFile } = await import('@tauri-apps/api/fs');
+        const { readBinaryFile } = await import('@tauri-apps/plugin-fs');
         pdfData = await readBinaryFile(pdfPath);
         console.log('✅ Read PDF file via Tauri API');
       } catch (error) {
@@ -117,3 +117,4 @@ export async function hasPDFText(pdfPath) {
     return false;
   }
 }
+

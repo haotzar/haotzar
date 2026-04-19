@@ -23,7 +23,7 @@ export const getPlatformName = () => {
 export async function readTextFile(filePath) {
   if (isTauri()) {
     try {
-      const { readTextFile } = await import('@tauri-apps/api/fs');
+      const { readTextFile } = await import('@tauri-apps/plugin-fs');
       return await readTextFile(filePath);
     } catch (error) {
       console.error('❌ Error reading text file via Tauri:', error);
@@ -45,7 +45,7 @@ export async function readTextFile(filePath) {
 export async function readBinaryFile(filePath) {
   if (isTauri()) {
     try {
-      const { readBinaryFile } = await import('@tauri-apps/api/fs');
+      const { readBinaryFile } = await import('@tauri-apps/plugin-fs');
       return await readBinaryFile(filePath);
     } catch (error) {
       console.error('❌ Error reading binary file via Tauri:', error);
@@ -67,7 +67,7 @@ export async function readBinaryFile(filePath) {
 export async function convertFileToUrl(filePath) {
   if (isTauri()) {
     try {
-      const { convertFileSrc } = await import('@tauri-apps/api/tauri');
+      const { convertFileSrc } = await import('@tauri-apps/api/core');
       return convertFileSrc(filePath);
     } catch (error) {
       console.error('❌ Error converting file path via Tauri:', error);
@@ -92,7 +92,7 @@ export async function convertFileToUrl(filePath) {
 export async function fileExists(filePath) {
   if (isTauri()) {
     try {
-      const { exists } = await import('@tauri-apps/api/fs');
+      const { exists } = await import('@tauri-apps/plugin-fs');
       return await exists(filePath);
     } catch (error) {
       console.error('❌ Error checking file existence via Tauri:', error);
@@ -118,7 +118,7 @@ export async function fileExists(filePath) {
 export async function writeFile(filePath, content) {
   if (isTauri()) {
     try {
-      const { writeTextFile } = await import('@tauri-apps/api/fs');
+      const { writeTextFile } = await import('@tauri-apps/plugin-fs');
       await writeTextFile(filePath, content);
     } catch (error) {
       console.error('❌ Error writing file via Tauri:', error);
@@ -138,7 +138,7 @@ export async function writeFile(filePath, content) {
 export async function deleteFile(filePath) {
   if (isTauri()) {
     try {
-      const { removeFile } = await import('@tauri-apps/api/fs');
+      const { removeFile } = await import('@tauri-apps/plugin-fs');
       await removeFile(filePath);
     } catch (error) {
       console.error('❌ Error deleting file via Tauri:', error);
@@ -158,7 +158,7 @@ export async function deleteFile(filePath) {
 export async function selectFolder() {
   if (isTauri()) {
     try {
-      const { open } = await import('@tauri-apps/api/dialog');
+      const { open } = await import('@tauri-apps/plugin-dialog');
       return await open({
         directory: true,
         multiple: false
@@ -181,7 +181,7 @@ export async function selectFolder() {
 export async function openExternal(url) {
   if (isTauri()) {
     try {
-      const { open } = await import('@tauri-apps/api/shell');
+      const { open } = await import('@tauri-apps/plugin-shell');
       await open(url);
     } catch (error) {
       console.error('❌ Error opening external link via Tauri:', error);
@@ -200,7 +200,7 @@ export async function openExternal(url) {
 export async function getAppDataPath() {
   if (isTauri()) {
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       return await invoke('get_app_data_path');
     } catch (error) {
       console.error('❌ Error getting app data path via Tauri:', error);
@@ -220,7 +220,7 @@ export async function getAppDataPath() {
 export async function getBooksPath() {
   if (isTauri()) {
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       return await invoke('get_books_path');
     } catch (error) {
       console.error('❌ Error getting books path via Tauri:', error);
@@ -241,7 +241,7 @@ export async function getBooksPath() {
 export async function startMeilisearch(config) {
   if (isTauri()) {
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       return await invoke('start_meilisearch', config);
     } catch (error) {
       console.error('❌ Error starting Meilisearch via Tauri:', error);
@@ -261,7 +261,7 @@ export async function startMeilisearch(config) {
 export async function stopMeilisearch() {
   if (isTauri()) {
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       await invoke('stop_meilisearch');
     } catch (error) {
       console.error('❌ Error stopping Meilisearch via Tauri:', error);
@@ -274,3 +274,4 @@ export async function stopMeilisearch() {
 }
 
 console.log(`🚀 Platform detected: ${getPlatformName()}`);
+

@@ -45,7 +45,7 @@ export async function startMeilisearchTest() {
       result = await window.electron.startMeilisearch({ port: 7700 });
     } else if (isTauri) {
       try {
-        const { invoke } = await import('@tauri-apps/api/tauri');
+        const { invoke } = await import('@tauri-apps/api/core');
         result = await invoke('start_meilisearch', { port: 7700 });
         console.log('📦 Meilisearch הופעל דרך Tauri');
       } catch (error) {
@@ -94,7 +94,7 @@ export async function stopMeilisearchTest() {
       console.log('✅ Meilisearch נסגר (Electron)');
     } else if (isTauri) {
       try {
-        const { invoke } = await import('@tauri-apps/api/tauri');
+        const { invoke } = await import('@tauri-apps/api/core');
         await invoke('stop_meilisearch');
         console.log('✅ Meilisearch נסגר (Tauri)');
       } catch (error) {
@@ -183,3 +183,4 @@ if (typeof window !== 'undefined') {
   console.log('  - window.testMeilisearch.search("query") - חיפוש');
   console.log('  - window.testMeilisearch.stats() - סטטיסטיקות');
 }
+

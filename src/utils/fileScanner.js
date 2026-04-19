@@ -8,7 +8,7 @@ export async function scanFiles(getSetting, setLoadingState) {
   if (isTauri) {
     // Tauri - טען דרך Rust API
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       
       setLoadingState?.({ isLoading: true, stage: 'סורק תיקיות...', progress: 40, message: '' });
       
@@ -167,3 +167,4 @@ export async function scanFiles(getSetting, setLoadingState) {
   console.log(`📚 סה"כ ${allFiles.length} קבצים נסרקו`);
   return allFiles;
 }
+

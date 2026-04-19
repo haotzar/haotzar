@@ -117,7 +117,7 @@ class SearchEngine {
       
       if (isTauri) {
         try {
-          const { readTextFile } = await import('@tauri-apps/api/fs');
+          const { readTextFile } = await import('@tauri-apps/plugin-fs');
           return await readTextFile(path);
         } catch (error) {
           console.error('❌ Error reading file via Tauri:', error);
@@ -497,3 +497,4 @@ class SearchEngine {
 const searchEngine = new SearchEngine();
 
 export default searchEngine;
+

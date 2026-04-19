@@ -66,48 +66,74 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-  # הערה: תמיכה ב-Android ו-iOS זמינה רק ב-Tauri v2
-  # הפרויקט הנוכחי משתמש ב-Tauri v1 (@tauri-apps/cli@^1.6.0)
-  # כדי להפעיל בנייה למובייל, יש לשדרג ל-Tauri v2:
-  # npm install @tauri-apps/cli@latest @tauri-apps/api@latest
-  
-  # build-android:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 20
-  #     - name: install Rust stable
-  #       uses: dtolnay/rust-toolchain@stable
-  #       with:
-  #         targets: aarch64-linux-android,armv7-linux-androideabi
-  #     - name: setup Java
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         distribution: 'zulu'
-  #         java-version: '17'
-  #     - name: setup Android SDK
-  #       uses: android-actions/setup-android@v3
-  #     - name: install frontend dependencies
-  #       run: npm install
-  #     - name: build android (requires Tauri v2)
-  #       run: npm run tauri android build
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      
+      - name: setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: setup Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: install frontend dependencies
+        run: npm install
+      
+      - name: download meilisearch
+        run: npm run download:meilisearch
+      
+      - name: init Android project
+        run: npm run tauri android init
+      
+      - name: build android
+        run: npm run tauri android build
+        env:
+          NDK_HOME: ${{ steps.setup-android.outputs.sdk-path }}/ndk-bundle
+      
+      - name: upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: src-tauri/gen/android/app/build/outputs/apk/release/*.apk
 
-  # build-ios:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 20
-  #     - name: install Rust stable
-  #       uses: dtolnay/rust-toolchain@stable
-  #       with:
-  #         targets: aarch64-apple-ios,aarch64-apple-ios-sim
-  #     - name: install frontend dependencies
-  #       run: npm install
-  #     - name: build ios (requires Tauri v2)
-  #       run: npm run tauri ios build
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+      
+      - name: install frontend dependencies
+        run: npm install
+      
+      - name: download meilisearch
+        run: npm run download:meilisearch
+      
+      - name: init iOS project
+        run: npm run tauri ios init
+      
+      - name: build ios
+        run: npm run tauri ios build
+        # הערה: בניית iOS ב-GitHub Actions דורשת הגדרת Provisioning Profiles ו-Certificates ב-Secrets

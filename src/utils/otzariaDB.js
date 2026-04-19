@@ -33,7 +33,7 @@ class OtzariaDB {
       } else if (this.isTauri) {
         // ב-Tauri נשתמש ב-invoke לפתיחת DB
         try {
-          const { invoke } = await import('@tauri-apps/api/tauri');
+          const { invoke } = await import('@tauri-apps/api/core');
           const result = await invoke('open_otzaria_db', { path: dbPath });
           if (result.success) {
             this.db = true;
@@ -617,3 +617,4 @@ class OtzariaDB {
 const otzariaDB = new OtzariaDB();
 
 export default otzariaDB;
+

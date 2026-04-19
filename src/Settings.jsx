@@ -118,7 +118,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       if (isTauri) {
         // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
+          const { open } = await import('@tauri-apps/plugin-dialog');
           const selectedPath = await open({
             directory: true,
             multiple: false,
@@ -198,7 +198,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       } else if (isTauri) {
         // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
+          const { open } = await import('@tauri-apps/plugin-dialog');
           const selectedPath = await open({
             directory: true,
             multiple: false,
@@ -345,7 +345,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       if (isTauri) {
         // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
+          const { open } = await import('@tauri-apps/plugin-dialog');
           const selectedPath = await open({
             directory: true,
             multiple: false,
@@ -388,7 +388,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       if (isTauri) {
         // שימוש ב-Tauri dialog API עם dynamic import
         try {
-          const { open } = await import('@tauri-apps/api/dialog');
+          const { open } = await import('@tauri-apps/plugin-dialog');
           const selectedPath = await open({
             directory: false,
             multiple: false,
@@ -1088,3 +1088,4 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 };
 
 export default Settings;
+

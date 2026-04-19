@@ -61,7 +61,7 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
         if (isTauri) {
           // ב-Tauri, השתמש ב-convertFileSrc להמרת הנתיב
           try {
-            const { convertFileSrc } = await import('@tauri-apps/api/tauri');
+            const { convertFileSrc } = await import('@tauri-apps/api/core');
             fileUrl = convertFileSrc(pdfPath);
             console.log('✅ Converted Tauri file path:', fileUrl);
           } catch (error) {

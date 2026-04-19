@@ -79,7 +79,7 @@ const TextViewer = ({ textPath, searchContext, isPreviewMode = false, bookId = n
                     if (isTauri) {
                         // קריאת קובץ דרך Tauri API
                         try {
-                            const { invoke } = await import('@tauri-apps/api/tauri');
+                            const { invoke } = await import('@tauri-apps/api/core');
                             htmlText = await invoke('read_text_file', { path: textPath });
                             console.log('✅ קובץ נטען דרך Tauri:', textPath);
                         } catch (error) {

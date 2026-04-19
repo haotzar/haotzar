@@ -414,7 +414,7 @@ function App() {
               } else {
                 // Tauri - השתמש ב-dynamic import
                 try {
-                  const { invoke } = await import('@tauri-apps/api/tauri');
+                  const { invoke } = await import('@tauri-apps/api/core');
                   otzariaPath = await invoke('get_otzaria_db_path');
                 } catch (error) {
                   console.error('❌ שגיאה בקבלת נתיב אוצריא:', error);
@@ -510,7 +510,7 @@ function App() {
                 } else {
                   // Tauri - השתמש ב-dynamic import
                   try {
-                    const { invoke } = await import('@tauri-apps/api/tauri');
+                    const { invoke } = await import('@tauri-apps/api/core');
                     otzariaPath = await invoke('get_otzaria_db_path');
                   } catch (error) {
                     console.error('❌ שגיאה בקבלת נתיב אוצריא:', error);
@@ -591,7 +591,7 @@ function App() {
               if (folder === 'books') {
                 // תיקיית books ברירת המחדל - קבל את הנתיב המלא
                 try {
-                  const { invoke } = await import('@tauri-apps/api/tauri');
+                  const { invoke } = await import('@tauri-apps/api/core');
                   const booksPath = await invoke('get_books_path');
                   scanPaths.push(booksPath);
                   console.log('📁 תיקיית books:', booksPath);
@@ -623,7 +623,7 @@ function App() {
 
             console.log('📁 סורק תיקיות:', scanPaths);
             try {
-              const { invoke } = await import('@tauri-apps/api/tauri');
+              const { invoke } = await import('@tauri-apps/api/core');
               const bookFiles = await invoke('scan_books_in_paths', { paths: scanPaths });
               console.log(`✅ נמצאו ${bookFiles.length} קבצים ב-${(performance.now() - scanStart).toFixed(0)}ms`);
               console.log('📋 First 5 files:', bookFiles.slice(0, 5));

@@ -257,7 +257,7 @@ class MeilisearchEngine {
       } else if (isTauri) {
         // הפעל את השרת דרך Tauri
         try {
-          const { invoke } = await import('@tauri-apps/api/tauri');
+          const { invoke } = await import('@tauri-apps/api/core');
           const result = await invoke('start_meilisearch', { port: this.serverPort });
           if (result.success) {
             this.isRunning = true;
@@ -1100,7 +1100,7 @@ class MeilisearchEngine {
         console.log('🛑 Meilisearch נסגר (Electron)');
       } else if (window.__TAURI__) {
         try {
-          const { invoke } = await import('@tauri-apps/api/tauri');
+          const { invoke } = await import('@tauri-apps/api/core');
           await invoke('stop_meilisearch');
           console.log('🛑 Meilisearch נסגר (Tauri)');
         } catch (error) {
@@ -1122,3 +1122,4 @@ class MeilisearchEngine {
 const meilisearchEngine = new MeilisearchEngine();
 
 export default meilisearchEngine;
+

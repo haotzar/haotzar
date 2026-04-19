@@ -1,92 +1,22 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "haotzar",
+  "version": "1.0.0",
+  "identifier": "com.haotzer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:5173",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "haotzar",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$APPDATA/**", "$RESOURCE/**", "$APPDATA/haotzer/**", "**"]
-      },
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": true,
-        "open": true,
-        "save": true
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["$APPDATA/**", "$RESOURCE/**"]
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true
-      },
-      "globalShortcut": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.haotzer.app",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": ["../resources/meilisearch/*"],
-      "externalBin": [],
-      "copyright": "",
-      "category": "Education",
-      "shortDescription": "אפליקציה דסקטופ להצגת ספרים תורניים",
-      "longDescription": "האוצר - אפליקציה דסקטופ מתקדמת להצגת וחיפוש בספרים תורניים",
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "",
-        "exceptionDomain": "",
-        "signingIdentity": null,
-        "providerShortName": null,
-        "entitlements": null
-      },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "",
-        "wix": {
-          "language": "he-IL"
-        }
-      }
-    },
+  "app": {
+    "withGlobalTauri": true,
     "security": {
-      "csp": "default-src 'self' asset: tauri: https: http://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval' asset: tauri: https: http://localhost:*; worker-src 'self' blob: asset: tauri: https:; style-src 'self' 'unsafe-inline' asset: tauri: https:; img-src 'self' data: https: asset: tauri: blob:; font-src 'self' data: asset: tauri: https:; connect-src 'self' http://localhost:* https://localhost:* asset: tauri: https: ws://localhost:*; media-src 'self' data: asset: tauri: https:;"
+      "csp": "default-src 'self' asset: tauri: https: http://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval' asset: tauri: https: http://localhost:*; worker-src 'self' blob: asset: tauri: https:; style-src 'self' 'unsafe-inline' asset: tauri: https:; img-src 'self' data: https: asset: tauri: blob:; font-src 'self' data: asset: tauri: https:; connect-src 'self' http://localhost:* https://localhost:* asset: tauri: https: ws://localhost:*; media-src 'self' data: asset: tauri: https:;",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/**", "$RESOURCE/**"]
+      }
     },
     "windows": [
       {
@@ -99,5 +29,40 @@
         "minHeight": 600
       }
     ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../resources/meilisearch/*": "./"
+    },
+    "copyright": "",
+    "category": "Education",
+    "shortDescription": "אפליקציה דסקטופ להצגת ספרים תורניים",
+    "longDescription": "האוצר - אפליקציה דסקטופ מתקדמת להצגת וחיפוש בספרים תורניים",
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": ""
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "he-IL"
+      }
+    }
   }
 }

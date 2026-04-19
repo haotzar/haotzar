@@ -171,7 +171,7 @@ export async function performPlatformSpecificAction() {
     console.log('🦀 Performing Tauri-specific action...');
     // כאן אפשר להשתמש ב-Tauri API ישירות אם צריך
     try {
-      const { invoke } = await import('@tauri-apps/api/tauri');
+      const { invoke } = await import('@tauri-apps/api/core');
       const result = await invoke('some_rust_command');
       return result;
     } catch (error) {
@@ -252,3 +252,4 @@ function MyComponent() {
   );
 }
 */
+
