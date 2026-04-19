@@ -66,6 +66,34 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
+      - name: upload artifacts (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
+
+      - name: upload artifacts (macOS)
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app.tar.gz
+
+      - name: upload artifacts (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installers
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
+
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -90,28 +118,43 @@ jobs:
       - name: setup Android SDK
         uses: android-actions/setup-android@v3
       
+      - name: install Android NDK
+        run: |
+          sdkmanager "ndk;26.1.10909125"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
+      
       - name: install frontend dependencies
         run: npm install
       
       - name: download meilisearch
         run: npm run download:meilisearch
       
-      - name: init Android project
-        run: npm run tauri android init
+      - name: check if Android project exists
+        id: check_android
+        run: |
+          if [ -d "src-tauri/gen/android" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: init Android project (if not exists)
+        if: steps.check_android.outputs.exists == 'false'
+        run: npm run tauri android init -- --ci
       
       - name: build android
-        run: npm run tauri android build
-        env:
-          NDK_HOME: ${{ steps.setup-android.outputs.sdk-path }}/ndk-bundle
+        run: npm run tauri android build -- --apk
       
       - name: upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/release/*.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
 
   build-ios:
     runs-on: macos-latest
+    # iOS build ירוץ רק אם יש APPLE_DEVELOPMENT_TEAM secret
+    if: ${{ secrets.APPLE_DEVELOPMENT_TEAM != '' }}
     steps:
       - uses: actions/checkout@v4
       
@@ -131,9 +174,26 @@ jobs:
       - name: download meilisearch
         run: npm run download:meilisearch
       
-      - name: init iOS project
+      - name: check if iOS project exists
+        id: check_ios
+        run: |
+          if [ -d "src-tauri/gen/apple" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: init iOS project (if not exists)
+        if: steps.check_ios.outputs.exists == 'false'
         run: npm run tauri ios init
       
       - name: build ios
         run: npm run tauri ios build
-        # הערה: בניית iOS ב-GitHub Actions דורשת הגדרת Provisioning Profiles ו-Certificates ב-Secrets
+        env:
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
+      
+      - name: upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: src-tauri/gen/apple/build/arm64/*.ipa

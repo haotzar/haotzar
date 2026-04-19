@@ -1,10 +1,16 @@
 # האוצר - מאגר ספרים תורני
 
+[![Build Status](https://github.com/[username]/haotzar/actions/workflows/tauri-build.yml/badge.svg)](https://github.com/[username]/haotzar/actions/workflows/tauri-build.yml)
+
 אפליקציה דסקטופ להצגת ספרים תורניים בפורמט PDF וטקסט, בנויה עם React.
 
 > 🔧 **תמיכה בשתי פלטפורמות:**
 > - **Tauri** (Rust) - קל, מהיר, צריכת זיכרון נמוכה (~10-15 MB)
 > - **Electron** (Node.js) - תמיכה רחבה, אקוסיסטם עשיר (~150-200 MB)
+
+> 📱 **תמיכה במובייל (Tauri v2):**
+> - ✅ **Android** - בנייה אוטומטית ב-CI
+> - 🍎 **iOS** - דורש Apple Developer account ([הוראות](MOBILE-SETUP.md))
 
 ## תכונות
 

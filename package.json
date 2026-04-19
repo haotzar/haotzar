@@ -43,6 +43,7 @@
     "tauri:ios:init": "tauri ios init",
     "tauri:ios:dev": "tauri ios dev",
     "tauri:ios:build": "tauri ios build",
+    "check:mobile": "node scripts/check-mobile-status.js",
     "download:meilisearch": "node scripts/tools.js meili:download",
     "postinstall": "node scripts/tools.js postinstall",
     "build:index": "node scripts/tools.js index:build",
