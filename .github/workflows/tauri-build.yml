@@ -154,7 +154,8 @@ jobs:
   build-ios:
     runs-on: macos-latest
     # iOS build ירוץ רק אם יש APPLE_DEVELOPMENT_TEAM secret
-    if: ${{ secrets.APPLE_DEVELOPMENT_TEAM != '' }}
+    # אי אפשר לבדוק secrets ישירות, אז נשתמש ב-continue-on-error
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       
