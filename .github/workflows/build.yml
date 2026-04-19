@@ -107,6 +107,142 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  build-electron-inno:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install Inno Setup
+      run: |
+        Write-Host "Downloading Inno Setup..."
+        $innoUrl = "https://jrsoftware.org/download.php/is.exe"
+        $innoInstaller = "$env:TEMP\innosetup.exe"
+        Invoke-WebRequest -Uri $innoUrl -OutFile $innoInstaller
+        
+        Write-Host "Installing Inno Setup..."
+        Start-Process -FilePath $innoInstaller -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -Wait
+        
+        Write-Host "Verifying Inno Setup installation..."
+        $isccPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+        if (Test-Path $isccPath) {
+          Write-Host "✅ Inno Setup installed successfully at: $isccPath"
+        } else {
+          Write-Host "❌ Inno Setup installation failed"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Create required directories and download Meilisearch
+      run: |
+        if (-not (Test-Path "books")) { New-Item -ItemType Directory -Path "books" }
+        if (-not (Test-Path "resources/meilisearch")) { New-Item -ItemType Directory -Path "resources/meilisearch" -Force }
+        "Placeholder for books directory" | Out-File -FilePath "books/README.txt"
+        
+        $version = "v1.5.1"
+        $url = "https://github.com/meilisearch/meilisearch/releases/download/$version/meilisearch-windows-amd64.exe"
+        $output = "resources/meilisearch/meilisearch.exe"
+        
+        Write-Host "Downloading Meilisearch $version..."
+        Invoke-WebRequest -Uri $url -OutFile $output
+        Write-Host "Meilisearch downloaded successfully"
+      shell: pwsh
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Electron app for Inno Setup
+      run: |
+        Write-Host "Building Electron app..."
+        npm run build:electron
+        
+        Write-Host "Creating unpacked directory..."
+        npx electron-builder --win --x64 --dir
+      shell: pwsh
+      env:
+        USE_HARD_LINKS: false
+
+    - name: Build Inno Setup installer
+      run: |
+        $isccPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+        Write-Host "Building Inno Setup installer..."
+        & $isccPath installer.iss
+        
+        Write-Host "Verifying installer was created..."
+        if (Test-Path "release\haotzar-Setup-*.exe") {
+          Write-Host "✅ Inno Setup installer created successfully"
+          Get-ChildItem "release\haotzar-Setup-*.exe" | ForEach-Object {
+            Write-Host "   Created: $($_.Name) ($([math]::Round($_.Length / 1MB, 2)) MB)"
+          }
+        } else {
+          Write-Host "❌ Inno Setup installer not found"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Upload Inno Setup artifacts (non-release)
+      uses: actions/upload-artifact@v4
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      with:
+        name: electron-inno-installer
+        path: |
+          release/haotzar-Setup-*.exe
+
+    - name: Create Inno Setup Release (for tags)
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          release/haotzar-Setup-*.exe
+        draft: true
+        prerelease: false
+        name: 'האוצר (Inno Setup) v${{ github.ref_name }}'
+        body: |
+          ## האוצר - אפליקציית ספרייה תורנית (Inno Setup)
+          
+          ### הורדה והתקנה:
+          1. הורד את קובץ ההתקנה (haotzar-Setup-*.exe)
+          2. הפעל את הקובץ ועקוב אחר ההוראות
+          3. בחר תיקיית התקנה (ברירת מחדל: Program Files)
+          
+          ### יתרונות מתקין Inno Setup:
+          - ממשק התקנה נקי ומקצועי
+          - תמיכה מלאה בעברית
+          - אפשרות לבחור תיקיית התקנה
+          - הסרה נקייה של האפליקציה
+          - גודל מתקין קטן יותר
+          
+          ### דרישות מערכת:
+          - Windows 10/11 (64-bit)
+          - 4GB RAM מומלץ
+          - 100GB שטח פנוי (לספרים)
+          
+          ### תכונות:
+          - חיפוש מהיר עם Meilisearch
+          - תמיכה בקבצי PDF ו-TXT
+          - ממשק בעברית
+          - תמיכה בתיקיות חיצוניות
+          
+          ### שינויים בגרסה זו:
+          - ראה את רשימת השינויים המלאה בדף הפרויקט
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-tauri-windows:
     runs-on: windows-latest
     

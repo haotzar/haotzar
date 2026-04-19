@@ -30,6 +30,8 @@
     "electron:build": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --publish never",
     "electron:build:win": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --win --x64 --publish never",
     "electron:build:portable": "npm run build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false CSC_LINK= CSC_KEY_PASSWORD= WIN_CSC_LINK= WIN_CSC_KEY_PASSWORD= electron-builder --win portable --x64",
+    "electron:build:inno": "npm run build:electron && electron-builder --win --x64 --dir && iscc installer.iss",
+    "build:installer": "node scripts/build-inno-installer.js",
     "optimize": "node scripts/optimize-startup.js",
     "measure": "node scripts/measure-startup.js",
     "clean:logs": "node scripts/remove-logs.js",
@@ -124,10 +126,6 @@
       "differentialPackage": true,
       "unicode": true,
       "warningsAsErrors": false
-    },
-    "nsisWeb": {
-      "appPackageUrl": "https://github.com/[username]/haotzer/releases/download/latest/${productName}-Setup-${version}.${ext}",
-      "artifactName": "${productName}-WebSetup-${version}.${ext}"
     }
   },
   "dependencies": {

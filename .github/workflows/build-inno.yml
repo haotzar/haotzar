@@ -1,0 +1,225 @@
+name: Build Inno Setup Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: false
+        default: '1.0.0'
+  push:
+    branches: [ main ]
+    paths:
+      - 'installer.iss'
+      - '.github/workflows/build-inno.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-inno-installer:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install Inno Setup
+      run: |
+        Write-Host "📥 Downloading Inno Setup..."
+        $innoUrl = "https://jrsoftware.org/download.php/is.exe"
+        $innoInstaller = "$env:TEMP\innosetup.exe"
+        
+        try {
+          Invoke-WebRequest -Uri $innoUrl -OutFile $innoInstaller -ErrorAction Stop
+          Write-Host "✅ Download completed"
+        } catch {
+          Write-Host "❌ Failed to download Inno Setup: $_"
+          exit 1
+        }
+        
+        Write-Host "📦 Installing Inno Setup..."
+        try {
+          Start-Process -FilePath $innoInstaller -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -Wait -ErrorAction Stop
+          Write-Host "✅ Installation completed"
+        } catch {
+          Write-Host "❌ Failed to install Inno Setup: $_"
+          exit 1
+        }
+        
+        Write-Host "🔍 Verifying Inno Setup installation..."
+        $isccPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+        if (Test-Path $isccPath) {
+          Write-Host "✅ Inno Setup installed successfully at: $isccPath"
+          & $isccPath /? | Select-Object -First 3
+        } else {
+          Write-Host "❌ Inno Setup installation verification failed"
+          Write-Host "Expected path: $isccPath"
+          Write-Host "Searching for iscc.exe..."
+          Get-ChildItem "C:\Program Files*" -Recurse -Filter "iscc.exe" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Found: $($_.FullName)"
+          }
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Create required directories and download Meilisearch
+      run: |
+        Write-Host "📁 Creating required directories..."
+        if (-not (Test-Path "books")) { 
+          New-Item -ItemType Directory -Path "books" | Out-Null
+          Write-Host "✅ Created books directory"
+        }
+        if (-not (Test-Path "resources/meilisearch")) { 
+          New-Item -ItemType Directory -Path "resources/meilisearch" -Force | Out-Null
+          Write-Host "✅ Created resources/meilisearch directory"
+        }
+        "Placeholder for books directory" | Out-File -FilePath "books/README.txt"
+        
+        Write-Host "📥 Downloading Meilisearch..."
+        $version = "v1.5.1"
+        $url = "https://github.com/meilisearch/meilisearch/releases/download/$version/meilisearch-windows-amd64.exe"
+        $output = "resources/meilisearch/meilisearch.exe"
+        
+        try {
+          Invoke-WebRequest -Uri $url -OutFile $output -ErrorAction Stop
+          $fileSize = (Get-Item $output).Length / 1MB
+          Write-Host "✅ Meilisearch $version downloaded successfully ($([math]::Round($fileSize, 2)) MB)"
+        } catch {
+          Write-Host "❌ Failed to download Meilisearch: $_"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Install dependencies
+      run: |
+        Write-Host "📦 Installing npm dependencies..."
+        npm install
+        Write-Host "✅ Dependencies installed"
+
+    - name: Build Electron app
+      run: |
+        Write-Host "🔨 Building Electron app..."
+        npm run build:electron
+        Write-Host "✅ Electron app built successfully"
+      shell: pwsh
+      env:
+        USE_HARD_LINKS: false
+
+    - name: Create unpacked directory
+      run: |
+        Write-Host "📂 Creating unpacked directory for Inno Setup..."
+        npx electron-builder --win --x64 --dir
+        
+        Write-Host "🔍 Verifying unpacked directory..."
+        $unpackedDir = "release\win-unpacked"
+        if (Test-Path $unpackedDir) {
+          Write-Host "✅ Unpacked directory created successfully"
+          $dirSize = (Get-ChildItem $unpackedDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+          Write-Host "   Directory size: $([math]::Round($dirSize, 2)) MB"
+          Write-Host "   Files count: $((Get-ChildItem $unpackedDir -Recurse -File).Count)"
+        } else {
+          Write-Host "❌ Unpacked directory not found at: $unpackedDir"
+          exit 1
+        }
+      shell: pwsh
+      env:
+        USE_HARD_LINKS: false
+
+    - name: Verify installer.iss exists
+      run: |
+        Write-Host "🔍 Verifying installer.iss..."
+        if (Test-Path "installer.iss") {
+          Write-Host "✅ installer.iss found"
+          Write-Host "File size: $((Get-Item 'installer.iss').Length) bytes"
+        } else {
+          Write-Host "❌ installer.iss not found!"
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Directory contents:"
+          Get-ChildItem | ForEach-Object { Write-Host "  $($_.Name)" }
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Build Inno Setup installer
+      run: |
+        $isccPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+        
+        Write-Host "🔨 Building Inno Setup installer..."
+        Write-Host "Using: $isccPath"
+        Write-Host "Script: installer.iss"
+        Write-Host ""
+        
+        try {
+          & $isccPath installer.iss
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Inno Setup compilation failed with exit code: $LASTEXITCODE"
+            exit 1
+          }
+          
+          Write-Host ""
+          Write-Host "🔍 Verifying installer was created..."
+          $installers = Get-ChildItem "release\haotzar-Setup-*.exe" -ErrorAction SilentlyContinue
+          
+          if ($installers) {
+            Write-Host "✅ Inno Setup installer created successfully!"
+            $installers | ForEach-Object {
+              $size = $_.Length / 1MB
+              Write-Host "   📦 $($_.Name) ($([math]::Round($size, 2)) MB)"
+            }
+          } else {
+            Write-Host "❌ Inno Setup installer not found in release directory"
+            Write-Host "Release directory contents:"
+            Get-ChildItem "release" -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "  $($_.Name)"
+            }
+            exit 1
+          }
+        } catch {
+          Write-Host "❌ Error during Inno Setup compilation: $_"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Upload Inno Setup installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: inno-setup-installer
+        path: release/haotzar-Setup-*.exe
+        if-no-files-found: error
+
+    - name: Generate build summary
+      run: |
+        Write-Host "📊 Build Summary"
+        Write-Host "================"
+        Write-Host ""
+        Write-Host "✅ Build completed successfully!"
+        Write-Host ""
+        Write-Host "Artifacts created:"
+        Get-ChildItem "release\haotzar-Setup-*.exe" | ForEach-Object {
+          $size = $_.Length / 1MB
+          Write-Host "  📦 $($_.Name)"
+          Write-Host "     Size: $([math]::Round($size, 2)) MB"
+          Write-Host "     Path: $($_.FullName)"
+        }
+        Write-Host ""
+        Write-Host "To download the installer:"
+        Write-Host "1. Go to the Actions tab"
+        Write-Host "2. Click on this workflow run"
+        Write-Host "3. Download the 'inno-setup-installer' artifact"
+      shell: pwsh
