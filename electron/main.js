@@ -1318,6 +1318,24 @@ function setupIpcHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  // חיפוש באינדקס (דרך main process) - 🔥 חדש!
+  ipcMain.handle('meilisearch-search', async (event, { indexName, query, searchParams }) => {
+    try {
+      const client = getMeiliClient();
+      if (!client) {
+        return { success: false, error: 'MeiliSearch client not initialized' };
+      }
+      
+      const index = client.index(indexName);
+      const results = await index.search(query, searchParams);
+      
+      return { success: true, results };
+    } catch (error) {
+      console.error(`❌ שגיאה בחיפוש באינדקס "${indexName}":`, error.message);
+      return { success: false, error: error.message };
+    }
+  });
   
   // חיפוש גימטריה
   ipcMain.handle('search-gematria', async (event, options) => {

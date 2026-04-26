@@ -21,6 +21,7 @@ class MeilisearchEngine {
     this.consecutiveFailures = 0; // מספר כשלונות רצופים
     this.circuitBreakerOpen = false; // האם circuit breaker פתוח
     this.circuitBreakerResetTime = null; // מתי לנסות שוב
+    this.clientTimeout = 120000; // 120 שניות timeout - מספיק לאינדקסים גדולים
   }
 
   // קבלת רשימת כל האינדקסים הזמינים
@@ -48,12 +49,23 @@ class MeilisearchEngine {
       if (this.cachedIndexes && this.cachedIndexes.length > 0) {
         return this.cachedIndexes;
       }
-      // אם אין cache, זרוק שגיאה במקום להמשיך
+      // אם אין cache, סמן שהשרת לא מוכן וזרוק שגיאה
+      this.serverReady = false;
       throw new Error('Too many requests - please wait');
     }
     
     // צור בקשה חדשה ושמור אותה
     this.pendingIndexesRequest = this._fetchIndexes()
+      .catch(error => {
+        // אם יש שגיאת חיבור, סמן שהשרת לא מוכן
+        if (error.message && (error.message.includes('Failed to fetch') || 
+            error.message.includes('Network request failed') ||
+            error.message.includes('has failed'))) {
+          console.warn('⚠️ לא ניתן להתחבר ל-MeiliSearch - מסמן כלא מוכן');
+          this.serverReady = false;
+        }
+        throw error;
+      })
       .finally(() => {
         // נקה את הבקשה הפעילה גם במקרה של שגיאה
         this.pendingIndexesRequest = null;
@@ -163,7 +175,7 @@ class MeilisearchEngine {
       if (!this.client) {
         this.client = new MeiliSearch({
           host: `http://127.0.0.1:${this.serverPort}`,
-          timeout: 30000
+          timeout: this.clientTimeout // 120 שניות - מספיק לאינדקסים גדולים
         });
       }      const indexes = await this.client.getIndexes();
       
@@ -300,7 +312,7 @@ class MeilisearchEngine {
         if (!this.client) {
           this.client = new MeiliSearch({
             host: `http://127.0.0.1:${this.serverPort}`,
-            timeout: 5000
+            timeout: this.clientTimeout // 120 שניות
           });
         }
         
@@ -349,7 +361,7 @@ class MeilisearchEngine {
       if (!this.client) {
         this.client = new MeiliSearch({
           host: `http://127.0.0.1:${this.serverPort}`,
-          timeout: 5000
+          timeout: this.clientTimeout // 120 שניות
         });
       }
 
@@ -553,6 +565,12 @@ class MeilisearchEngine {
       return [];
     }
 
+    // בדוק אם השרת מוכן
+    if (!this.serverReady) {
+      console.warn('⚠️ MeiliSearch לא מוכן - השתמש ב-FlexSearch במקום');
+      return [];
+    }
+
     // אם לא נבחרו אינדקסים, קבל את כל האינדקסים הזמינים
     let indexesToSearch = selectedIndexes;
     if (selectedIndexes.length === 0) {
@@ -566,6 +584,8 @@ class MeilisearchEngine {
         if (error.message === 'Server starting' || error.message === 'Server not running') {
           console.warn('⚠️ השרת עדיין עולה - נסה שוב בעוד מספר שניות');
         }
+        // סמן שהשרת לא מוכן
+        this.serverReady = false;
         return [];
       }
     } else {
@@ -574,39 +594,72 @@ class MeilisearchEngine {
 
     if (indexesToSearch.length === 0) {
       console.warn('⚠️ אין אינדקסים זמינים לחיפוש');
+      // סמן שהשרת לא מוכן
+      this.serverReady = false;
       return [];
     }
     
-    console.log(`📊 מחפש ב-${indexesToSearch.length} אינדקסים: ${indexesToSearch.join(', ')}`);        try {
+    console.log(`📊 מחפש ב-${indexesToSearch.length} אינדקסים: ${indexesToSearch.join(', ')}`);
+    
+    try {
       // הכן את אפשרויות החיפוש
+      // 🎯 עבור אינדקסים גדולים (1M+ מסמכים), חשוב לחתוך את התוכן
       const searchParams = {
-        limit: 10000,
-        // לא נציין attributesToSearchOn - תן ל-Meilisearch לחפש בכל השדות הניתנים לחיפוש
-        attributesToHighlight: ['*'], // הדגש את כל השדות
+        limit: maxResults,
+        attributesToCrop: ['content'], // 🔥 חתוך את content לחלק רלוונטי בלבד!
+        cropLength: 50, // 🔥 רק 50 מילים סביב ההתאמה - מספיק להקשר
+        attributesToHighlight: ['content'],
         highlightPreTag: '<mark>',
         highlightPostTag: '</mark>',
         showRankingScore: true,
-        showMatchesPosition: true,
-        matchingStrategy: matchingStrategy,
-        cropLength: cropLength
-      };      // חפש בכל האינדקסים הנבחרים במקביל
+        matchingStrategy: matchingStrategy
+      };
+      
+      console.log(`⚙️ פרמטרי חיפוש: limit=${searchParams.limit}, cropLength=${searchParams.cropLength}`);      // חפש בכל האינדקסים הנבחרים במקביל
       const searchPromises = indexesToSearch.map(async (indexUid) => {
         try {
-          const index = this.client.index(indexUid);          const results = await index.search(query, searchParams);          return { indexUid, ...results };
-        } catch (error) {
-          console.error(`❌ שגיאה בחיפוש באינדקס "${indexUid}":`, error.message);
+          console.log(`🔍 מחפש באינדקס "${indexUid}"...`);
+          const searchStart = performance.now();
           
-          // אם השגיאה היא 400, זה אומר שהפרמטרים לא תקינים לאינדקס הזה
-          if (error.message && error.message.includes('400')) {
-            console.warn(`⚠️ אינדקס "${indexUid}" לא תומך בפרמטרים אלו - מדלג`);
+          let results;
+          
+          // אם ב-Electron, השתמש ב-IPC (מהיר יותר!)
+          if (window.electron && window.electron.meilisearchSearch) {
+            const response = await window.electron.meilisearchSearch(indexUid, query, searchParams);
+            if (!response.success) {
+              throw new Error(response.error);
+            }
+            results = response.results;
+          } else {
+            // fallback - גישה ישירה (לדפדפן)
+            const index = this.client.index(indexUid);
+            results = await index.search(query, searchParams);
           }
           
+          const searchTime = (performance.now() - searchStart).toFixed(0);
+          console.log(`✅ אינדקס "${indexUid}" החזיר ${results.hits?.length || 0} תוצאות ב-${searchTime}ms`);
+          
+          return { indexUid, ...results };
+        } catch (error) {
+          console.error(`❌ שגיאה בחיפוש באינדקס "${indexUid}":`, error.message);
           return { indexUid, hits: [], estimatedTotalHits: 0 };
         }
       });
 
       // המתן לכל החיפושים
       const allResults = await Promise.all(searchPromises);
+      
+      // בדוק אם היו אינדקסים שנכשלו
+      const failedIndexes = allResults.filter(r => r.hits.length === 0 && r.estimatedTotalHits === 0);
+      const successfulIndexes = allResults.filter(r => r.hits.length > 0 || r.estimatedTotalHits > 0);
+      
+      if (failedIndexes.length > 0 && successfulIndexes.length > 0) {
+        console.warn(`⚠️ ${failedIndexes.length} אינדקסים נכשלו, אבל ${successfulIndexes.length} הצליחו`);
+        console.log('✅ אינדקסים שהצליחו:', successfulIndexes.map(r => r.indexUid).join(', '));
+        console.log('❌ אינדקסים שנכשלו:', failedIndexes.map(r => r.indexUid).join(', '));
+      } else if (failedIndexes.length === allResults.length) {
+        console.error('❌ כל האינדקסים נכשלו - אין תוצאות');
+      }
       
       // איחוד כל התוצאות
       const searchResults = {

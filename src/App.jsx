@@ -2022,7 +2022,7 @@ function App() {
       
       // מיזוג אופציות ברירת מחדל עם אופציות מתקדמות
       const searchOptions = {
-        maxResults: 500, // הגדלנו מ-100 ל-500 ספרים
+        maxResults: 10000, // 🔥 10,000 תוצאות - כמו שביקשת
         contextLength: 150,
         fullSpelling: advancedOptions.fullSpelling || false,
         partialWord: advancedOptions.partialWord || false,

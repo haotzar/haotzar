@@ -330,6 +330,11 @@ contextBridge.exposeInMainWorld('electron', {
   meilisearchUpdateSettings: async (indexName, settings) => {
     return ipcRenderer.invoke('meilisearch-update-settings', { indexName, settings });
   },
+  
+  // חיפוש באינדקס דרך main process - 🔥 חדש!
+  meilisearchSearch: async (indexName, query, searchParams) => {
+    return ipcRenderer.invoke('meilisearch-search', { indexName, query, searchParams });
+  },
 
   // בחירת קובץ
   selectFile: async (filters) => {
