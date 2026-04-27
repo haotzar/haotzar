@@ -32,6 +32,8 @@ import {
   ArrowClockwiseRegular,
   ChevronDownRegular,
   HistoryRegular,
+  TableRegular,
+  NumberSymbolRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
@@ -68,6 +70,7 @@ import CustomAlert from './components/CustomAlert';
 import CustomConfirm from './components/CustomConfirm';
 import customConfirm from './utils/customConfirm';
 import './App.css';
+import './TabsDropdown.css';
 
 // ערכת צבעים מותאמת אישית - חום-שחור
 const customLightTheme = {
@@ -152,6 +155,9 @@ function App() {
   
   // ספרים מוצמדים
   const [pinnedBooks, setPinnedBooks] = useState(() => getSetting('pinnedBooks', []));
+  
+  // תפריט כלים
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
 
   // הגדרת data-theme ראשונית
   useEffect(() => {
@@ -1339,6 +1345,145 @@ function App() {
     saveTabsState(newTabs, historyTabId);
   };
 
+  // פתיחת כרטיסיית הגדרות
+  const openSettingsTab = () => {
+    // סגור תצוגה מקדימה של תיקייה אם פתוחה
+    if (folderPreview) {
+      closeFolderPreview();
+    }
+
+    // עבור לתצוגת ספרים
+    setCurrentView('books');
+
+    // בדוק אם כבר יש כרטיסיית הגדרות פתוחה
+    const existingSettingsTab = openTabs.find(tab => tab.type === 'settings');
+    if (existingSettingsTab) {
+      // אם כבר יש כרטיסייה - עבור אליה
+      setActiveTabId(existingSettingsTab.id);
+      return;
+    }
+
+    // צור כרטיסיית הגדרות חדשה
+    const settingsTabId = `settings-tab-${Date.now()}`;
+    const settingsTab = {
+      id: settingsTabId,
+      name: 'הגדרות',
+      type: 'settings'
+    };
+    
+    const newTabs = [...openTabs, settingsTab];
+    setOpenTabs(newTabs);
+    setActiveTabId(settingsTabId);
+    saveTabsState(newTabs, settingsTabId);
+  };
+
+  // פתיחת כרטיסיית כלי
+  const openToolTab = (toolId, toolName) => {
+    // סגור תפריט הכלים
+    setShowToolsMenu(false);
+    
+    // סגור תצוגה מקדימה של תיקייה אם פתוחה
+    if (folderPreview) {
+      closeFolderPreview();
+    }
+
+    // עבור לתצוגת ספרים
+    setCurrentView('books');
+
+    // בדוק אם כבר יש כרטיסייה של הכלי הזה פתוחה
+    const existingToolTab = openTabs.find(tab => tab.type === 'tool' && tab.toolId === toolId);
+    if (existingToolTab) {
+      // אם כבר יש כרטיסייה - עבור אליה
+      setActiveTabId(existingToolTab.id);
+      return;
+    }
+
+    // צור כרטיסיית כלי חדשה
+    const toolTabId = `tool-tab-${toolId}-${Date.now()}`;
+    const toolTab = {
+      id: toolTabId,
+      name: toolName,
+      type: 'tool',
+      toolId: toolId
+    };
+    
+    const newTabs = [...openTabs, toolTab];
+    setOpenTabs(newTabs);
+    setActiveTabId(toolTabId);
+    saveTabsState(newTabs, toolTabId);
+  };
+
+  // פונקציה שמחזירה את האייקון הנכון לכל כלי
+  const getToolIcon = (toolId) => {
+    switch (toolId) {
+      case 'gematria':
+        return NumberSymbolRegular;
+      case 'parasha':
+        return BookOpenRegular;
+      case 'dictionary':
+        return BookRegular;
+      case 'calendar':
+        return CalendarRegular;
+      case 'converter':
+        return WrenchRegular;
+      case 'notes':
+        return DocumentTextRegular;
+      default:
+        return WrenchRegular;
+    }
+  };
+
+  // זיהוי מקור הספר
+  const getBookSource = (file) => {
+    // ספרי אוצריא
+    if (file.type === 'otzaria') {
+      return 'otzaria';
+    }
+    
+    // בדוק לפי נתיב הקובץ
+    if (file.path) {
+      const pathLower = file.path.toLowerCase();
+      if (pathLower.includes('hebrewbooks') || pathLower.includes('hebrew-books')) {
+        return 'hebrewbooks';
+      }
+      if (pathLower.includes('אוצריא') || pathLower.includes('otzaria')) {
+        return 'otzaria';
+      }
+      if (pathLower.includes('עוז והדר') || pathLower.includes('oz vehadar') || pathLower.includes('ozvehadar')) {
+        return 'ozvehadar';
+      }
+      if (pathLower.includes('מוסד הרב קוק') || pathLower.includes('kook')) {
+        return 'kook';
+      }
+      if (pathLower.includes('האוצר') || pathLower.includes('ozer')) {
+        return 'ozer';
+      }
+    }
+    
+    // ברירת מחדל - ספר מקומי
+    return 'local';
+  };
+
+  // קבלת אייקון לפי מקור הספר
+  const getBookIcon = (book) => {
+    const source = getBookSource(book);
+    
+    switch (source) {
+      case 'otzaria':
+        return <img src="/otzaria-icon.png" alt="אוצריא" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />;
+      case 'hebrewbooks':
+        return <img src="/hebrew_books.png" alt="HebrewBooks" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />;
+      case 'ozvehadar':
+        return <img src="/Logo-ozveadar.png" alt="עוז והדר" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />;
+      case 'kook':
+        return <img src="/logo-kook.png" alt="מוסד הרב קוק" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />;
+      case 'ozer':
+        return <img src="/icon.png" alt="האוצר" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />;
+      default:
+        return book.type === 'pdf' ? <DocumentRegular /> : <DocumentTextRegular />;
+    }
+  };
+
   // עדכון רשימת ספרים שנפתחו לאחרונה
   const updateRecentBooks = (file) => {
     const recent = [...recentBooks];
@@ -2022,7 +2167,7 @@ function App() {
       
       // מיזוג אופציות ברירת מחדל עם אופציות מתקדמות
       const searchOptions = {
-        maxResults: 10000, // 🔥 10,000 תוצאות - כמו שביקשת
+        maxResults: 20, // טען רק 20 ראשונים - pagination
         contextLength: 150,
         fullSpelling: advancedOptions.fullSpelling || false,
         partialWord: advancedOptions.partialWord || false,
@@ -2032,20 +2177,31 @@ function App() {
         specificBook: advancedOptions.specificBook || '', // חיפוש בספר ספציפי
         matchingStrategy: advancedOptions.matchingStrategy || 'last', // אסטרטגיית התאמה
         cropLength: advancedOptions.cropLength || 300, // אורך הקשר (מילים) - מקסימום 300
-        selectedIndexes: advancedOptions.selectedIndexes || [] // אינדקסים נבחרים לחיפוש
+        selectedIndexes: advancedOptions.selectedIndexes || [], // אינדקסים נבחרים לחיפוש
+        offset: advancedOptions.offset || 0 // offset לpagination
       };
       
       console.log('📡 Calling search with:', { query: effectiveQuery, options: searchOptions });
-      const results = await activeEngine.search(effectiveQuery, searchOptions);
+      const searchResponse = await activeEngine.search(effectiveQuery, searchOptions);
       
-      console.log(`✅ Got ${results.length} results from engine`);
+      // אם המנוע מחזיר אובייקט עם results ו-estimatedTotalHits
+      const results = searchResponse.results || searchResponse;
+      const estimatedTotal = searchResponse.estimatedTotalHits || results.length;
+      
+      console.log(`✅ Got ${results.length} results from engine (${estimatedTotal} total estimated)`);
       
       // תקן את התוצאות - מצא את הקבצים המקוריים מתוך allFiles
       const fixedResults = results.map(result => {
+        // נרמל שמות להשוואה - הסר סיומת קובץ כי allFiles שומר שמות ללא סיומת
+        const resultNameNoExt = (result.file.name || '').replace(/\.(pdf|txt|html|docx?)$/i, '');
+        const resultIdNoExt = (result.file.id || '').replace(/\.(pdf|txt|html|docx?)$/i, '');
+
         const originalFile = allFiles.find(f => 
           f.name === result.file.name || 
           f.name === result.file.id ||
-          f.id === result.file.id
+          f.id === result.file.id ||
+          f.name === resultNameNoExt ||
+          f.name === resultIdNoExt
         );
         
         if (originalFile) {
@@ -2055,15 +2211,26 @@ function App() {
           };
         }
         
-        // File not found in allFiles, but result is still valid
-        return result;
+        // קובץ לא נמצא ב-allFiles - תקן לפחות את ה-type לפי שם הקובץ
+        const nameCheck = (result.file.name || result.file.id || '').toLowerCase();
+        const correctedType = nameCheck.endsWith('.pdf') ? 'pdf' : result.file.type;
+        return {
+          ...result,
+          file: { ...result.file, type: correctedType }
+        };
       });
       
-      console.log(`נמצאו ${fixedResults.length} קבצים עם התאמות`);
+      console.log(`נמצאו ${fixedResults.length} קבצים עם התאמות (${estimatedTotal} סה"כ)`);
+      
+      // הוסף estimatedTotalHits כ-property למערך
+      fixedResults.estimatedTotalHits = estimatedTotal;
+      
       return fixedResults;
     } catch (error) {
       console.error('❌ שגיאה בחיפוש:', error);
-      return [];
+      const emptyResults = [];
+      emptyResults.estimatedTotalHits = 0;
+      return emptyResults;
     }
   };
 
@@ -2614,17 +2781,64 @@ function App() {
             <Button
               appearance="subtle"
               icon={<SettingsRegular />}
-              onClick={() => setCurrentView('settings')}
+              onClick={openSettingsTab}
               aria-label="הגדרות"
-              data-active={currentView === 'settings'}
+              data-active={openTabs.some(tab => tab.type === 'settings' && tab.id === activeTabId)}
             />
-            <Button
-              appearance="subtle"
-              icon={<WrenchRegular />}
-              onClick={() => setCurrentView('tools')}
-              aria-label="כלים"
-              data-active={currentView === 'tools'}
-            />
+            <div className="tools-menu-container">
+              <Button
+                appearance="subtle"
+                icon={<WrenchRegular />}
+                onClick={() => setShowToolsMenu(!showToolsMenu)}
+                aria-label="כלים"
+                data-active={openTabs.some(tab => tab.type === 'tool' && tab.id === activeTabId)}
+              />
+              {showToolsMenu && (
+                <>
+                  <div className="tools-menu-overlay" onClick={() => setShowToolsMenu(false)} />
+                  <div className="tools-menu-dropdown">
+                    <div className="tools-menu-grid">
+                      <div className="tools-menu-item" onClick={() => openToolTab('gematria', 'גימטריות')}>
+                        <div className="tools-menu-icon">
+                          <NumberSymbolRegular />
+                        </div>
+                        <span className="tools-menu-label">גימטריות</span>
+                      </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('parasha', 'פרשת שבוע')}>
+                        <div className="tools-menu-icon">
+                          <BookOpenRegular />
+                        </div>
+                        <span className="tools-menu-label">פרשת שבוע</span>
+                      </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('dictionary', 'מילון ארמי')}>
+                        <div className="tools-menu-icon">
+                          <BookRegular />
+                        </div>
+                        <span className="tools-menu-label">מילון ארמי</span>
+                      </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('calendar', 'לוח שנה')}>
+                        <div className="tools-menu-icon">
+                          <CalendarRegular />
+                        </div>
+                        <span className="tools-menu-label">לוח שנה</span>
+                      </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('converter', 'ממיר מידות')}>
+                        <div className="tools-menu-icon">
+                          <WrenchRegular />
+                        </div>
+                        <span className="tools-menu-label">ממיר מידות</span>
+                      </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('notes', 'הערות')}>
+                        <div className="tools-menu-icon">
+                          <DocumentTextRegular />
+                        </div>
+                        <span className="tools-menu-label">הערות</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               appearance="subtle"
               icon={<HomeRegular />}
@@ -2776,10 +2990,17 @@ function App() {
                       <SearchRegular className="tab-icon" />
                     ) : tab.type === 'history' ? (
                       <HistoryRegular className="tab-icon" />
-                    ) : tab.type === 'pdf' ? (
-                      <DocumentRegular className="tab-icon" />
-                    ) : tab.type === 'otzaria' ? (
-                      <BookRegular className="tab-icon" />
+                    ) : tab.type === 'settings' ? (
+                      <SettingsRegular className="tab-icon" />
+                    ) : tab.type === 'metadata' ? (
+                      <TableRegular className="tab-icon" />
+                    ) : tab.type === 'tool' ? (
+                      (() => {
+                        const ToolIcon = getToolIcon(tab.toolId);
+                        return <ToolIcon className="tab-icon" />;
+                      })()
+                    ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
+                      <span className="tab-icon">{getBookIcon(tab)}</span>
                     ) : (
                       <DocumentTextRegular className="tab-icon" />
                     )}
@@ -2848,10 +3069,17 @@ function App() {
                               <SearchRegular />
                             ) : tab.type === 'history' ? (
                               <HistoryRegular />
-                            ) : tab.type === 'pdf' ? (
-                              <DocumentRegular />
-                            ) : tab.type === 'otzaria' ? (
-                              <BookRegular />
+                            ) : tab.type === 'settings' ? (
+                              <SettingsRegular />
+                            ) : tab.type === 'metadata' ? (
+                              <TableRegular />
+                            ) : tab.type === 'tool' ? (
+                              (() => {
+                                const ToolIcon = getToolIcon(tab.toolId);
+                                return <ToolIcon />;
+                              })()
+                            ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
+                              getBookIcon(tab)
                             ) : (
                               <DocumentTextRegular />
                             )}
@@ -2917,7 +3145,7 @@ function App() {
                                       </div>
                                       <div className="split-view-selector-tabs">
                                         {openTabs
-                                          .filter(t => t.id !== tab.id && t.id !== tab.rightTab.id && t.type !== 'split')
+                                          .filter(t => t.id !== tab.id && t.id !== tab.rightTab.id && t.type !== 'split' && t.type !== 'settings' && t.type !== 'metadata' && t.type !== 'tool')
                                           .map(t => (
                                             <div
                                               key={t.id}
@@ -2950,14 +3178,29 @@ function App() {
                                     }}
                                     handleFileClick={handleFileClick}
                                     allFiles={allFiles}
+                                    onNewSearch={openSearchTab}
                                     onSearch={async (query, advancedOptions) => {
                                       setIsSearching(true);
                                       try {
                                         const results = await handleContentSearch(query, advancedOptions);
-                                        const updatedTabs = openTabs.map(t => 
-                                          t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchQuery: query, searchResults: results || [] } } : t
-                                        );
-                                        setOpenTabs(updatedTabs);
+                                        
+                                        // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
+                                        if (advancedOptions.append && tab.leftTab.searchResults && tab.leftTab.searchResults.length > 0) {
+                                          const combined = [...tab.leftTab.searchResults, ...results];
+                                          combined.estimatedTotalHits = results.estimatedTotalHits || tab.leftTab.searchResults.estimatedTotalHits;
+                                          
+                                          const updatedTabs = openTabs.map(t => 
+                                            t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchResults: combined } } : t
+                                          );
+                                          setOpenTabs(updatedTabs);
+                                          console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                        } else {
+                                          // חיפוש רגיל - החלף תוצאות
+                                          const updatedTabs = openTabs.map(t => 
+                                            t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchQuery: query, searchResults: results || [] } } : t
+                                          );
+                                          setOpenTabs(updatedTabs);
+                                        }
                                       } finally {
                                         setIsSearching(false);
                                       }
@@ -3052,14 +3295,29 @@ function App() {
                                     }}
                                     handleFileClick={handleFileClick}
                                     allFiles={allFiles}
+                                    onNewSearch={openSearchTab}
                                     onSearch={async (query, advancedOptions) => {
                                       setIsSearching(true);
                                       try {
                                         const results = await handleContentSearch(query, advancedOptions);
-                                        const updatedTabs = openTabs.map(t => 
-                                          t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchQuery: query, searchResults: results || [] } } : t
-                                        );
-                                        setOpenTabs(updatedTabs);
+                                        
+                                        // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
+                                        if (advancedOptions.append && tab.rightTab.searchResults && tab.rightTab.searchResults.length > 0) {
+                                          const combined = [...tab.rightTab.searchResults, ...results];
+                                          combined.estimatedTotalHits = results.estimatedTotalHits || tab.rightTab.searchResults.estimatedTotalHits;
+                                          
+                                          const updatedTabs = openTabs.map(t => 
+                                            t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchResults: combined } } : t
+                                          );
+                                          setOpenTabs(updatedTabs);
+                                          console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                        } else {
+                                          // חיפוש רגיל - החלף תוצאות
+                                          const updatedTabs = openTabs.map(t => 
+                                            t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchQuery: query, searchResults: results || [] } } : t
+                                          );
+                                          setOpenTabs(updatedTabs);
+                                        }
                                       } finally {
                                         setIsSearching(false);
                                       }
@@ -3123,15 +3381,31 @@ function App() {
                               }}
                               handleFileClick={handleFileClick}
                               allFiles={allFiles}
+                              onNewSearch={openSearchTab}
                               onSearch={async (query, advancedOptions) => {
                                 // wrapper שמעדכן את התוצאות של הכרטיסייה הספציפית
                                 setIsSearching(true);
                                 try {
                                   const results = await handleContentSearch(query, advancedOptions);
-                                  const updatedTabs = openTabs.map(t => 
-                                    t.id === tab.id ? { ...t, searchQuery: query, searchResults: results || [] } : t
-                                  );
-                                  setOpenTabs(updatedTabs);
+                                  
+                                  // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
+                                  if (advancedOptions.append && tab.searchResults && tab.searchResults.length > 0) {
+                                    const combined = [...tab.searchResults, ...results];
+                                    // שמור את estimatedTotalHits מהתוצאות החדשות
+                                    combined.estimatedTotalHits = results.estimatedTotalHits || tab.searchResults.estimatedTotalHits;
+                                    
+                                    const updatedTabs = openTabs.map(t => 
+                                      t.id === tab.id ? { ...t, searchResults: combined } : t
+                                    );
+                                    setOpenTabs(updatedTabs);
+                                    console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                  } else {
+                                    // חיפוש רגיל - החלף תוצאות
+                                    const updatedTabs = openTabs.map(t => 
+                                      t.id === tab.id ? { ...t, searchQuery: query, searchResults: results || [] } : t
+                                    );
+                                    setOpenTabs(updatedTabs);
+                                  }
                                 } finally {
                                   setIsSearching(false);
                                 }
@@ -3147,6 +3421,24 @@ function App() {
                               onClearHistory={() => {
                                 setRecentBooks([]);
                                 updateSetting('recentBooks', []);
+                              }}
+                            />
+                          ) : tab.type === 'settings' ? (
+                            <Settings 
+                              isDark={isDark} 
+                              setIsDark={setIsDark}
+                              onNavigateToMetadata={() => {
+                                // פתח כרטיסיית metadata במקום לשנות view
+                                const metadataTabId = `metadata-tab-${Date.now()}`;
+                                const metadataTab = {
+                                  id: metadataTabId,
+                                  name: 'עריכת מטא-דאטה',
+                                  type: 'metadata'
+                                };
+                                const newTabs = [...openTabs, metadataTab];
+                                setOpenTabs(newTabs);
+                                setActiveTabId(metadataTabId);
+                                saveTabsState(newTabs, metadataTabId);
                               }}
                             />
                           ) : tab.type === 'pdf' ? (
@@ -3178,6 +3470,21 @@ function App() {
                               onSearchRequest={setHeaderSearchQuery}
                               onHistoryClick={openHistoryTab}
                             />
+                          ) : tab.type === 'metadata' ? (
+                            <MetadataTableEditor 
+                              onBack={() => {
+                                // חזור לכרטיסיית ההגדרות
+                                const settingsTab = openTabs.find(t => t.type === 'settings');
+                                if (settingsTab) {
+                                  setActiveTabId(settingsTab.id);
+                                } else {
+                                  // אם אין כרטיסיית הגדרות, פתח אחת
+                                  openSettingsTab();
+                                }
+                              }}
+                            />
+                          ) : tab.type === 'tool' ? (
+                            <ToolsPage initialTool={tab.toolId} />
                           ) : (
                             <div className="empty-state">
                               <p>לא ניתן להציג את הקובץ</p>
@@ -3312,8 +3619,8 @@ function App() {
                   <span>שכפול</span>
                 </div>
 
-                {/* הצמדה - רק לכרטיסיות רגילות */}
-                {contextMenuTarget.type !== 'split' && (
+                {/* הצמדה - רק לכרטיסיות רגילות (לא settings, metadata, tool או split) */}
+                {contextMenuTarget.type !== 'split' && contextMenuTarget.type !== 'settings' && contextMenuTarget.type !== 'metadata' && contextMenuTarget.type !== 'tool' && (
                   <div className="context-menu-item" onClick={handlePinBook}>
                     {pinnedBooks.some(book => book.id === contextMenuTarget.id) ? (
                       <>
@@ -3331,8 +3638,8 @@ function App() {
 
                 <div className="context-menu-divider"></div>
 
-                {/* Split View - רק לכרטיסיות רגילות */}
-                {contextMenuTarget.type !== 'split' && openTabs.length > 1 && (
+                {/* Split View - רק לכרטיסיות רגילות (לא settings, metadata, tool או split) */}
+                {contextMenuTarget.type !== 'split' && contextMenuTarget.type !== 'settings' && contextMenuTarget.type !== 'metadata' && contextMenuTarget.type !== 'tool' && openTabs.length > 1 && (
                   <>
                     <div className="context-menu-item" onClick={handleAddToSplitView}>
                       <SquareMultipleRegular />

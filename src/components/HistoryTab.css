@@ -8,7 +8,7 @@
 }
 
 .history-header {
-  padding: 48px 48px 24px 48px;
+  padding: 20px 24px 16px 24px;
   border-bottom: 1px solid var(--colorNeutralStroke2);
   background: var(--colorNeutralBackground1);
 }
@@ -17,32 +17,32 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .history-main-title {
   margin: 0;
-  font-size: 32px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 500;
   color: var(--colorNeutralForeground1);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
 .history-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .history-clear-btn {
-  padding: 8px 16px;
+  padding: 6px 12px;
   border: 1px solid var(--colorNeutralStroke1);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--colorNeutralBackground1);
   color: var(--colorBrandForeground1);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   white-space: nowrap;
 }
 
@@ -59,40 +59,40 @@
 .history-search {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
   display: flex;
   align-items: center;
 }
 
 .history-search .search-icon {
   position: absolute;
-  right: 16px;
-  font-size: 18px;
+  right: 12px;
+  font-size: 16px;
   color: var(--colorNeutralForeground3);
   pointer-events: none;
 }
 
 .history-search-input {
   width: 100%;
-  padding: 12px 48px 12px 48px;
+  padding: 8px 40px 8px 40px;
   border: 1px solid var(--colorNeutralStroke1);
-  border-radius: 24px;
-  font-size: 14px;
+  border-radius: 20px;
+  font-size: 13px;
   background: var(--colorNeutralBackground1);
   color: var(--colorNeutralForeground1);
-  transition: all 0.2s;
+  transition: all 0.15s;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
 .history-search-input:focus {
   outline: none;
   border-color: var(--colorBrandStroke1);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .search-clear-btn {
   position: absolute;
-  left: 12px;
+  left: 8px;
   padding: 4px;
   border: none;
   background: transparent;
@@ -102,7 +102,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .search-clear-btn:hover {
@@ -126,35 +126,35 @@
 }
 
 .history-empty .empty-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
+  font-size: 48px;
+  margin-bottom: 12px;
   opacity: 0.5;
 }
 
 .history-empty p {
-  font-size: 16px;
+  font-size: 14px;
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
 .history-list {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 24px 48px;
+  padding: 16px 24px;
   direction: rtl;
 }
 
 .history-group {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   direction: rtl;
 }
 
 .history-group-header {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--colorNeutralForeground2);
-  padding: 8px 16px;
-  margin-bottom: 4px;
+  padding: 6px 12px;
+  margin-bottom: 2px;
   font-family: system-ui, -apple-system, sans-serif;
   direction: rtl;
   text-align: right;
@@ -170,12 +170,12 @@
 .history-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s;
-  min-height: 48px;
+  transition: background 0.1s;
+  min-height: 40px;
   direction: rtl;
 }
 
@@ -185,13 +185,15 @@
 
 .history-item-icon {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--colorNeutralForeground3);
-  font-size: 18px;
+  font-size: 16px;
+  background: var(--colorNeutralBackground3);
+  border-radius: 6px;
 }
 
 .history-item-content {
@@ -205,7 +207,7 @@
 }
 
 .history-item-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--colorNeutralForeground1);
   white-space: nowrap;
@@ -214,10 +216,11 @@
   font-family: system-ui, -apple-system, sans-serif;
   direction: rtl;
   text-align: right;
+  line-height: 1.4;
 }
 
 .history-item-url {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--colorNeutralForeground3);
   white-space: nowrap;
   overflow: hidden;
@@ -229,9 +232,9 @@
 
 .history-item-time {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--colorNeutralForeground3);
-  padding-left: 16px;
+  padding-left: 12px;
   font-family: system-ui, -apple-system, sans-serif;
   direction: rtl;
   text-align: right;
@@ -239,7 +242,7 @@
 
 /* גלילה מותאמת */
 .history-content::-webkit-scrollbar {
-  width: 12px;
+  width: 8px;
 }
 
 .history-content::-webkit-scrollbar-track {
@@ -248,8 +251,8 @@
 
 .history-content::-webkit-scrollbar-thumb {
   background: var(--colorNeutralStroke2);
-  border-radius: 6px;
-  border: 3px solid var(--colorNeutralBackground1);
+  border-radius: 4px;
+  border: 2px solid var(--colorNeutralBackground1);
 }
 
 .history-content::-webkit-scrollbar-thumb:hover {
@@ -260,7 +263,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -269,5 +272,5 @@
 }
 
 .history-item {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }

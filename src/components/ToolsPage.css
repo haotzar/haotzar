@@ -629,3 +629,9 @@
     font-size: 14px;
   }
 }
+
+/* תוכן ברוחב מלא - ללא תוכן עניינים */
+.tools-content-area.tools-content-full-width {
+  width: 100%;
+  max-width: 100%;
+}

@@ -5,11 +5,44 @@ import PDFViewer from '../PDFViewer';
 import TextViewer from '../TextViewer';
 import './SearchResultsNew.css';
 
-const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPreviewChange }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPreviewChange, onLoadMore }) => {
   const [expandedBooks, setExpandedBooks] = useState(new Set());
-  const resultsPerPage = 30;
-  const maxPages = 10;
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  const estimatedTotal = results.estimatedTotalHits || results.length;
+  const resultsPerPage = 20; // כמה תוצאות בעמוד
+
+  // Infinite scroll - טען עוד כשגוללים לסוף
+  useEffect(() => {
+    const handleScroll = () => {
+      // בדוק אם הגענו לקרוב לסוף העמוד
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      
+      // אם נשארו פחות מ-500px לסוף ועדיין יש תוצאות לטעון
+      if (distanceFromBottom < 500) {
+        const loadedResults = results.length;
+        const hasMore = loadedResults < estimatedTotal && loadedResults < resultsPerPage * 10; // מקסימום 10 עמודים
+        
+        if (hasMore && !isLoadingMore && onLoadMore) {
+          setIsLoadingMore(true);
+          onLoadMore(loadedResults, resultsPerPage);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [results.length, estimatedTotal, isLoadingMore, onLoadMore, resultsPerPage]);
+
+  // איפוס isLoadingMore כשהתוצאות משתנות (נטענו תוצאות חדשות)
+  useEffect(() => {
+    if (isLoadingMore && results.length > 0) {
+      setIsLoadingMore(false);
+    }
+  }, [results.length]);
 
 
   // קיבוץ תוצאות לפי ספר
@@ -91,7 +124,9 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     const queryWords = searchQuery ? searchQuery.trim().split(/\s+/) : [];
     
     // אם אין מילים לחיפוש, החזר את הטקסט כמו שהוא
-    if (queryWords.length === 0) return text;
+    if (queryWords.length === 0) {
+      return text;
+    }
     
     // מצא את כל המיקומים שצריך להדגיש
     const highlights = [];
@@ -209,7 +244,9 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     }
     
     // אם אין מה להדגיש, החזר את הטקסט כמו שהוא
-    if (highlights.length === 0) return text;
+    if (highlights.length === 0) {
+      return text;
+    }
     
     // מיין לפי מיקום
     highlights.sort((a, b) => a.start - b.start);
@@ -290,21 +327,9 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     return matrix[len1][len2];
   };
 
-  // חישוב pagination - לפי ספרים
-  const totalBooks = groupedResults.length;
-  const totalPages = Math.min(Math.ceil(totalBooks / resultsPerPage), maxPages);
-  const startIndex = (currentPage - 1) * resultsPerPage;
-  const endIndex = Math.min(startIndex + resultsPerPage, totalBooks);
-  const currentResults = groupedResults.slice(startIndex, endIndex);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    // גלול לראש אזור התוצאות
-    const resultsWrapper = document.querySelector('.search-results-wrapper');
-    if (resultsWrapper) {
-      resultsWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
+  // הצג את כל התוצאות שנטענו עד כה
+  const currentResults = groupedResults;
+  const hasMore = results.length < estimatedTotal && results.length < resultsPerPage * 10; // מקסימום 10 עמודים
 
   return (
     <>
@@ -333,7 +358,7 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
                       const contextData = firstContext ? {
                         searchQuery: searchQuery,
                         context: firstContext,
-                        replaceSearchTab: true // החלף את כרטיסיית החיפוש
+                        replaceSearchTab: false // פתח בטאב חדש
                       } : null;
                       
                       onFileClick(bookGroup.file, contextData);
@@ -388,43 +413,37 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
           })}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination">
-          {/* כפתור הקודם */}
-          {currentPage > 1 && (
-            <button
-              className="page-btn"
-              onClick={() => handlePageChange(currentPage - 1)}
-            >
-              ← הקודם
-            </button>
-          )}
-
-          {/* מספרי עמודים */}
-          <div className="page-numbers">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                className={`page-number ${currentPage === page ? 'active' : ''}`}
-                onClick={() => handlePageChange(page)}
-              >
-                {page}
-              </button>
-            ))}
+        {/* אינדיקטור טעינה למטה */}
+        {isLoadingMore && (
+          <div className="loading-more">
+            <Spinner size="medium" />
+            <div className="loading-text">טוען עוד תוצאות...</div>
           </div>
-
-          {/* כפתור הבא */}
-          {currentPage < totalPages && (
-            <button
-              className="page-btn"
-              onClick={() => handlePageChange(currentPage + 1)}
+        )}
+        
+        {/* כפתור טען עוד */}
+        {hasMore && !isLoadingMore && (
+          <div className="load-more-container">
+            <button 
+              className="load-more-btn"
+              onClick={() => {
+                if (onLoadMore && !isLoadingMore) {
+                  setIsLoadingMore(true);
+                  onLoadMore(results.length, resultsPerPage);
+                }
+              }}
             >
-              הבא →
+              טען עוד תוצאות
             </button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+        
+        {/* הודעה שאין עוד תוצאות */}
+        {!hasMore && results.length > 0 && (
+          <div className="no-more-results">
+            הוצגו כל התוצאות ({groupedResults.length} ספרים)
+          </div>
+        )}
       </div>
     </>
   );

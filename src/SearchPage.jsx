@@ -21,6 +21,7 @@ const SearchPage = ({
   handleFileClick,
   allFiles,
   onSearch,
+  onNewSearch, // callback לפתיחת טאב חיפוש חדש
   recentBooks: _recentBooks = [], // הוסף recentBooks כ-prop
   isActive = true, // האם הכרטיסייה פעילה
   onAutocompleteChange, // callback לעדכון App על מצב ההשלמה
@@ -181,11 +182,19 @@ const SearchPage = ({
   // חיפוש בתוכן - רק בלחיצה על Enter
   const handleSearchSubmit = () => {
     if (searchQuery && searchQuery.trim().length > 0) {
-      // סמן שבוצע חיפוש
-      setHasSearched(true);
-      
       // המרה אוטומטית מאנגלית לעברית
       const { converted, shouldConvert } = autoConvertSearch(searchQuery);
+      const finalQuery = shouldConvert ? converted : searchQuery;
+      
+      // אם כבר יש תוצאות חיפוש (כלומר זה חיפוש חדש), פתח טאב חדש
+      if (searchResults && searchResults.length > 0 && onNewSearch) {
+        console.log('🔍 פותח טאב חיפוש חדש עבור:', finalQuery);
+        onNewSearch(finalQuery);
+        return; // לא ממשיכים - הטאב החדש יטפל בחיפוש
+      }
+      
+      // סמן שבוצע חיפוש
+      setHasSearched(true);
       
       // אם צריך המרה, עדכן את שדה החיפוש
       if (shouldConvert) {
@@ -193,15 +202,14 @@ const SearchPage = ({
       }
       
       // שמור את החיפוש ברשימת החיפושים האחרונים
-      saveRecentSearch(shouldConvert ? converted : searchQuery);
+      saveRecentSearch(finalQuery);
       
       // סגור השלמה אוטומטית
       setShowAutocomplete(false);
       
       // בצע חיפוש בתוכן עם אופציות מתקדמות
-      // העבר את ה-query (המומר אם צריך) ישירות לפונקציה
       console.log('🔍 SearchPage: שולח חיפוש עם אינדקסים:', selectedIndexes);
-      onSearch(shouldConvert ? converted : searchQuery, {
+      onSearch(finalQuery, {
         fullSpelling,
         partialWord,
         suffixes,
@@ -328,9 +336,7 @@ const SearchPage = ({
                   className="search-clear-btn"
                   onClick={() => {
                     setSearchQuery('');
-                    setSearchResults([]);
                     setShowAutocomplete(false);
-                    setHasSearched(false);
                   }}
                 >
                   ×
@@ -572,9 +578,11 @@ const SearchPage = ({
             });
             
             const bookCount = uniqueBooks.size;
+            const estimatedTotal = searchResults.estimatedTotalHits || totalMatches;
+            
             return (
               <>
-                {bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'} • כ-{totalMatches.toLocaleString()} תוצאות
+                מציג {bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'} • כ-{estimatedTotal.toLocaleString('he-IL')} תוצאות
               </>
             );
           })()}
@@ -615,6 +623,29 @@ const SearchPage = ({
                 setPreviewBook(book);
                 setPreviewContext(context);
                 setPreviewSearchQuery(searchQuery); // שמור את ה-query הנוכחי
+              }}
+              onLoadMore={async (offset, limit) => {
+                // טען עוד תוצאות מ-Meilisearch
+                console.log(`🔄 טוען עוד תוצאות: offset=${offset}, limit=${limit}`);
+                try {
+                  const newResults = await onSearch(searchQuery, {
+                    fullSpelling,
+                    partialWord,
+                    suffixes,
+                    prefixes,
+                    matchingStrategy,
+                    cropLength,
+                    specificBook,
+                    accuracy: searchAccuracy,
+                    selectedIndexes,
+                    offset,
+                    append: true // סימן שזה הוספה ולא החלפה
+                  });
+                  
+                  console.log(`✅ הוספו ${newResults?.length || 0} תוצאות`);
+                } catch (error) {
+                  console.error('❌ שגיאה בטעינת תוצאות נוספות:', error);
+                }
               }}
             />
           </div>

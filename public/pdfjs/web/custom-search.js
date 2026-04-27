@@ -44,6 +44,124 @@
     }
   };
 
+  // פונקציה לטיפול בחיפוש וניווט - מוגדרת מחוץ ל-DOMContentLoaded
+  function handleSearchAndNavigation() {
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+    const pageNum = urlParams.get('page');
+    
+    console.log('🔍 handleSearchAndNavigation called with:', { searchQuery, pageNum });
+    
+    if (!searchQuery && !pageNum) {
+      console.log('⚠️ No search query or page number - nothing to do');
+      return;
+    }
+    
+    // Wait for findController to be ready
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds
+    
+    const waitForFindController = setInterval(function() {
+      attempts++;
+      
+      if (window.PDFViewerApplication && window.PDFViewerApplication.findController) {
+        clearInterval(waitForFindController);
+        
+        console.log(`✅ findController ready after ${attempts} attempts, executing search and navigation...`);
+        
+        // If there's a page number, navigate to it first
+        if (pageNum) {
+          const targetPage = parseInt(pageNum, 10);
+          if (!isNaN(targetPage) && targetPage > 0) {
+            console.log('📄 Navigating to page:', targetPage);
+            window.PDFViewerApplication.page = targetPage;
+          }
+        }
+        
+        // If there's a search query, execute it
+        if (searchQuery) {
+          setTimeout(function() {
+            console.log('🔍 Executing search for:', searchQuery);
+            
+            // פצל את השאילתה למילים בודדות
+            const queryWords = searchQuery.trim().split(/\s+/);
+            console.log('🔍 Split into words:', queryWords);
+            
+            // חפש את המילה הארוכה ביותר (בדרך כלל היא הכי ייחודית)
+            const searchTerm = queryWords.reduce((longest, word) => 
+              word.length > longest.length ? word : longest, queryWords[0] || searchQuery
+            );
+            console.log('🔍 Searching for longest/most unique term:', searchTerm);
+            
+            // Set the search input value
+            const findInput = document.getElementById('findInput');
+            if (findInput) {
+              findInput.value = searchTerm;
+              console.log('✅ Set findInput value');
+            } else {
+              console.warn('⚠️ findInput not found');
+            }
+            
+            // Execute the search using eventBus
+            const eventBus = window.PDFViewerApplication.eventBus;
+            
+            if (!eventBus) {
+              console.error('❌ eventBus not found');
+              return;
+            }
+            
+            // First, make sure highlight all is checked
+            const highlightAllCheckbox = document.getElementById('findHighlightAll');
+            if (highlightAllCheckbox) {
+              highlightAllCheckbox.checked = true;
+              console.log('✅ Set highlightAll checkbox');
+            }
+            
+            // Execute the find command
+            console.log('📤 Dispatching find event...');
+            eventBus.dispatch('find', {
+              source: window,
+              type: 'find',
+              query: searchTerm,
+              caseSensitive: false,
+              entireWord: false,
+              highlightAll: true,
+              findPrevious: false,
+              phraseSearch: false
+            });
+            
+            console.log('✅ Search command dispatched');
+            
+            // Listen for search results
+            eventBus.on('updatefindmatchescount', function(evt) {
+              console.log('📊 Search results:', evt.matchesCount);
+              
+              if (evt.matchesCount && evt.matchesCount.total > 0) {
+                console.log(`✅ Found ${evt.matchesCount.total} matches for "${searchTerm}"`);
+              } else {
+                console.log(`❌ No matches found for: ${searchTerm}`);
+              }
+            }, { once: true });
+            
+          }, 1000); // Wait 1 second for the page to render
+        }
+      } else {
+        if (attempts % 10 === 0) {
+          console.log(`⏳ Waiting for findController... (attempt ${attempts}/${maxAttempts})`);
+        }
+      }
+    }, 100);
+    
+    // Timeout after 5 seconds
+    setTimeout(function() {
+      clearInterval(waitForFindController);
+      if (attempts >= maxAttempts) {
+        console.error('❌ Timeout waiting for findController after 5 seconds');
+      }
+    }, 5000);
+  }
+
   // Wait for PDFViewerApplication to be ready
   document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 DOM loaded, waiting for PDF viewer...');
@@ -56,10 +174,15 @@
     
     console.log('🔍 URL params:', { searchQuery, pageNum, previewMode });
     
-    // אם זה מצב תצוגה מקדימה, אל תכפה outline ואל תפתח סיידבר
+    // אם זה מצב תצוגה מקדימה, דלג על הגדרות sidebar אבל עדיין בצע חיפוש
     if (previewMode === 'true') {
-      console.log('👁️ Preview mode detected - skipping sidebar setup');
-      return; // צא מהפונקציה - אל תעשה כלום
+      console.log('👁️ Preview mode detected - skipping sidebar setup but will execute search');
+      
+      // בצע רק חיפוש וניווט, ללא sidebar
+      if (searchQuery || pageNum) {
+        handleSearchAndNavigation();
+      }
+      return; // צא אחרי הפעלת החיפוש
     }
     
     // הסתר את הסיידבר עד שהוא מוכן
@@ -157,86 +280,5 @@
         console.log('👆 User clicked thumbnails button - allowing temporarily');
       }
     });
-    
-    function handleSearchAndNavigation() {
-      if (!window.PDFViewerApplication.findController) {
-        console.log('⚠️ Find controller not ready yet');
-        return;
-      }
-      
-      console.log('✅ Executing search and navigation...');
-      
-      // If there's a page number, navigate to it first
-      if (pageNum) {
-        const targetPage = parseInt(pageNum, 10);
-        if (!isNaN(targetPage) && targetPage > 0) {
-          console.log('📄 Navigating to page:', targetPage);
-          window.PDFViewerApplication.page = targetPage;
-        }
-      }
-      
-      // If there's a search query, execute it
-      if (searchQuery) {
-        setTimeout(function() {
-          console.log('🔍 Executing search for:', searchQuery);
-          
-          // Set the search input value
-          const findInput = document.getElementById('findInput');
-          if (findInput) {
-            findInput.value = searchQuery;
-          }
-          
-          // Execute the search using eventBus
-          const eventBus = window.PDFViewerApplication.eventBus;
-          
-          // First, make sure highlight all is checked
-          const highlightAllCheckbox = document.getElementById('findHighlightAll');
-          if (highlightAllCheckbox) {
-            highlightAllCheckbox.checked = true;
-          }
-          
-          // Execute the find command
-          if (eventBus) {
-            eventBus.dispatch('find', {
-              source: window,
-              type: 'find',
-              query: searchQuery,
-              caseSensitive: false,
-              entireWord: false,
-              highlightAll: true,
-              findPrevious: false,
-              phraseSearch: false
-            });
-          }
-          
-          console.log('✅ Search command executed');
-          
-          // Listen for search results
-          window.PDFViewerApplication.eventBus.on('updatefindmatchescount', function(evt) {
-            console.log('📊 Search results:', evt.matchesCount);
-            
-            if (evt.matchesCount && evt.matchesCount.total > 0) {
-              console.log('✅ Found', evt.matchesCount.total, 'matches');
-              
-              // Navigate to first match after a short delay
-              setTimeout(function() {
-                console.log('🎯 Navigating to first match...');
-                findController.executeCommand('findagain', {
-                  query: searchQuery,
-                  caseSensitive: false,
-                  entireWord: false,
-                  highlightAll: true,
-                  findPrevious: false,
-                  phraseSearch: false
-                });
-              }, 200);
-            } else {
-              console.log('❌ No matches found for:', searchQuery);
-            }
-          }, { once: true });
-          
-        }, 500); // Wait a bit for the page to render
-      }
-    }
   });
 })();

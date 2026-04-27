@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'FrankRuehl';
+  src: url('/fonts/FrankRuehlCLM-Medium.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* מיכל תוצאות - תופס את כל הרוחב הזמין */
 .search-results-container {
   direction: rtl;
@@ -9,6 +16,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 /* רשימת תוצאות */
@@ -23,6 +31,7 @@
   box-sizing: border-box;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 /* תצוגה מקדימה - 1/3 מהרוחב, מתחת לכרטיסיות עד התחתית */
@@ -165,6 +174,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 .expanded-snippet {
@@ -181,6 +191,7 @@
   white-space: normal;
   box-sizing: border-box;
   text-align: justify; /* 🔥 יישור לשני הצדדים */
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 /* אייקון תצוגה מקדימה */
@@ -238,6 +249,7 @@
   word-break: break-word;
   white-space: normal;
   box-sizing: border-box;
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 .result-title-new:hover {
@@ -287,6 +299,7 @@
   word-break: break-word;
   white-space: normal;
   box-sizing: border-box;
+  font-family: 'FrankRuehl', 'Times New Roman', serif;
 }
 
 .result-snippet:hover {
@@ -298,59 +311,6 @@
 .result-snippet mark.highlight {
   background-color: transparent;
   color: #d93025;
-  font-weight: 600;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 40px;
-  padding: 20px 0;
-}
-
-.page-btn {
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid rgba(92, 61, 46, 0.2);
-  border-radius: 4px;
-  font-size: 14px;
-  color: #5c3d2e;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-btn:hover {
-  background: rgba(92, 61, 46, 0.05);
-  border-color: rgba(92, 61, 46, 0.3);
-}
-
-.page-numbers {
-  display: flex;
-  gap: 4px;
-}
-
-.page-number {
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  font-size: 14px;
-  color: #5c3d2e;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-number:hover {
-  background: rgba(92, 61, 46, 0.08);
-}
-
-.page-number.active {
-  background: #5c3d2e;
-  color: white;
   font-weight: 600;
 }
 
@@ -369,6 +329,63 @@
 .loading-text {
   font-size: 16px;
   color: #8b6f47;
+}
+
+/* טעינת עוד תוצאות */
+.loading-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+  width: 100%;
+  text-align: center;
+}
+
+.loading-more .loading-text {
+  font-size: 14px;
+  color: #8b6f47;
+}
+
+/* אין עוד תוצאות */
+.no-more-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8b6f47;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* כפתור טען עוד */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 30px 20px;
+  width: 100%;
+}
+
+.load-more-btn {
+  padding: 12px 32px;
+  background: #5c3d2e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(92, 61, 46, 0.2);
+}
+
+.load-more-btn:hover {
+  background: #4a3124;
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.3);
+  transform: translateY(-1px);
+}
+
+.load-more-btn:active {
+  transform: translateY(0);
 }
 
 /* מצב כהה */
@@ -449,25 +466,21 @@
   border-bottom-color: rgba(92, 61, 46, 0.2);
 }
 
-[data-theme="dark"] .page-btn {
-  border-color: rgba(92, 61, 46, 0.4);
-  color: #c4a574;
+[data-theme="dark"] .loading-more .loading-text {
+  color: #a68a5c;
 }
 
-[data-theme="dark"] .page-btn:hover {
-  background: rgba(92, 61, 46, 0.15);
+[data-theme="dark"] .no-more-results {
+  color: #a68a5c;
 }
 
-[data-theme="dark"] .page-number {
-  color: #c4a574;
-}
-
-[data-theme="dark"] .page-number:hover {
-  background: rgba(92, 61, 46, 0.15);
-}
-
-[data-theme="dark"] .page-number.active {
+[data-theme="dark"] .load-more-btn {
   background: #8b6f47;
+  color: white;
+}
+
+[data-theme="dark"] .load-more-btn:hover {
+  background: #a68a5c;
 }
 
 /* Responsive */
@@ -513,12 +526,6 @@
   }
 
   .result-snippet {
-    font-size: 13px;
-  }
-
-  .page-number {
-    width: 36px;
-    height: 36px;
     font-size: 13px;
   }
 }

@@ -162,31 +162,9 @@ const ToolsPage = ({ initialTool = 'gematria' }) => {
       <div className="tools-content">
         {/* מיכל ראשי */}
         <div className="tools-main-container">
-          {/* תוכן הכלי - צד שמאל */}
-          <div className="tools-content-area">
+          {/* תוכן הכלי - מלא רוחב */}
+          <div className="tools-content-area tools-content-full-width">
             {renderToolContent()}
-          </div>
-
-          {/* תוכן עניינים - צד ימין */}
-          <div className="tools-toc">
-            <div className="toc-header">
-              <h3>כלים</h3>
-            </div>
-            <div className="toc-list">
-              {tools.map((tool) => {
-                const IconComponent = tool.icon;
-                return (
-                  <button
-                    key={tool.id}
-                    className={`toc-item ${activeTool === tool.id ? 'active' : ''}`}
-                    onClick={() => handleToolChange(tool.id)}
-                  >
-                    <IconComponent className="toc-icon" />
-                    <span className="toc-name">{tool.name}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>

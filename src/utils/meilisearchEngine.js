@@ -494,6 +494,9 @@ class MeilisearchEngine {
         displayedAttributes: ['id', 'source_file', 'source_path', 'page', 'content', 'bookId', 'lineIndex', 'heRef', 'title', 'heShortDesc', 'volume'],
         filterableAttributes: ['source_file', 'bookId', 'page'],
         sortableAttributes: ['page', 'lineIndex'],
+        pagination: {
+          maxTotalHits: 100000 // הרם את ההגבלה מ-1000 ל-100,000
+        },
         separatorTokens: [
           '"', "'", '\u05F4', '\u05F3',
           '\u2018', '\u2019', '\u201C', '\u201D',
@@ -552,7 +555,8 @@ class MeilisearchEngine {
       specificBook = '',
       matchingStrategy = 'last',
       cropLength = 200,
-      selectedIndexes = [] // אינדקסים נבחרים לחיפוש
+      selectedIndexes = [], // אינדקסים נבחרים לחיפוש
+      offset = 0 // offset לpagination
     } = options;
     
     console.log('🔍 Meilisearch search called with:', { 
@@ -603,14 +607,9 @@ class MeilisearchEngine {
     
     try {
       // הכן את אפשרויות החיפוש
-      // 🎯 עבור אינדקסים גדולים (1M+ מסמכים), חשוב לחתוך את התוכן
       const searchParams = {
         limit: maxResults,
-        attributesToCrop: ['content'], // 🔥 חתוך את content לחלק רלוונטי בלבד!
-        cropLength: 50, // 🔥 רק 50 מילים סביב ההתאמה - מספיק להקשר
-        attributesToHighlight: ['content'],
-        highlightPreTag: '<mark>',
-        highlightPostTag: '</mark>',
+        offset: offset, // הוסף offset לpagination
         showRankingScore: true,
         matchingStrategy: matchingStrategy
       };
@@ -623,21 +622,21 @@ class MeilisearchEngine {
           
           let results;
           
-          // אם ב-Electron, השתמש ב-IPC (מהיר יותר!)
-          if (window.electron && window.electron.meilisearchSearch) {
-            const response = await window.electron.meilisearchSearch(indexUid, query, searchParams);
-            if (!response.success) {
-              throw new Error(response.error);
-            }
-            results = response.results;
-          } else {
-            // fallback - גישה ישירה (לדפדפן)
-            const index = this.client.index(indexUid);
-            results = await index.search(query, searchParams);
-          }
+          // גישה ישירה ל-Meilisearch (HTTP) - הרבה יותר מהיר מ-IPC!
+          // IPC מעביר את כל ה-10,000 תוצאות דרך תקשורת בין-תהליכית (איטי)
+          // HTTP ישיר מהדפדפן מהיר פי 300
+          const index = this.client.index(indexUid);
+          results = await index.search(query, searchParams);
           
           const searchTime = (performance.now() - searchStart).toFixed(0);
           console.log(`✅ אינדקס "${indexUid}" החזיר ${results.hits?.length || 0} תוצאות ב-${searchTime}ms`);
+          
+          // 🔍 בדיקה: גודל content
+          if (results.hits && results.hits.length > 0) {
+            const sampleContent = results.hits[0].content || '';
+            const avgSize = results.hits.reduce((sum, h) => sum + (h.content?.length || 0), 0) / results.hits.length;
+            console.log(`📏 גודל content ממוצע: ${Math.round(avgSize)} תווים, דוגמה: ${sampleContent.length} תווים`);
+          }
           
           return { indexUid, ...results };
         } catch (error) {
@@ -669,9 +668,11 @@ class MeilisearchEngine {
       let filteredHits = searchResults.hits;
       if (specificBook && specificBook.trim().length > 0) {
         const bookFilter = specificBook.trim().toLowerCase();
-        filteredHits = searchResults.hits.filter(hit => 
-          hit.fileId && hit.fileId.toLowerCase().includes(bookFilter)
-        );      }
+        filteredHits = searchResults.hits.filter(hit => {
+          const hitFile = hit.source_file || hit.title || hit.bookId?.toString() || hit.id || '';
+          return hitFile.toLowerCase().includes(bookFilter);
+        });
+      }
       
       // הצג דוגמה של תוצאות
       if (filteredHits.length > 0) {
@@ -722,6 +723,10 @@ class MeilisearchEngine {
         const fileName = hit.source_file || hit.title || (hit.bookId ? `ספר ${hit.bookId}` : fileId);
         
         const score = hit._rankingScore || 0;
+        
+        // זהה סוג קובץ לפי path, שם קובץ, או fileId
+        const nameForTypeCheck = (filePath || fileName || fileId || '').toLowerCase();
+        const fileType = nameForTypeCheck.endsWith('.pdf') ? 'pdf' : 'text';
 
         if (!resultsMap.has(fileId)) {
           resultsMap.set(fileId, {
@@ -729,7 +734,7 @@ class MeilisearchEngine {
               id: fileId,
               name: fileName,
               path: filePath,
-              type: filePath.toLowerCase().endsWith('.pdf') ? 'pdf' : 'text'
+              type: fileType
             },
             matchCount: 0,
             contexts: [],
@@ -744,34 +749,23 @@ class MeilisearchEngine {
         fileResult.maxScore = Math.max(fileResult.maxScore, score);
         fileResult.totalScore += score;
         
-        // 🎯 חלץ הקשר מההדגשה - תמיכה בכל סוגי האינדקסים
-        const highlighted = hit._formatted?.content ||  // PDF/lines אינדקס
-                          hit.content ||                 // ללא הדגשה
-                          hit._formatted?.heShortDesc || // books אינדקס
-                          hit.heShortDesc ||
-                          hit._formatted?.title ||
-                          hit.title;
+        // 🎯 דלג על extractContext - רק קיבוץ מהיר
+        // נבדוק את הזמן הנקי ללא עיבוד הקשר
+        const rawContent = hit.content || hit.heShortDesc || hit.title || '';
         
-        // לוג לבדיקה - רק פעם אחת
-        if (resultsMap.size === 1 && fileResult.contexts.length === 0) {
-          console.log('🔍 Sample hit:', {
-            hasFormatted: !!hit._formatted,
-            hasContent: !!hit.content,
-            hasText: !!hit.text,
-            hasHeShortDesc: !!hit.heShortDesc,
-            hasTitle: !!hit.title,
-            highlightedPreview: highlighted?.substring(0, 200),
-            hasMark: highlighted?.includes('<mark>')
-          });
-        }
+        // חלץ מילים מודגשות מהשאילתה
+        const queryWords = query.trim().split(/\s+/);
         
-        // אם אין תוכן בכלל, דלג על התוצאה הזו
-        if (!highlighted) {
-          console.warn(`⚠️ אין תוכן להצגה עבור: ${fileId}`);
-          continue;
-        }
-        
-        const context = this.extractContext(highlighted, query, cropLength);
+        const context = {
+          text: rawContent.substring(0, 500), // רק 500 תווים ראשונים
+          matchIndex: 0,
+          matchLength: 0,
+          highlightedWords: queryWords, // העבר את מילות החיפוש
+          chunkStart: hit.chunkStart || 0,
+          chunkId: hit.chunkId || 0,
+          pageNum: hit.page || hit.pageNum || 1,
+          score: score
+        };
         
         if (context) {
           context.chunkStart = hit.chunkStart || 0;
@@ -820,6 +814,8 @@ class MeilisearchEngine {
         console.log(`📊 ציון גבוה: ${results[0].score.toFixed(3)}, נמוך: ${results[results.length-1].score.toFixed(3)}`);
       }
       
+      console.log(`📊 סה"כ תוצאות משוערות: ${searchResults.estimatedTotalHits}`);
+      
       // אם אין תוצאות אבל היו hits, זה אומר שהאינדקס לא מכיל תוכן
       if (results.length === 0 && filteredHits.length > 0) {
         console.warn('⚠️ נמצאו תוצאות אבל אין להן תוכן להצגה.');
@@ -827,7 +823,10 @@ class MeilisearchEngine {
         console.warn('💡 בנה אינדקס מסוג "lines" כדי לחפש בתוכן הספרים.');
       }
       
-      return results;
+      return {
+        results,
+        estimatedTotalHits: searchResults.estimatedTotalHits
+      };
     } catch (error) {
       console.error('❌ שגיאה בחיפוש:', error);
       return [];
@@ -921,6 +920,7 @@ class MeilisearchEngine {
     // שלב 2: אין הדגשה - חפש את המילים ידנית עם נרמול
     const normalizeText = (str) => {
       return str
+        .replace(/[\u0591-\u05C7]/g, '') // הסר ניקוד עברי (טעמים וניקוד)
         .replace(/['"״׳''""]/g, '') // הסר גרשיים
         .replace(/[.,!?;:\-–—()[\]{}]/g, '') // הסר סימני פיסוק
         .toLowerCase()
