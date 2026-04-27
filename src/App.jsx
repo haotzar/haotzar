@@ -2716,11 +2716,9 @@ function App() {
 
     // השתמש ב-capture phase כדי לתפוס את האירוע לפני כולם
     window.addEventListener('keydown', handleKeyDown, { capture: true });
-    console.log('✅ מאזין לקיצורי מקלדת הופעל');
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
-      console.log('❌ מאזין לקיצורי מקלדת הוסר');
     };
   }, [activeTabId, openTabs, folderPreview, currentView]);
 
