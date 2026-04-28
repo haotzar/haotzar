@@ -34,6 +34,7 @@ import {
   HistoryRegular,
   TableRegular,
   NumberSymbolRegular,
+  PlugDisconnectedRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
@@ -50,6 +51,7 @@ import LibraryHome from './components/LibraryHome';
 import SearchAutocomplete from './components/SearchAutocomplete';
 import MetadataTableEditor from './components/MetadataTableEditor';
 import ToolsPage from './components/ToolsPage';
+import PluginViewer from './components/PluginViewer';
 import LibrarySidebar from './components/LibrarySidebar';
 import FileTree from './components/FileTree';
 import BookPreview from './components/BookPreview';
@@ -1447,9 +1449,45 @@ function App() {
         return WrenchRegular;
       case 'notes':
         return DocumentTextRegular;
+      case 'plugins':
+        return PlugDisconnectedRegular;
       default:
         return WrenchRegular;
     }
+  };
+
+  // פתיחת תוסף בטאב חדש
+  const openPluginTab = (plugin) => {
+    // סגור תצוגה מקדימה של תיקייה אם פתוחה
+    if (folderPreview) {
+      closeFolderPreview();
+    }
+
+    // עבור לתצוגת ספרים
+    setCurrentView('books');
+
+    // בדוק אם כבר יש כרטיסייה של התוסף הזה פתוחה
+    const existingPluginTab = openTabs.find(tab => tab.type === 'plugin' && tab.pluginId === plugin.id);
+    if (existingPluginTab) {
+      // אם כבר יש כרטיסייה - עבור אליה
+      setActiveTabId(existingPluginTab.id);
+      return;
+    }
+
+    // צור כרטיסיית תוסף חדשה
+    const pluginTabId = `plugin-tab-${plugin.id}-${Date.now()}`;
+    const pluginTab = {
+      id: pluginTabId,
+      name: plugin.name,
+      type: 'plugin',
+      pluginId: plugin.id,
+      pluginData: plugin
+    };
+    
+    const newTabs = [...openTabs, pluginTab];
+    setOpenTabs(newTabs);
+    setActiveTabId(pluginTabId);
+    saveTabsState(newTabs, pluginTabId);
   };
 
   // זיהוי מקור הספר
@@ -2851,6 +2889,12 @@ function App() {
                         </div>
                         <span className="tools-menu-label">הערות</span>
                       </div>
+                      <div className="tools-menu-item" onClick={() => openToolTab('plugins', 'תוספים')}>
+                        <div className="tools-menu-icon">
+                          <PlugDisconnectedRegular />
+                        </div>
+                        <span className="tools-menu-label">תוספים</span>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -3016,6 +3060,12 @@ function App() {
                         const ToolIcon = getToolIcon(tab.toolId);
                         return <ToolIcon className="tab-icon" />;
                       })()
+                    ) : tab.type === 'plugin' ? (
+                      tab.pluginData?.icon ? (
+                        <img src={tab.pluginData.icon} alt="" className="tab-icon plugin-tab-icon" />
+                      ) : (
+                        <PlugDisconnectedRegular className="tab-icon" />
+                      )
                     ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
                       <span className="tab-icon">{getBookIcon(tab)}</span>
                     ) : (
@@ -3095,6 +3145,12 @@ function App() {
                                 const ToolIcon = getToolIcon(tab.toolId);
                                 return <ToolIcon />;
                               })()
+                            ) : tab.type === 'plugin' ? (
+                              tab.pluginData?.icon ? (
+                                <img src={tab.pluginData.icon} alt="" className="plugin-dropdown-icon" />
+                              ) : (
+                                <PlugDisconnectedRegular />
+                              )
                             ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
                               getBookIcon(tab)
                             ) : (
@@ -3589,7 +3645,9 @@ function App() {
                               }}
                             />
                           ) : tab.type === 'tool' ? (
-                            <ToolsPage initialTool={tab.toolId} />
+                            <ToolsPage initialTool={tab.toolId} onOpenPlugin={openPluginTab} />
+                          ) : tab.type === 'plugin' ? (
+                            <PluginViewer plugin={tab.pluginData} />
                           ) : (
                             <div className="empty-state">
                               <p>לא ניתן להציג את הקובץ</p>

@@ -1,0 +1,10 @@
+{
+  "name": "תוסף דוגמה - מחשבון",
+  "version": "1.0.0",
+  "description": "מחשבון פשוט להדגמת מערכת התוספים",
+  "author": "צוות הפיתוח",
+  "main": "index.html",
+  "icon": "icon.png",
+  "styles": ["style.css"],
+  "scripts": ["script.js"]
+}

@@ -1,0 +1,144 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.calculator-container {
+    max-width: 400px;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    font-size: 32px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.calculator {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.display {
+    background: #2d3748;
+    color: white;
+    font-size: 36px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+    margin-bottom: 20px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    word-wrap: break-word;
+    word-break: break-all;
+    direction: ltr;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.btn {
+    padding: 20px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn.number {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.btn.number:hover {
+    background: #edf2f7;
+}
+
+.btn.operator {
+    background: #667eea;
+    color: white;
+}
+
+.btn.operator:hover {
+    background: #5568d3;
+}
+
+.btn.equals {
+    background: #48bb78;
+    color: white;
+}
+
+.btn.equals:hover {
+    background: #38a169;
+}
+
+.info {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.info p {
+    color: #2d3748;
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.info p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    .display {
+        font-size: 28px;
+        padding: 15px;
+        min-height: 60px;
+    }
+
+    .btn {
+        padding: 15px;
+        font-size: 18px;
+    }
+
+    .info p {
+        font-size: 12px;
+    }
+}

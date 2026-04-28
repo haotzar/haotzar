@@ -747,6 +747,14 @@ body.with-background * {
   color: #5f6368;
 }
 
+/* אייקון תוסף בטאב */
+.tab-icon.plugin-tab-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
 .tab-item.active .tab-icon {
   opacity: 1;
   color: #202124;
@@ -2705,6 +2713,14 @@ body.with-background * {
   color: #5c3d2e;
   flex-shrink: 0;
   order: 1; /* אייקון ראשון מימין */
+}
+
+/* אייקון תוסף בתפריט נפתח */
+.tabs-dropdown-item-icon .plugin-dropdown-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 3px;
 }
 
 .tabs-dropdown-item.active .tabs-dropdown-item-icon {

@@ -1,0 +1,519 @@
+/* מנהל תוספים */
+.plugins-manager {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  direction: rtl;
+}
+
+/* כותרת */
+.plugins-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 24px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.plugins-header-content h2 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  margin: 0 0 6px 0;
+  text-align: right;
+}
+
+.plugins-header-content p {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  margin: 0;
+  text-align: right;
+}
+
+/* תוכן */
+.plugins-content {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 20px;
+}
+
+/* רשימת תוספים */
+.plugins-list-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.plugins-list-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px 8px 0 0;
+}
+
+.plugins-list-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  text-align: right;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.plugins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* הסתרת פס גלילה */
+.plugins-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.plugins-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.plugins-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.plugins-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* כרטיס תוסף */
+.plugin-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.plugin-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.plugin-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.plugin-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.plugin-icon-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.plugin-info {
+  flex: 1;
+  text-align: right;
+}
+
+.plugin-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.plugin-version {
+  font-size: 12px;
+  color: var(--text-tertiary, #999);
+  font-family: 'SF Mono', 'Consolas', monospace;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.plugin-description {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  margin: 0 0 8px 0;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.plugin-author {
+  font-size: 12px;
+  color: var(--text-tertiary, #999);
+  margin: 0 0 12px 0;
+  text-align: right;
+}
+
+.plugin-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  margin-top: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* מצב ריק */
+.plugins-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.plugins-empty-state .empty-icon {
+  font-size: 64px;
+  color: rgba(0, 0, 0, 0.15);
+  margin-bottom: 16px;
+}
+
+.plugins-empty-state p {
+  margin: 0 0 8px 0;
+  color: var(--text-secondary, #666);
+  font-size: 16px;
+}
+
+.plugins-empty-state .empty-hint {
+  font-size: 14px;
+  color: var(--text-tertiary, #999);
+}
+
+/* פאנל הוראות */
+.plugins-instructions-panel {
+  width: 380px;
+  flex-shrink: 0;
+}
+
+.plugin-instructions {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+  text-align: right;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.instructions-icon {
+  font-size: 48px;
+  color: rgba(0, 0, 0, 0.2);
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.plugin-instructions h4 {
+  margin: 0 0 16px 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-align: center;
+}
+
+.plugin-instructions ol {
+  margin: 0;
+  padding: 0 20px 0 0;
+  text-align: right;
+}
+
+.plugin-instructions li {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  line-height: 1.6;
+}
+
+.plugin-instructions code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 12px;
+  color: #e83e8c;
+}
+
+.plugin-instructions pre {
+  background: #f6f8fa;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  text-align: left;
+  direction: ltr;
+}
+
+.plugin-instructions pre code {
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: #24292e;
+}
+
+.instructions-note {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #0366d6;
+  text-align: center;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .plugins-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .plugins-header-content h2 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .plugins-header-content p {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .plugins-list-header {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .plugins-list-header h3 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .plugins-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .plugins-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .plugin-card {
+  background: #2d2d2d;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .plugin-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .plugin-icon-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+[data-theme="dark"] .plugin-info h4 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .plugin-version {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .plugin-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .plugin-author {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .plugin-actions {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .plugins-empty-state .empty-icon {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .plugins-empty-state p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .plugins-empty-state .empty-hint {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .plugin-instructions {
+  background: #2d2d2d;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .instructions-icon {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .plugin-instructions h4 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .plugin-instructions li {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .plugin-instructions code {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ff79c6;
+}
+
+[data-theme="dark"] .plugin-instructions pre {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .plugin-instructions pre code {
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .instructions-note {
+  background: rgba(3, 102, 214, 0.15);
+  border-color: rgba(3, 102, 214, 0.3);
+  color: #58a6ff;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .plugins-content {
+    flex-direction: column;
+  }
+
+  .plugins-instructions-panel {
+    width: 100%;
+  }
+
+  .plugins-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .plugins-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .plugins-header-content h2 {
+    font-size: 28px;
+  }
+
+  .plugins-header-content p {
+    font-size: 14px;
+  }
+
+  .plugins-content {
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .plugins-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .plugin-card {
+    padding: 12px;
+  }
+
+  .plugin-icon,
+  .plugin-icon-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  .plugin-icon-placeholder {
+    font-size: 20px;
+  }
+
+  .plugin-info h4 {
+    font-size: 14px;
+  }
+
+  .plugin-version {
+    font-size: 11px;
+  }
+
+  .plugin-description {
+    font-size: 13px;
+  }
+
+  .plugin-instructions {
+    padding: 16px;
+  }
+
+  .plugin-instructions h4 {
+    font-size: 16px;
+  }
+
+  .plugin-instructions li {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plugins-header-content h2 {
+    font-size: 24px;
+  }
+
+  .plugins-header-content p {
+    font-size: 13px;
+  }
+
+  .plugins-grid {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .plugin-instructions {
+    padding: 12px;
+  }
+
+  .plugin-instructions h4 {
+    font-size: 15px;
+  }
+
+  .plugin-instructions li {
+    font-size: 12px;
+  }
+}

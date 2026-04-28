@@ -1,0 +1,24 @@
+/* תצוגת תוסף בטאב */
+.plugin-viewer-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: white;
+  direction: ltr;
+}
+
+.plugin-viewer-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .plugin-viewer-container {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .plugin-viewer-iframe {
+  background: #0d0d0d;
+}
