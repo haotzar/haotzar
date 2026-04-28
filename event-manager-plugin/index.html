@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Event Manager</h1>
+  <form id="event-form">
+    <input type="text" id="event-title" placeholder="Event Title" required />
+    <input type="date" id="event-date" required />
+    <select id="event-type">
+      <option value="meeting">Meeting</option>
+      <option value="task">Task</option>
+      <option value="reminder">Reminder</option>
+    </select>
+    <button type="submit">Add Event</button>
+  </form>
+  <ul id="events-list"></ul>
+  <script src="eventManager.js"></script>
+</body>
+</html>

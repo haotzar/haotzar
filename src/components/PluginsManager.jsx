@@ -2,21 +2,24 @@ import { useState, useEffect } from 'react';
 import {
   AddRegular,
   DeleteRegular,
-  PlayRegular,
-  InfoRegular,
-  PlugDisconnectedRegular,
+  PuzzlePieceRegular,
+  OpenRegular,
+  PinRegular,
+  PinOffRegular,
 } from '@fluentui/react-icons';
-import { Button, Switch } from '@fluentui/react-components';
+import { Button } from '@fluentui/react-components';
 import TooltipWrapper from './TooltipWrapper';
 import './PluginsManager.css';
 
-const PluginsManager = ({ onOpenPlugin }) => {
+const PluginsManager = ({ onOpenPlugin, onPinPlugin }) => {
   const [plugins, setPlugins] = useState([]);
+  const [pinnedPlugins, setPinnedPlugins] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // טעינת רשימת תוספים מ-localStorage
   useEffect(() => {
     loadPlugins();
+    loadPinnedPlugins();
   }, []);
 
   const loadPlugins = () => {
@@ -27,6 +30,26 @@ const PluginsManager = ({ onOpenPlugin }) => {
       }
     } catch (error) {
       console.error('Error loading plugins:', error);
+    }
+  };
+
+  const loadPinnedPlugins = () => {
+    try {
+      const saved = localStorage.getItem('pinnedPlugins');
+      if (saved) {
+        setPinnedPlugins(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Error loading pinned plugins:', error);
+    }
+  };
+
+  const savePinnedPlugins = (pinned) => {
+    try {
+      localStorage.setItem('pinnedPlugins', JSON.stringify(pinned));
+      setPinnedPlugins(pinned);
+    } catch (error) {
+      console.error('Error saving pinned plugins:', error);
     }
   };
 
@@ -114,11 +137,17 @@ const PluginsManager = ({ onOpenPlugin }) => {
         try {
           const iconFile = await dirHandle.getFileHandle(manifestData.icon);
           const file = await iconFile.getFile();
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            pluginFiles.icon = e.target.result;
-          };
-          reader.readAsDataURL(file);
+          
+          // המתן לטעינת האייקון
+          await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              pluginFiles.icon = e.target.result;
+              resolve();
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
         } catch (error) {
           console.warn('Icon file not found');
         }
@@ -141,6 +170,9 @@ const PluginsManager = ({ onOpenPlugin }) => {
       const updatedPlugins = [...plugins, newPlugin];
       savePlugins(updatedPlugins);
       
+      console.log('Plugin installed:', newPlugin);
+      console.log('Plugin icon:', newPlugin.icon ? 'Loaded' : 'Not loaded');
+      
       setLoading(false);
       alert(`התוסף "${newPlugin.name}" הותקן בהצלחה!`);
     } catch (error) {
@@ -155,8 +187,19 @@ const PluginsManager = ({ onOpenPlugin }) => {
   // הסרת תוסף
   const handleRemovePlugin = (pluginId) => {
     if (confirm('האם אתה בטוח שברצונך להסיר תוסף זה?')) {
+      // הסר את התוסף מהרשימה
       const updatedPlugins = plugins.filter(p => p.id !== pluginId);
       savePlugins(updatedPlugins);
+      
+      // בדוק אם התוסף מוצמד והסר אותו גם מההצמדה
+      const isPinned = pinnedPlugins.some(p => p.id === pluginId);
+      if (isPinned) {
+        const updatedPinned = pinnedPlugins.filter(p => p.id !== pluginId);
+        savePinnedPlugins(updatedPinned);
+        if (onPinPlugin) {
+          onPinPlugin(updatedPinned);
+        }
+      }
     }
   };
 
@@ -165,6 +208,31 @@ const PluginsManager = ({ onOpenPlugin }) => {
     if (onOpenPlugin) {
       onOpenPlugin(plugin);
     }
+  };
+
+  // הצמדה/ביטול הצמדה של תוסף לתפריט כלים
+  const handleTogglePin = (plugin) => {
+    const isPinned = pinnedPlugins.some(p => p.id === plugin.id);
+    
+    if (isPinned) {
+      // הסר מההצמדה
+      const updated = pinnedPlugins.filter(p => p.id !== plugin.id);
+      savePinnedPlugins(updated);
+      if (onPinPlugin) {
+        onPinPlugin(updated);
+      }
+    } else {
+      // הוסף להצמדה
+      const updated = [...pinnedPlugins, plugin];
+      savePinnedPlugins(updated);
+      if (onPinPlugin) {
+        onPinPlugin(updated);
+      }
+    }
+  };
+
+  const isPluginPinned = (pluginId) => {
+    return pinnedPlugins.some(p => p.id === pluginId);
   };
 
   return (
@@ -193,7 +261,7 @@ const PluginsManager = ({ onOpenPlugin }) => {
           
           {plugins.length === 0 ? (
             <div className="plugins-empty-state">
-              <PlugDisconnectedRegular className="empty-icon" />
+              <PuzzlePieceRegular className="empty-icon" />
               <p>אין תוספים מותקנים</p>
               <p className="empty-hint">לחץ על "הוסף תוסף" כדי להתחיל</p>
             </div>
@@ -209,7 +277,7 @@ const PluginsManager = ({ onOpenPlugin }) => {
                       <img src={plugin.icon} alt={plugin.name} className="plugin-icon" />
                     ) : (
                       <div className="plugin-icon-placeholder">
-                        <PlugDisconnectedRegular />
+                        <PuzzlePieceRegular />
                       </div>
                     )}
                     <div className="plugin-info">
@@ -227,12 +295,22 @@ const PluginsManager = ({ onOpenPlugin }) => {
                   )}
                   
                   <div className="plugin-actions">
-                    <div className="plugin-switch-container">
-                      <Switch
-                        label="הפעל"
-                        onChange={() => handleRunPlugin(plugin)}
+                    <Button
+                      appearance="primary"
+                      size="small"
+                      icon={<OpenRegular />}
+                      onClick={() => handleRunPlugin(plugin)}
+                    >
+                      פתח
+                    </Button>
+                    <TooltipWrapper content={isPluginPinned(plugin.id) ? "בטל הצמדה" : "הצמד לכלים"}>
+                      <Button
+                        appearance={isPluginPinned(plugin.id) ? "primary" : "subtle"}
+                        size="small"
+                        icon={isPluginPinned(plugin.id) ? <PinOffRegular /> : <PinRegular />}
+                        onClick={() => handleTogglePin(plugin)}
                       />
-                    </div>
+                    </TooltipWrapper>
                     <TooltipWrapper content="הסר תוסף">
                       <Button
                         appearance="subtle"
@@ -254,7 +332,7 @@ const PluginsManager = ({ onOpenPlugin }) => {
         {/* הוראות */}
         <div className="plugins-instructions-panel">
           <div className="plugin-instructions">
-            <InfoRegular className="instructions-icon" />
+            <PuzzlePieceRegular className="instructions-icon" />
             <h4>כיצד ליצור תוסף?</h4>
             <ol>
               <li>צור תיקייה חדשה לתוסף שלך</li>

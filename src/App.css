@@ -3006,3 +3006,23 @@ body.with-background * {
 [data-theme="dark"] .tools-menu-label {
   color: #e8eaed;
 }
+
+/* מפריד בתפריט כלים */
+.tools-menu-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 8px 0;
+}
+
+[data-theme="dark"] .tools-menu-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* אייקון תוסף בתפריט כלים */
+.tools-menu-plugin-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+}

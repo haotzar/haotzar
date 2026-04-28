@@ -1,0 +1,35 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 24px;
+  background: #f7f7f7;
+}
+h1 {
+  color: #333;
+}
+form {
+  margin-bottom: 16px;
+}
+input, select, button {
+  margin-right: 8px;
+  padding: 6px;
+}
+#events-list {
+  list-style: none;
+  padding: 0;
+}
+.event-item {
+  background: #fff;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.event-info {
+  flex: 1;
+}
+.event-actions button {
+  margin-left: 8px;
+}

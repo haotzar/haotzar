@@ -36,7 +36,7 @@ const PluginViewer = ({ plugin }) => {
       <iframe
         ref={iframeRef}
         srcDoc={getPluginIframeContent(plugin)}
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts"
         title={plugin.name}
         className="plugin-viewer-iframe"
       />

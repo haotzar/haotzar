@@ -8,7 +8,7 @@ import {
   NoteRegular,
   ChevronRightRegular,
   ChevronLeftRegular,
-  PlugDisconnectedRegular,
+  PuzzlePieceRegular,
 } from '@fluentui/react-icons';
 import TooltipWrapper from './TooltipWrapper';
 import GematriaTool from './GematriaTool';
@@ -20,7 +20,7 @@ import ParashaTool from './ParashaTool';
 import PluginsManager from './PluginsManager';
 import './ToolsPage.css';
 
-const ToolsPage = ({ initialTool = 'gematria', onOpenPlugin }) => {
+const ToolsPage = ({ initialTool = 'gematria', onOpenPlugin, onPinPlugin }) => {
   // קריאת הכלי האחרון מ-localStorage או שימוש ב-initialTool
   const getLastActiveTool = () => {
     // אם initialTool הועבר במפורש (לא ברירת המחדל), השתמש בו
@@ -71,7 +71,7 @@ const ToolsPage = ({ initialTool = 'gematria', onOpenPlugin }) => {
     { id: 'calendar', name: 'לוח שנה', icon: CalendarLtrRegular },
     { id: 'converter', name: 'ממיר מידות', icon: ScalesRegular },
     { id: 'notes', name: 'הערות אישיות', icon: NoteRegular },
-    { id: 'plugins', name: 'תוספים', icon: PlugDisconnectedRegular },
+    { id: 'plugins', name: 'תוספים', icon: PuzzlePieceRegular },
   ];
 
   const renderToolContent = () => {
@@ -154,7 +154,7 @@ const ToolsPage = ({ initialTool = 'gematria', onOpenPlugin }) => {
       case 'plugins':
         return (
           <div className="tool-content">
-            <PluginsManager onOpenPlugin={onOpenPlugin} />
+            <PluginsManager onOpenPlugin={onOpenPlugin} onPinPlugin={onPinPlugin} />
           </div>
         );
       default:

@@ -34,7 +34,7 @@ import {
   HistoryRegular,
   TableRegular,
   NumberSymbolRegular,
-  PlugDisconnectedRegular,
+  PuzzlePieceRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 
@@ -157,6 +157,16 @@ function App() {
   
   // ספרים מוצמדים
   const [pinnedBooks, setPinnedBooks] = useState(() => getSetting('pinnedBooks', []));
+  
+  // תוספים מוצמדים
+  const [pinnedPlugins, setPinnedPlugins] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pinnedPlugins');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   
   // תפריט כלים
   const [showToolsMenu, setShowToolsMenu] = useState(false);
@@ -1450,7 +1460,7 @@ function App() {
       case 'notes':
         return DocumentTextRegular;
       case 'plugins':
-        return PlugDisconnectedRegular;
+        return PuzzlePieceRegular;
       default:
         return WrenchRegular;
     }
@@ -1488,6 +1498,11 @@ function App() {
     setOpenTabs(newTabs);
     setActiveTabId(pluginTabId);
     saveTabsState(newTabs, pluginTabId);
+  };
+
+  // עדכון תוספים מוצמדים
+  const handlePinnedPluginsUpdate = (updatedPinnedPlugins) => {
+    setPinnedPlugins(updatedPinnedPlugins);
   };
 
   // זיהוי מקור הספר
@@ -2891,10 +2906,33 @@ function App() {
                       </div>
                       <div className="tools-menu-item" onClick={() => openToolTab('plugins', 'תוספים')}>
                         <div className="tools-menu-icon">
-                          <PlugDisconnectedRegular />
+                          <PuzzlePieceRegular />
                         </div>
                         <span className="tools-menu-label">תוספים</span>
                       </div>
+                      
+                      {/* תוספים מוצמדים */}
+                      {pinnedPlugins.length > 0 && (
+                        <>
+                          <div className="tools-menu-divider"></div>
+                          {pinnedPlugins.map(plugin => (
+                            <div 
+                              key={plugin.id} 
+                              className="tools-menu-item" 
+                              onClick={() => openPluginTab(plugin)}
+                            >
+                              <div className="tools-menu-icon">
+                                {plugin.icon ? (
+                                  <img src={plugin.icon} alt={plugin.name} className="tools-menu-plugin-icon" />
+                                ) : (
+                                  <PuzzlePieceRegular />
+                                )}
+                              </div>
+                              <span className="tools-menu-label">{plugin.name}</span>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                 </>
@@ -3064,7 +3102,7 @@ function App() {
                       tab.pluginData?.icon ? (
                         <img src={tab.pluginData.icon} alt="" className="tab-icon plugin-tab-icon" />
                       ) : (
-                        <PlugDisconnectedRegular className="tab-icon" />
+                        <PuzzlePieceRegular className="tab-icon" />
                       )
                     ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
                       <span className="tab-icon">{getBookIcon(tab)}</span>
@@ -3149,7 +3187,7 @@ function App() {
                               tab.pluginData?.icon ? (
                                 <img src={tab.pluginData.icon} alt="" className="plugin-dropdown-icon" />
                               ) : (
-                                <PlugDisconnectedRegular />
+                                <PuzzlePieceRegular />
                               )
                             ) : tab.type === 'pdf' || tab.type === 'text' || tab.type === 'otzaria' ? (
                               getBookIcon(tab)
@@ -3645,7 +3683,7 @@ function App() {
                               }}
                             />
                           ) : tab.type === 'tool' ? (
-                            <ToolsPage initialTool={tab.toolId} onOpenPlugin={openPluginTab} />
+                            <ToolsPage initialTool={tab.toolId} onOpenPlugin={openPluginTab} onPinPlugin={handlePinnedPluginsUpdate} />
                           ) : tab.type === 'plugin' ? (
                             <PluginViewer plugin={tab.pluginData} />
                           ) : (

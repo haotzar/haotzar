@@ -1,0 +1,8 @@
+{
+  "name": "Event Manager",
+  "version": "1.0.0",
+  "main": "index.html",
+  "icon": "icon.png",
+  "scripts": ["eventManager.js"],
+  "styles": ["styles.css"]
+}
