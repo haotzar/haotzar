@@ -1,4 +1,4 @@
-import { SearchRegular, DocumentRegular, DocumentTextRegular, SettingsRegular, EyeRegular } from '@fluentui/react-icons';
+import { SearchRegular, DocumentRegular, DocumentTextRegular, SettingsRegular, EyeRegular, TextAlignJustifyRegular, BookRegular } from '@fluentui/react-icons';
 import { useState, useEffect, useMemo } from 'react';
 import TooltipWrapper from './components/TooltipWrapper';
 import SearchResultsNew from './components/SearchResultsNew';
@@ -32,6 +32,10 @@ const SearchPage = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchAccuracy, setSearchAccuracy] = useState(50); // רמת דיוק החיפוש
   const [hasSearched, setHasSearched] = useState(false); // האם בוצע חיפוש
+  
+  // פילטרים לתוצאות
+  const [bookNameFilter, setBookNameFilter] = useState(''); // סינון לפי שם ספר
+  const [compactView, setCompactView] = useState(false); // תצוגה מצומצמת (רק שמות)
   
   // אינדקסים נבחרים לחיפוש
   const [selectedIndexes, setSelectedIndexes] = useState([]);
@@ -185,13 +189,6 @@ const SearchPage = ({
       // המרה אוטומטית מאנגלית לעברית
       const { converted, shouldConvert } = autoConvertSearch(searchQuery);
       const finalQuery = shouldConvert ? converted : searchQuery;
-      
-      // אם כבר יש תוצאות חיפוש (כלומר זה חיפוש חדש), פתח טאב חדש
-      if (searchResults && searchResults.length > 0 && onNewSearch) {
-        console.log('🔍 פותח טאב חיפוש חדש עבור:', finalQuery);
-        onNewSearch(finalQuery);
-        return; // לא ממשיכים - הטאב החדש יטפל בחיפוש
-      }
       
       // סמן שבוצע חיפוש
       setHasSearched(true);
@@ -560,32 +557,50 @@ const SearchPage = ({
         moreCategories={moreCategories}
       />
 
-      {/* מספר תוצאות */}
+      {/* מספר תוצאות ופילטרים */}
       {hasSearched && filteredResults.length > 0 && !isSearching && (
         <div className="results-count-header">
-          {(() => {
-            // חישוב מספר ספרים ייחודיים
-            const uniqueBooks = new Set();
-            let totalMatches = 0;
-            
-            filteredResults.forEach(result => {
-              uniqueBooks.add(result.file.id);
-              if (result.contexts && result.contexts.length > 0) {
-                totalMatches += result.contexts.length;
-              } else {
-                totalMatches += 1;
-              }
-            });
-            
-            const bookCount = uniqueBooks.size;
-            const estimatedTotal = searchResults.estimatedTotalHits || totalMatches;
-            
-            return (
-              <>
-                מציג {bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'} • כ-{estimatedTotal.toLocaleString('he-IL')} תוצאות
-              </>
-            );
-          })()}
+          <div className="results-filters">
+            {/* חיפוש בשם ספר עם כפתור toggle בתוכו */}
+            <div className="book-filter-container">
+              <input
+                type="text"
+                className="book-name-filter"
+                placeholder="סנן לפי שם ספר..."
+                value={bookNameFilter}
+                onChange={(e) => setBookNameFilter(e.target.value)}
+              />
+              
+              {/* כפתור toggle תצוגה */}
+              <button
+                className={`compact-view-toggle ${compactView ? 'active' : ''}`}
+                onClick={() => setCompactView(!compactView)}
+                title={compactView ? 'הצג תוכן' : 'הסתר תוכן'}
+              >
+                {compactView ? <BookRegular /> : <TextAlignJustifyRegular />}
+              </button>
+            </div>
+          </div>
+          
+          <div className="results-info">
+            {(() => {
+              // חישוב מספר ספרים ייחודיים ומספר hits
+              const uniqueBooks = new Set();
+              
+              filteredResults.forEach(result => {
+                uniqueBooks.add(result.file.id);
+              });
+              
+              const bookCount = uniqueBooks.size;
+              const hitsCount = filteredResults.length; // מספר ה-hits שמוצגים
+              
+              return (
+                <>
+                  מציג {hitsCount.toLocaleString('he-IL')} {hitsCount === 1 ? 'תוצאה' : 'תוצאות'} מ-{bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'}
+                </>
+              );
+            })()}
+          </div>
         </div>
       )}
 
@@ -619,6 +634,8 @@ const SearchPage = ({
               onFileClick={handleFileClick}
               isSearching={isSearching}
               searchQuery={searchQuery}
+              bookNameFilter={bookNameFilter}
+              compactView={compactView}
               onPreviewChange={(book, context) => {
                 setPreviewBook(book);
                 setPreviewContext(context);
@@ -639,6 +656,7 @@ const SearchPage = ({
                     accuracy: searchAccuracy,
                     selectedIndexes,
                     offset,
+                    limit, // העבר את ה-limit
                     append: true // סימן שזה הוספה ולא החלפה
                   });
                   

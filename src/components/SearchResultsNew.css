@@ -281,6 +281,18 @@
   opacity: 1;
 }
 
+/* מספר התאמות בשורה */
+.match-count-inline {
+  font-size: 14px;
+  color: #70757a;
+  font-weight: normal;
+  margin-right: 8px;
+}
+
+[data-theme="dark"] .match-count-inline {
+  color: #9aa0a6;
+}
+
 /* תצוגה מקדימה */
 .result-snippet {
   font-size: 14px;
@@ -528,4 +540,69 @@
   .result-snippet {
     font-size: 13px;
   }
+}
+
+/* כפתור טען עוד */
+.load-more-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 20px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 32px;
+  background: #5c3d2e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(92, 61, 46, 0.2);
+  font-family: inherit;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: #4a2f23;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.3);
+}
+
+.load-more-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.load-more-info {
+  font-size: 13px;
+  color: #8b6f47;
+  text-align: center;
+}
+
+/* מצב כהה */
+[data-theme="dark"] .load-more-btn {
+  background: #8b6f47;
+  color: white;
+}
+
+[data-theme="dark"] .load-more-btn:hover:not(:disabled) {
+  background: #a68a5c;
+}
+
+[data-theme="dark"] .load-more-info {
+  color: #a68a5c;
 }

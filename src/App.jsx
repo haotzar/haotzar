@@ -1296,21 +1296,40 @@ function App() {
       closeFolderPreview();
     }
 
-    // צור ID ייחודי לכל כרטיסיית חיפוש
-    const searchTabId = `search-tab-${Date.now()}`;
-    const searchTab = {
-      id: searchTabId,
-      name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
-      type: 'search',
-      searchQuery: searchText, // התחל עם טקסט החיפוש
-      searchResults: []
-    };
-    
-    // תמיד צור כרטיסייה חדשה
-    const newTabs = [...openTabs, searchTab];
-    setOpenTabs(newTabs);
-    setActiveTabId(searchTabId);
-    saveTabsState(newTabs, searchTabId);
+    // בדוק אם כבר קיים טאב חיפוש פעיל
+    const activeTab = openTabs.find(tab => tab.id === activeTabId);
+    const isActiveTabSearch = activeTab && activeTab.type === 'search';
+
+    if (isActiveTabSearch) {
+      // עדכן את הטאב הקיים עם שם חדש וטקסט חיפוש חדש
+      const updatedTabs = openTabs.map(tab => 
+        tab.id === activeTabId 
+          ? { 
+              ...tab, 
+              name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
+              searchQuery: searchText,
+              searchResults: []
+            }
+          : tab
+      );
+      setOpenTabs(updatedTabs);
+      saveTabsState(updatedTabs, activeTabId);
+    } else {
+      // צור טאב חיפוש חדש רק אם הטאב הפעיל אינו טאב חיפוש
+      const searchTabId = `search-tab-${Date.now()}`;
+      const searchTab = {
+        id: searchTabId,
+        name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
+        type: 'search',
+        searchQuery: searchText,
+        searchResults: []
+      };
+      
+      const newTabs = [...openTabs, searchTab];
+      setOpenTabs(newTabs);
+      setActiveTabId(searchTabId);
+      saveTabsState(newTabs, searchTabId);
+    }
   };
 
   // פתיחת כרטיסיית היסטוריה
@@ -2167,7 +2186,7 @@ function App() {
       
       // מיזוג אופציות ברירת מחדל עם אופציות מתקדמות
       const searchOptions = {
-        maxResults: 20, // טען רק 20 ראשונים - pagination
+        maxResults: advancedOptions.limit || (advancedOptions.append ? 100 : 200), // חיפוש ראשון: 200, append: 100
         contextLength: 150,
         fullSpelling: advancedOptions.fullSpelling || false,
         partialWord: advancedOptions.partialWord || false,
@@ -3184,18 +3203,48 @@ function App() {
                                         
                                         // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
                                         if (advancedOptions.append && tab.leftTab.searchResults && tab.leftTab.searchResults.length > 0) {
-                                          const combined = [...tab.leftTab.searchResults, ...results];
+                                          // שמור על reference של תוצאות קיימות - מיזוג חכם
+                                          // צור מזהה ייחודי לכל hit
+                                          const getHitId = (r) => {
+                                            const page = r.contexts?.[0]?.pageNum || 0;
+                                            const chunk = r.contexts?.[0]?.chunkId || 0;
+                                            return `${r.file.id}-${page}-${chunk}`;
+                                          };
+                                          
+                                          const existingById = new Map(tab.leftTab.searchResults.map(r => [getHitId(r), r]));
+                                          const newItems = [];
+                                          
+                                          results.forEach(r => {
+                                            const hitId = getHitId(r);
+                                            if (!existingById.has(hitId)) {
+                                              newItems.push(r);
+                                              existingById.set(hitId, r);
+                                            }
+                                          });
+                                          
+                                          const combined = newItems.length > 0 
+                                            ? [...tab.leftTab.searchResults, ...newItems]
+                                            : tab.leftTab.searchResults;
+                                          
                                           combined.estimatedTotalHits = results.estimatedTotalHits || tab.leftTab.searchResults.estimatedTotalHits;
                                           
                                           const updatedTabs = openTabs.map(t => 
                                             t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchResults: combined } } : t
                                           );
                                           setOpenTabs(updatedTabs);
-                                          console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                          console.log(`✅ הוספו ${newItems.length} תוצאות חדשות, סה"כ: ${combined.length}`);
                                         } else {
-                                          // חיפוש רגיל - החלף תוצאות
+                                          // חיפוש רגיל - החלף תוצאות ועדכן שם
                                           const updatedTabs = openTabs.map(t => 
-                                            t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchQuery: query, searchResults: results || [] } } : t
+                                            t.id === tab.id ? { 
+                                              ...t, 
+                                              leftTab: { 
+                                                ...t.leftTab, 
+                                                name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                                searchQuery: query, 
+                                                searchResults: results || [] 
+                                              } 
+                                            } : t
                                           );
                                           setOpenTabs(updatedTabs);
                                         }
@@ -3301,18 +3350,48 @@ function App() {
                                         
                                         // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
                                         if (advancedOptions.append && tab.rightTab.searchResults && tab.rightTab.searchResults.length > 0) {
-                                          const combined = [...tab.rightTab.searchResults, ...results];
+                                          // שמור על reference של תוצאות קיימות - מיזוג חכם
+                                          // צור מזהה ייחודי לכל hit
+                                          const getHitId = (r) => {
+                                            const page = r.contexts?.[0]?.pageNum || 0;
+                                            const chunk = r.contexts?.[0]?.chunkId || 0;
+                                            return `${r.file.id}-${page}-${chunk}`;
+                                          };
+                                          
+                                          const existingById = new Map(tab.rightTab.searchResults.map(r => [getHitId(r), r]));
+                                          const newItems = [];
+                                          
+                                          results.forEach(r => {
+                                            const hitId = getHitId(r);
+                                            if (!existingById.has(hitId)) {
+                                              newItems.push(r);
+                                              existingById.set(hitId, r);
+                                            }
+                                          });
+                                          
+                                          const combined = newItems.length > 0 
+                                            ? [...tab.rightTab.searchResults, ...newItems]
+                                            : tab.rightTab.searchResults;
+                                          
                                           combined.estimatedTotalHits = results.estimatedTotalHits || tab.rightTab.searchResults.estimatedTotalHits;
                                           
                                           const updatedTabs = openTabs.map(t => 
                                             t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchResults: combined } } : t
                                           );
                                           setOpenTabs(updatedTabs);
-                                          console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                          console.log(`✅ הוספו ${newItems.length} תוצאות חדשות, סה"כ: ${combined.length}`);
                                         } else {
-                                          // חיפוש רגיל - החלף תוצאות
+                                          // חיפוש רגיל - החלף תוצאות ועדכן שם
                                           const updatedTabs = openTabs.map(t => 
-                                            t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchQuery: query, searchResults: results || [] } } : t
+                                            t.id === tab.id ? { 
+                                              ...t, 
+                                              rightTab: { 
+                                                ...t.rightTab, 
+                                                name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                                searchQuery: query, 
+                                                searchResults: results || [] 
+                                              } 
+                                            } : t
                                           );
                                           setOpenTabs(updatedTabs);
                                         }
@@ -3388,7 +3467,30 @@ function App() {
                                   
                                   // אם זה append (טעינת עמוד נוסף), הוסף לתוצאות הקיימות
                                   if (advancedOptions.append && tab.searchResults && tab.searchResults.length > 0) {
-                                    const combined = [...tab.searchResults, ...results];
+                                    // שמור על reference של תוצאות קיימות - מיזוג חכם
+                                    // צור מזהה ייחודי לכל hit (file.id + page + chunkId)
+                                    const getHitId = (r) => {
+                                      const page = r.contexts?.[0]?.pageNum || 0;
+                                      const chunk = r.contexts?.[0]?.chunkId || 0;
+                                      return `${r.file.id}-${page}-${chunk}`;
+                                    };
+                                    
+                                    const existingById = new Map(tab.searchResults.map(r => [getHitId(r), r]));
+                                    const newItems = [];
+                                    
+                                    results.forEach(r => {
+                                      const hitId = getHitId(r);
+                                      if (!existingById.has(hitId)) {
+                                        newItems.push(r);
+                                        existingById.set(hitId, r);
+                                      }
+                                    });
+                                    
+                                    // רק אם יש פריטים חדשים, צור מערך חדש
+                                    const combined = newItems.length > 0 
+                                      ? [...tab.searchResults, ...newItems]
+                                      : tab.searchResults; // שמור על אותו reference אם אין חדשים
+                                    
                                     // שמור את estimatedTotalHits מהתוצאות החדשות
                                     combined.estimatedTotalHits = results.estimatedTotalHits || tab.searchResults.estimatedTotalHits;
                                     
@@ -3396,11 +3498,16 @@ function App() {
                                       t.id === tab.id ? { ...t, searchResults: combined } : t
                                     );
                                     setOpenTabs(updatedTabs);
-                                    console.log(`✅ הוספו ${results.length} תוצאות, סה"כ: ${combined.length}`);
+                                    console.log(`✅ הוספו ${newItems.length} תוצאות חדשות, סה"כ: ${combined.length}`);
                                   } else {
-                                    // חיפוש רגיל - החלף תוצאות
+                                    // חיפוש רגיל - החלף תוצאות ועדכן שם
                                     const updatedTabs = openTabs.map(t => 
-                                      t.id === tab.id ? { ...t, searchQuery: query, searchResults: results || [] } : t
+                                      t.id === tab.id ? { 
+                                        ...t, 
+                                        name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                        searchQuery: query, 
+                                        searchResults: results || [] 
+                                      } : t
                                     );
                                     setOpenTabs(updatedTabs);
                                   }

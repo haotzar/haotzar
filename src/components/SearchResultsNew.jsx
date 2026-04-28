@@ -1,82 +1,211 @@
-import { useState, useMemo, useEffect, memo } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback, useRef } from 'react';
 import { DocumentRegular, DocumentTextRegular, ChevronDownRegular, ChevronUpRegular, DismissRegular, EyeRegular } from '@fluentui/react-icons';
 import { Spinner } from '@fluentui/react-components';
 import PDFViewer from '../PDFViewer';
 import TextViewer from '../TextViewer';
 import './SearchResultsNew.css';
 
-const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPreviewChange, onLoadMore }) => {
+// קומפוננטה ממוזערת לתוצאה בודדת - תמנע רינדור מחדש מיותר
+const BookResult = memo(({ 
+  bookGroup, 
+  isExpanded, 
+  onToggleExpand, 
+  onFileClick, 
+  onShowPreview, 
+  searchQuery,
+  highlightSearchTerm,
+  compactView = false
+}) => {
+  const firstContext = bookGroup.contexts[0];
+
+  return (
+    <div className="book-group">
+      {/* כותרת הספר */}
+      <div className="result-header-new">
+        <div className="result-icon-small">
+          {bookGroup.file.type === 'pdf' ? (
+            <DocumentRegular />
+          ) : (
+            <DocumentTextRegular />
+          )}
+        </div>
+        <div 
+          className="result-title-new" 
+          onClick={() => {
+            // פתיחה בלשונית חדשה עם הקשר החיפוש
+            const contextData = firstContext ? {
+              searchQuery: searchQuery,
+              context: firstContext,
+              replaceSearchTab: false // פתח בטאב חדש
+            } : null;
+            
+            onFileClick(bookGroup.file, contextData);
+          }}
+        >
+          {bookGroup.file.name}
+          {bookGroup.totalMatches > 1 && (
+            <span className="match-count-inline"> ({bookGroup.totalMatches} התאמות)</span>
+          )}
+        </div>
+        
+        {/* כפתור הרחבה */}
+        {bookGroup.totalMatches > 1 && (
+          <button 
+            className="expand-btn"
+            onClick={() => onToggleExpand(bookGroup.file.id)}
+            title={isExpanded ? 'כווץ' : 'הרחב'}
+          >
+            {isExpanded ? <ChevronUpRegular /> : <ChevronDownRegular />}
+          </button>
+        )}
+      </div>
+
+      {/* תצוגה מקדימה ראשונה - רק אם לא במצב compact */}
+      {!compactView && firstContext && (
+        <div 
+          className="result-snippet"
+          onClick={() => onShowPreview(bookGroup.file, firstContext)}
+          style={{ cursor: 'pointer' }}
+        >
+          <EyeRegular className="snippet-preview-icon" />
+          {highlightSearchTerm(firstContext.text, firstContext)}
+        </div>
+      )}
+
+      {/* תוצאות נוספות (כשמורחב) - רק אם לא במצב compact */}
+      {!compactView && isExpanded && bookGroup.contexts.length > 1 && (
+        <div className="expanded-results">
+          {bookGroup.contexts.slice(1).map((context, index) => (
+            <div 
+              key={`${bookGroup.file.id}-context-${index + 1}`}
+              className="result-snippet expanded-snippet"
+              onClick={() => onShowPreview(bookGroup.file, context)}
+              style={{ cursor: 'pointer' }}
+            >
+              <EyeRegular className="snippet-preview-icon" />
+              {highlightSearchTerm(context.text, context)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // רינדר מחדש רק אם ה-bookGroup reference השתנה או אם compactView השתנה
+  return (
+    prevProps.bookGroup === nextProps.bookGroup &&
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.searchQuery === nextProps.searchQuery &&
+    prevProps.compactView === nextProps.compactView
+  );
+});
+
+BookResult.displayName = 'BookResult';
+
+const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, bookNameFilter = '', compactView = false, onPreviewChange, onLoadMore }) => {
   const [expandedBooks, setExpandedBooks] = useState(new Set());
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
+  // שמור את התוצאות המלאות ואת מספר התוצאות המוצגות
+  const [allResults, setAllResults] = useState([]);
+  const [displayedCount, setDisplayedCount] = useState(20);
+  const lastResultsLengthRef = useRef(0);
+  
+  // Cache של קבוצות - שומר על same reference לקבוצות קיימות
+  const groupsCacheRef = useRef(new Map());
+  
   const estimatedTotal = results.estimatedTotalHits || results.length;
-  const resultsPerPage = 20; // כמה תוצאות בעמוד
-
-  // Infinite scroll - טען עוד כשגוללים לסוף
+  const resultsPerPage = 20;
+  
+  // עדכן את התוצאות המלאות כשמגיעות תוצאות חדשות
   useEffect(() => {
-    const handleScroll = () => {
-      // בדוק אם הגענו לקרוב לסוף העמוד
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = document.documentElement.clientHeight;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      
-      // אם נשארו פחות מ-500px לסוף ועדיין יש תוצאות לטעון
-      if (distanceFromBottom < 500) {
-        const loadedResults = results.length;
-        const hasMore = loadedResults < estimatedTotal && loadedResults < resultsPerPage * 10; // מקסימום 10 עמודים
-        
-        if (hasMore && !isLoadingMore && onLoadMore) {
-          setIsLoadingMore(true);
-          onLoadMore(loadedResults, resultsPerPage);
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [results.length, estimatedTotal, isLoadingMore, onLoadMore, resultsPerPage]);
-
-  // איפוס isLoadingMore כשהתוצאות משתנות (נטענו תוצאות חדשות)
-  useEffect(() => {
-    if (isLoadingMore && results.length > 0) {
-      setIsLoadingMore(false);
+    // אם זה חיפוש חדש (פחות תוצאות מהפעם הקודמת), אפס
+    if (results.length < lastResultsLengthRef.current) {
+      console.log('🔄 חיפוש חדש - מאפס תוצאות');
+      setAllResults(results);
+      setDisplayedCount(20); // התחל עם 20 תוצאות
+      groupsCacheRef.current.clear();
+    } 
+    // אם יש יותר תוצאות, הוסף רק את החדשות
+    else if (results.length > lastResultsLengthRef.current) {
+      console.log(`➕ מוסיף ${results.length - lastResultsLengthRef.current} תוצאות חדשות`);
+      setAllResults(results);
     }
-  }, [results.length]);
-
-
-  // קיבוץ תוצאות לפי ספר
+    
+    lastResultsLengthRef.current = results.length;
+  }, [results]);
+  
+  // הצג תוצאות בהדרגה - 20 כל 500ms
+  useEffect(() => {
+    if (displayedCount < allResults.length) {
+      const timer = setTimeout(() => {
+        const nextCount = Math.min(displayedCount + resultsPerPage, allResults.length);
+        console.log(`📊 מציג ${nextCount} מתוך ${allResults.length} תוצאות`);
+        setDisplayedCount(nextCount);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [displayedCount, allResults.length, resultsPerPage]);
+  
+  // התוצאות שמוצגות כרגע
+  const displayedResults = allResults.slice(0, displayedCount);
   const groupedResults = useMemo(() => {
-    if (!results || results.length === 0) return [];
+    if (!displayedResults || displayedResults.length === 0) {
+      return [];
+    }
     
-    const grouped = new Map();
+    // שלב 1: אסוף את כל ה-contexts לכל ספר
+    const bookContextsMap = new Map();
     
-    results.forEach(result => {
+    displayedResults.forEach(result => {
       const bookId = result.file.id;
       
-      if (!grouped.has(bookId)) {
-        grouped.set(bookId, {
+      if (!bookContextsMap.has(bookId)) {
+        bookContextsMap.set(bookId, {
           file: result.file,
-          contexts: [],
-          totalMatches: 0
+          contexts: []
         });
       }
       
-      const group = grouped.get(bookId);
+      const bookData = bookContextsMap.get(bookId);
       
+      // הוסף contexts
       if (result.contexts && result.contexts.length > 0) {
-        group.contexts.push(...result.contexts);
-        group.totalMatches += result.contexts.length;
-      } else {
-        group.totalMatches += 1;
+        bookData.contexts.push(...result.contexts);
       }
     });
     
-    return Array.from(grouped.values());
-  }, [results]);
+    // שלב 2: בנה קבוצות - שמור על reference אם התוכן זהה
+    const nextGroups = new Map();
+    
+    for (const [bookId, bookData] of bookContextsMap.entries()) {
+      const cachedGroup = groupsCacheRef.current.get(bookId);
+      
+      // בדוק אם הקבוצה המטמונת זהה לחדשה
+      if (cachedGroup && 
+          cachedGroup.contexts.length === bookData.contexts.length &&
+          cachedGroup.totalMatches === bookData.contexts.length) {
+        // שמור על אותו reference - אין שינוי!
+        nextGroups.set(bookId, cachedGroup);
+      } else {
+        // צור קבוצה חדשה - יש שינוי
+        const newGroup = {
+          file: bookData.file,
+          contexts: bookData.contexts,
+          totalMatches: bookData.contexts.length
+        };
+        nextGroups.set(bookId, newGroup);
+      }
+    }
+    
+    // עדכן את ה-cache
+    groupsCacheRef.current = nextGroups;
+    
+    return Array.from(nextGroups.values());
+  }, [displayedResults]);
 
   // פונקציה להרחבה/כיווץ של ספר
-  const toggleBookExpansion = (bookId) => {
+  const toggleBookExpansion = useCallback((bookId) => {
     setExpandedBooks(prev => {
       const newSet = new Set(prev);
       if (newSet.has(bookId)) {
@@ -86,14 +215,14 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
       }
       return newSet;
     });
-  };
+  }, []);
 
   // פונקציה להצגת תצוגה מקדימה
-  const showPreview = (file, context) => {
+  const showPreview = useCallback((file, context) => {
     if (onPreviewChange) {
       onPreviewChange(file, context);
     }
-  };
+  }, [onPreviewChange]);
 
   if (isSearching) {
     return (
@@ -104,13 +233,16 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     );
   }
 
-  if (!results || results.length === 0 || groupedResults.length === 0) {
+  if (!displayedResults || displayedResults.length === 0 || groupedResults.length === 0) {
     return null;
   }
 
   // סימון מילות החיפוש באדום - משופר עם תמיכה בוריאציות ומילים מרובות
   const highlightSearchTerm = (text, context) => {
     if (!text) return text;
+    
+    // הסר כל תגיות HTML שמגיעות מ-Meilisearch (em, mark, וכו')
+    const cleanText = text.replace(/<\/?[^>]+(>|$)/g, '');
     
     // נרמול - הסרת גרשיים וסימני ציטוט
     const normalizeForMatch = (str) => {
@@ -125,7 +257,7 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     
     // אם אין מילים לחיפוש, החזר את הטקסט כמו שהוא
     if (queryWords.length === 0) {
-      return text;
+      return cleanText;
     }
     
     // מצא את כל המיקומים שצריך להדגיש
@@ -135,17 +267,17 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     if (context && context.highlightedWords && Array.isArray(context.highlightedWords)) {
       for (const word of context.highlightedWords) {
         const wordLower = word.toLowerCase();
-        const textLower = text.toLowerCase();
+        const textLower = cleanText.toLowerCase();
         
         let searchFrom = 0;
-        while (searchFrom < text.length) {
+        while (searchFrom < cleanText.length) {
           const index = textLower.indexOf(wordLower, searchFrom);
           if (index === -1) break;
           
           highlights.push({
             start: index,
             end: index + word.length,
-            word: text.substring(index, index + word.length)
+            word: cleanText.substring(index, index + word.length)
           });
           
           searchFrom = index + word.length;
@@ -156,17 +288,17 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     else if (context && context.highlightedWord) {
       const word = context.highlightedWord;
       const wordLower = word.toLowerCase();
-      const textLower = text.toLowerCase();
+      const textLower = cleanText.toLowerCase();
       
       let searchFrom = 0;
-      while (searchFrom < text.length) {
+      while (searchFrom < cleanText.length) {
         const index = textLower.indexOf(wordLower, searchFrom);
         if (index === -1) break;
         
         highlights.push({
           start: index,
           end: index + word.length,
-          word: text.substring(index, index + word.length)
+          word: cleanText.substring(index, index + word.length)
         });
         
         searchFrom = index + word.length;
@@ -178,12 +310,12 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
       const normalizedQuery = normalizeForMatch(queryWord);
       if (!normalizedQuery || normalizedQuery.length < 2) continue;
       
-      const normalizedText = normalizeForMatch(text);
-      const textWords = text.split(/\s+/);
+      const normalizedText = normalizeForMatch(cleanText);
+      const textWords = cleanText.split(/\s+/);
       
       let currentPos = 0;
       for (const textWord of textWords) {
-        const wordStart = text.indexOf(textWord, currentPos);
+        const wordStart = cleanText.indexOf(textWord, currentPos);
         if (wordStart === -1) {
           currentPos += textWord.length + 1;
           continue;
@@ -245,7 +377,7 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     
     // אם אין מה להדגיש, החזר את הטקסט כמו שהוא
     if (highlights.length === 0) {
-      return text;
+      return cleanText;
     }
     
     // מיין לפי מיקום
@@ -261,7 +393,7 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
         if (highlight.start <= last.end) {
           // חופפים - מזג
           last.end = Math.max(last.end, highlight.end);
-          last.word = text.substring(last.start, last.end);
+          last.word = cleanText.substring(last.start, last.end);
         } else {
           merged.push(highlight);
         }
@@ -275,7 +407,7 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     for (const highlight of merged) {
       // הוסף טקסט לפני ההדגשה
       if (highlight.start > lastEnd) {
-        parts.push(text.substring(lastEnd, highlight.start));
+        parts.push(cleanText.substring(lastEnd, highlight.start));
       }
       
       // הוסף את החלק המודגש
@@ -289,8 +421,8 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     }
     
     // הוסף את השאר של הטקסט
-    if (lastEnd < text.length) {
-      parts.push(text.substring(lastEnd));
+    if (lastEnd < cleanText.length) {
+      parts.push(cleanText.substring(lastEnd));
     }
     
     return <>{parts}</>;
@@ -327,121 +459,85 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
     return matrix[len1][len2];
   };
 
-  // הצג את כל התוצאות שנטענו עד כה
-  const currentResults = groupedResults;
-  const hasMore = results.length < estimatedTotal && results.length < resultsPerPage * 10; // מקסימום 10 עמודים
+  // הצג את כל התוצאות שנטענו עד כה - עם סינון לפי שם ספר
+  const filteredByBookName = bookNameFilter.trim() 
+    ? groupedResults.filter(group => 
+        group.file.name.toLowerCase().includes(bookNameFilter.toLowerCase())
+      )
+    : groupedResults;
+  
+  const currentResults = filteredByBookName;
+  
+  // האם עדיין מציג תוצאות בהדרגה
+  const isShowingGradually = displayedCount < allResults.length;
+  
+  // האם יש עוד תוצאות לטעון מהשרת
+  const hasMoreToLoad = allResults.length < estimatedTotal && onLoadMore;
+  
+  // פונקציה לטעינת עוד תוצאות
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !onLoadMore) return;
+    
+    setIsLoadingMore(true);
+    try {
+      await onLoadMore(allResults.length, 100);
+    } catch (error) {
+      console.error('❌ שגיאה בטעינת תוצאות נוספות:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <>
       <div className="search-results-container">
         {/* רשימת תוצאות */}
         <div className="results-list-new">
-          {currentResults.map((bookGroup) => {
-            const isExpanded = expandedBooks.has(bookGroup.file.id);
-            const firstContext = bookGroup.contexts[0];
-            
-            return (
-              <div key={bookGroup.file.id} className="book-group">
-                {/* כותרת הספר */}
-                <div className="result-header-new">
-                  <div className="result-icon-small">
-                    {bookGroup.file.type === 'pdf' ? (
-                      <DocumentRegular />
-                    ) : (
-                      <DocumentTextRegular />
-                    )}
-                  </div>
-                  <div 
-                    className="result-title-new" 
-                    onClick={() => {
-                      // פתיחה בלשונית חדשה עם הקשר החיפוש
-                      const contextData = firstContext ? {
-                        searchQuery: searchQuery,
-                        context: firstContext,
-                        replaceSearchTab: false // פתח בטאב חדש
-                      } : null;
-                      
-                      onFileClick(bookGroup.file, contextData);
-                    }}
-                  >
-                    {bookGroup.file.name}
-                  </div>
-                  
-                  {/* כפתור הרחבה */}
-                  {bookGroup.totalMatches > 1 && (
-                    <button 
-                      className="expand-btn"
-                      onClick={() => toggleBookExpansion(bookGroup.file.id)}
-                      title={isExpanded ? 'כווץ' : 'הרחב'}
-                    >
-                      {isExpanded ? <ChevronUpRegular /> : <ChevronDownRegular />}
-                      <span className="match-count">({bookGroup.totalMatches})</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* תצוגה מקדימה ראשונה */}
-                {firstContext && (
-                  <div 
-                    className="result-snippet"
-                    onClick={() => showPreview(bookGroup.file, firstContext)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <EyeRegular className="snippet-preview-icon" />
-                    {highlightSearchTerm(firstContext.text, firstContext)}
-                  </div>
-                )}
-
-                {/* תוצאות נוספות (כשמורחב) */}
-                {isExpanded && bookGroup.contexts.length > 1 && (
-                  <div className="expanded-results">
-                    {bookGroup.contexts.slice(1).map((context, index) => (
-                      <div 
-                        key={index}
-                        className="result-snippet expanded-snippet"
-                        onClick={() => showPreview(bookGroup.file, context)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <EyeRegular className="snippet-preview-icon" />
-                        {highlightSearchTerm(context.text, context)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {currentResults.map((bookGroup) => (
+            <BookResult
+              key={bookGroup.file.id}
+              bookGroup={bookGroup}
+              isExpanded={expandedBooks.has(bookGroup.file.id)}
+              onToggleExpand={toggleBookExpansion}
+              onFileClick={onFileClick}
+              onShowPreview={showPreview}
+              searchQuery={searchQuery}
+              highlightSearchTerm={highlightSearchTerm}
+              compactView={compactView}
+            />
+          ))}
         </div>
 
         {/* אינדיקטור טעינה למטה */}
-        {isLoadingMore && (
+        {isShowingGradually && (
           <div className="loading-more">
             <Spinner size="medium" />
-            <div className="loading-text">טוען עוד תוצאות...</div>
+            <div className="loading-text">
+              טוען עוד תוצאות... ({displayedCount}/{allResults.length})
+            </div>
           </div>
         )}
         
         {/* כפתור טען עוד */}
-        {hasMore && !isLoadingMore && (
+        {!isShowingGradually && hasMoreToLoad && (
           <div className="load-more-container">
             <button 
               className="load-more-btn"
-              onClick={() => {
-                if (onLoadMore && !isLoadingMore) {
-                  setIsLoadingMore(true);
-                  onLoadMore(results.length, resultsPerPage);
-                }
-              }}
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
             >
-              טען עוד תוצאות
+              {isLoadingMore ? (
+                <>
+                  <Spinner size="tiny" />
+                  <span>טוען...</span>
+                </>
+              ) : (
+                <>טען עוד 100 תוצאות</>
+              )}
             </button>
-          </div>
-        )}
-        
-        {/* הודעה שאין עוד תוצאות */}
-        {!hasMore && results.length > 0 && (
-          <div className="no-more-results">
-            הוצגו כל התוצאות ({groupedResults.length} ספרים)
+            <div className="load-more-info">
+              מוצגים {allResults.length} מתוך {estimatedTotal.toLocaleString('he-IL')} תוצאות משוערות
+            </div>
           </div>
         )}
       </div>
@@ -449,25 +545,6 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, onPr
   );
 };
 
-// מנע רינדור מיותר כשרק searchQuery משתנה
-export default memo(SearchResultsNew, (prevProps, nextProps) => {
-  // החזר true אם הProps שווים (אל תרנדר מחדש)
-  // החזר false אם הProps שונים (רנדר מחדש)
-  
-  const shouldNotRerender = (
-    prevProps.results === nextProps.results &&
-    prevProps.isSearching === nextProps.isSearching &&
-    prevProps.onFileClick === nextProps.onFileClick
-  );
-  
-  if (!shouldNotRerender) {
-    console.log('🔄 SearchResultsNew re-rendering because:', {
-      resultsChanged: prevProps.results !== nextProps.results,
-      isSearchingChanged: prevProps.isSearching !== nextProps.isSearching,
-      onFileClickChanged: prevProps.onFileClick !== nextProps.onFileClick,
-      searchQueryChanged: prevProps.searchQuery !== nextProps.searchQuery
-    });
-  }
-  
-  return shouldNotRerender;
-});
+// אל תשתמש ב-memo על הקומפוננטה הראשית - תן לה להתרנדר
+// ה-BookResult עם memo ידאג שרק תוצאות חדשות יתרנדרו
+export default SearchResultsNew;

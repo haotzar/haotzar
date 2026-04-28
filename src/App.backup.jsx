@@ -1290,21 +1290,40 @@ function App() {
       closeFolderPreview();
     }
 
-    // צור ID ייחודי לכל כרטיסיית חיפוש
-    const searchTabId = `search-tab-${Date.now()}`;
-    const searchTab = {
-      id: searchTabId,
-      name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
-      type: 'search',
-      searchQuery: searchText, // התחל עם טקסט החיפוש
-      searchResults: []
-    };
-    
-    // תמיד צור כרטיסייה חדשה
-    const newTabs = [...openTabs, searchTab];
-    setOpenTabs(newTabs);
-    setActiveTabId(searchTabId);
-    saveTabsState(newTabs, searchTabId);
+    // בדוק אם כבר קיים טאב חיפוש פעיל
+    const activeTab = openTabs.find(tab => tab.id === activeTabId);
+    const isActiveTabSearch = activeTab && activeTab.type === 'search';
+
+    if (isActiveTabSearch) {
+      // עדכן את הטאב הקיים עם שם חדש וטקסט חיפוש חדש
+      const updatedTabs = openTabs.map(tab => 
+        tab.id === activeTabId 
+          ? { 
+              ...tab, 
+              name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
+              searchQuery: searchText,
+              searchResults: []
+            }
+          : tab
+      );
+      setOpenTabs(updatedTabs);
+      saveTabsState(updatedTabs, activeTabId);
+    } else {
+      // צור טאב חיפוש חדש רק אם הטאב הפעיל אינו טאב חיפוש
+      const searchTabId = `search-tab-${Date.now()}`;
+      const searchTab = {
+        id: searchTabId,
+        name: searchText ? `חיפוש: ${searchText}` : 'חיפוש',
+        type: 'search',
+        searchQuery: searchText,
+        searchResults: []
+      };
+      
+      const newTabs = [...openTabs, searchTab];
+      setOpenTabs(newTabs);
+      setActiveTabId(searchTabId);
+      saveTabsState(newTabs, searchTabId);
+    }
   };
 
   // פתיחת כרטיסיית היסטוריה
@@ -2955,7 +2974,15 @@ function App() {
                                       try {
                                         const results = await handleContentSearch(query, advancedOptions);
                                         const updatedTabs = openTabs.map(t => 
-                                          t.id === tab.id ? { ...t, leftTab: { ...t.leftTab, searchQuery: query, searchResults: results || [] } } : t
+                                          t.id === tab.id ? { 
+                                            ...t, 
+                                            leftTab: { 
+                                              ...t.leftTab, 
+                                              name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                              searchQuery: query, 
+                                              searchResults: results || [] 
+                                            } 
+                                          } : t
                                         );
                                         setOpenTabs(updatedTabs);
                                       } finally {
@@ -3057,7 +3084,15 @@ function App() {
                                       try {
                                         const results = await handleContentSearch(query, advancedOptions);
                                         const updatedTabs = openTabs.map(t => 
-                                          t.id === tab.id ? { ...t, rightTab: { ...t.rightTab, searchQuery: query, searchResults: results || [] } } : t
+                                          t.id === tab.id ? { 
+                                            ...t, 
+                                            rightTab: { 
+                                              ...t.rightTab, 
+                                              name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                              searchQuery: query, 
+                                              searchResults: results || [] 
+                                            } 
+                                          } : t
                                         );
                                         setOpenTabs(updatedTabs);
                                       } finally {
@@ -3129,7 +3164,12 @@ function App() {
                                 try {
                                   const results = await handleContentSearch(query, advancedOptions);
                                   const updatedTabs = openTabs.map(t => 
-                                    t.id === tab.id ? { ...t, searchQuery: query, searchResults: results || [] } : t
+                                    t.id === tab.id ? { 
+                                      ...t, 
+                                      name: query ? `חיפוש: ${query}` : 'חיפוש',
+                                      searchQuery: query, 
+                                      searchResults: results || [] 
+                                    } : t
                                   );
                                   setOpenTabs(updatedTabs);
                                 } finally {

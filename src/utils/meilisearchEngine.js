@@ -550,7 +550,7 @@ class MeilisearchEngine {
   // ממוין לפי איכות ההתאמה
   async search(query, options = {}) {
     const { 
-      maxResults = 200, 
+      maxResults = 20, // ברירת מחדל 20 תוצאות לעמוד
       accuracy = 50,
       specificBook = '',
       matchingStrategy = 'last',
@@ -562,7 +562,9 @@ class MeilisearchEngine {
     console.log('🔍 Meilisearch search called with:', { 
       query, 
       selectedIndexes, 
-      selectedCount: selectedIndexes.length 
+      selectedCount: selectedIndexes.length,
+      offset,
+      limit: maxResults
     });
     
     if (!query || !this.client) {
@@ -611,10 +613,14 @@ class MeilisearchEngine {
         limit: maxResults,
         offset: offset, // הוסף offset לpagination
         showRankingScore: true,
-        matchingStrategy: matchingStrategy
+        matchingStrategy: matchingStrategy,
+        attributesToHighlight: ['content', 'title'],
+        attributesToCrop: ['content'],
+        cropLength: cropLength || 200,
+        cropMarker: '...'
       };
       
-      console.log(`⚙️ פרמטרי חיפוש: limit=${searchParams.limit}, cropLength=${searchParams.cropLength}`);      // חפש בכל האינדקסים הנבחרים במקביל
+      console.log(`⚙️ פרמטרי חיפוש: limit=${searchParams.limit}, offset=${searchParams.offset}, cropLength=${searchParams.cropLength}`);      // חפש בכל האינדקסים הנבחרים במקביל
       const searchPromises = indexesToSearch.map(async (indexUid) => {
         try {
           console.log(`🔍 מחפש באינדקס "${indexUid}"...`);
@@ -631,11 +637,15 @@ class MeilisearchEngine {
           const searchTime = (performance.now() - searchStart).toFixed(0);
           console.log(`✅ אינדקס "${indexUid}" החזיר ${results.hits?.length || 0} תוצאות ב-${searchTime}ms`);
           
-          // 🔍 בדיקה: גודל content
+          // 🔍 בדיקה: גודל content והאם יש _formatted
           if (results.hits && results.hits.length > 0) {
-            const sampleContent = results.hits[0].content || '';
-            const avgSize = results.hits.reduce((sum, h) => sum + (h.content?.length || 0), 0) / results.hits.length;
-            console.log(`📏 גודל content ממוצע: ${Math.round(avgSize)} תווים, דוגמה: ${sampleContent.length} תווים`);
+            const sampleHit = results.hits[0];
+            const sampleContent = sampleHit.content || '';
+            const sampleFormatted = sampleHit._formatted?.content || '';
+            console.log(`📏 גודל content: ${sampleContent.length} תווים, _formatted: ${sampleFormatted.length} תווים`);
+            if (sampleFormatted.includes('<mark>')) {
+              console.log('✅ _formatted מכיל תגי <mark> להדגשה');
+            }
           }
           
           return { indexUid, ...results };
@@ -698,25 +708,8 @@ class MeilisearchEngine {
       if (filteredHits.length > 0) {
         const scores = filteredHits.map(h => h._rankingScore || 0).sort((a, b) => b - a);
         console.log(`📊 טווח ציונים: ${scores[0].toFixed(3)} (גבוה) - ${scores[scores.length - 1].toFixed(3)} (נמוך)`);      }
-      // קיבוץ לפי קובץ
-      const resultsMap = new Map();
-
-      for (const hit of relevantHits) {
-        // לוג לדיבוג - הצג את המסמך הראשון
-        if (resultsMap.size === 0) {
-          console.log('🔍 שדות זמינים:', Object.keys(hit));
-          console.log('🔍 דוגמה למסמך:', {
-            id: hit.id,
-            source_file: hit.source_file,
-            source_path: hit.source_path,
-            page: hit.page,
-            bookId: hit.bookId,
-            title: hit.title,
-            hasContent: !!hit.content,
-            hasText: !!hit.text
-          });
-        }
-        
+      // 🔥 החזר כל hit כתוצאה נפרדת - הקיבוץ יקרה ב-UI!
+      const results = relevantHits.map(hit => {
         // 🎯 תמיכה בשני סוגי אינדקסים: PDF (source_file) ואוצריא (bookId/title)
         const fileId = hit.source_file || hit.bookId?.toString() || hit.title || hit.id;
         const filePath = hit.source_path || hit.href || '';
@@ -728,90 +721,43 @@ class MeilisearchEngine {
         const nameForTypeCheck = (filePath || fileName || fileId || '').toLowerCase();
         const fileType = nameForTypeCheck.endsWith('.pdf') ? 'pdf' : 'text';
 
-        if (!resultsMap.has(fileId)) {
-          resultsMap.set(fileId, {
-            file: {
-              id: fileId,
-              name: fileName,
-              path: filePath,
-              type: fileType
-            },
-            matchCount: 0,
-            contexts: [],
-            maxScore: score,
-            totalScore: 0
-          });
-        }
-
-        const fileResult = resultsMap.get(fileId);
-        
-        // עדכן ציונים
-        fileResult.maxScore = Math.max(fileResult.maxScore, score);
-        fileResult.totalScore += score;
-        
-        // 🎯 דלג על extractContext - רק קיבוץ מהיר
-        // נבדוק את הזמן הנקי ללא עיבוד הקשר
-        const rawContent = hit.content || hit.heShortDesc || hit.title || '';
+        // 🎯 השתמש בתוכן המעוצב והחתוך מ-Meilisearch
+        const formattedContent = hit._formatted?.content || hit.content || hit.heShortDesc || hit.title || '';
         
         // חלץ מילים מודגשות מהשאילתה
         const queryWords = query.trim().split(/\s+/);
         
         const context = {
-          text: rawContent.substring(0, 500), // רק 500 תווים ראשונים
+          text: formattedContent,
           matchIndex: 0,
           matchLength: 0,
-          highlightedWords: queryWords, // העבר את מילות החיפוש
+          highlightedWords: queryWords,
           chunkStart: hit.chunkStart || 0,
           chunkId: hit.chunkId || 0,
           pageNum: hit.page || hit.pageNum || 1,
           score: score
         };
         
-        if (context) {
-          context.chunkStart = hit.chunkStart || 0;
-          context.chunkId = hit.chunkId || 0;
-          context.pageNum = hit.page || hit.pageNum || 1; // השתמש ב-page מהמסמך
-          context.score = score; // הוסף ציון להקשר
-          
-          fileResult.contexts.push(context);
-          fileResult.matchCount++;
-        }
-      }
-
-      // המר למערך וממיין לפי רלוונטיות
-      let results = Array.from(resultsMap.values())
-        .sort((a, b) => {
-          // מיון לפי: 1) ציון מקסימלי 2) ציון כולל 3) מספר התאמות
-          if (Math.abs(b.maxScore - a.maxScore) > 0.01) {
-            return b.maxScore - a.maxScore;
-          }
-          if (Math.abs(b.totalScore - a.totalScore) > 0.1) {
-            return b.totalScore - a.totalScore;
-          }
-          return b.matchCount - a.matchCount;
-        });
+        return {
+          file: {
+            id: fileId,
+            name: fileName,
+            path: filePath,
+            type: fileType
+          },
+          matchCount: 1,
+          contexts: [context],
+          score: score
+        };
+      });
       
-      // אם יש יותר מדי קבצים, הגבל לפי ציון
-      if (results.length > maxResults) {
-        // מצא את הציון של התוצאה ה-maxResults
-        const cutoffScore = results[maxResults - 1].maxScore;
-        // הגבל רק לתוצאות מעל הציון הזה
-        results = results.filter(r => r.maxScore >= cutoffScore).slice(0, maxResults);
-        console.log(`✂️ הגבלה ל-${maxResults} קבצים הטובים ביותר (ציון מעל ${cutoffScore.toFixed(3)})`);
-      }
-      
-      results = results.map(result => ({
-        file: result.file,
-        matchCount: result.matchCount,
-        contexts: result.contexts
-          .sort((a, b) => (b.score || 0) - (a.score || 0)) // מיין הקשרים לפי ציון
-          .slice(0, 3), // רק 3 הקשרים הטובים ביותר לקובץ
-        score: result.maxScore // הוסף ציון לתוצאה
-      }));
-
-      console.log(`✅ מחזיר ${results.length} קבצים עם תוצאות (מתוך ${resultsMap.size} קבצים)`);
+      console.log(`✅ מחזיר ${results.length} תוצאות (hits)`);
       if (results.length > 0) {
         console.log(`📊 ציון גבוה: ${results[0].score.toFixed(3)}, נמוך: ${results[results.length-1].score.toFixed(3)}`);
+        
+        // ספור כמה קבצים ייחודיים
+        const uniqueFiles = new Set(results.map(r => r.file.id));
+        console.log(`📚 ${uniqueFiles.size} קבצים ייחודיים`);
       }
       
       console.log(`📊 סה"כ תוצאות משוערות: ${searchResults.estimatedTotalHits}`);
