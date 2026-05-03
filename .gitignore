@@ -59,6 +59,9 @@ electron/dist/
 
 # Books directory - too large for Git
 books/
+# Allow demo books in public/books for GitHub Pages
+!public/books/
+!public/books/**/*
 
 # Meilisearch binary - too large for Git, downloaded automatically
 resources/meilisearch/meilisearch.exe
