@@ -74,3 +74,39 @@
 - `GITHUB_TOKEN` - אוטומטי
 - `TAURI_PRIVATE_KEY` - למערכת העדכונים (אופציונלי)
 - `TAURI_KEY_PASSWORD` - סיסמה למפתח (אופציונלי)
+
+---
+
+## Deploy to GitHub Pages
+
+מפרסם את האפליקציה כאתר סטטי ב-GitHub Pages.
+
+### איך להפעיל?
+
+#### שלב 1: הפעל GitHub Pages ברפוזיטורי
+1. לך ל-**Settings** → **Pages**
+2. תחת **Source**, בחר **GitHub Actions**
+3. שמור
+
+#### שלב 2: הרץ את ה-Workflow
+ה-workflow רץ אוטומטית בכל push ל-`main`, או שאתה יכול להריץ ידנית:
+1. לך ל-**Actions** tab
+2. בחר **Deploy to GitHub Pages**
+3. לחץ **Run workflow**
+
+#### שלב 3: גש לאתר
+לאחר שה-workflow מסתיים, האתר יהיה זמין ב:
+- `https://<username>.github.io/<repo-name>/`
+
+### מה קורה ב-Workflow?
+
+1. **Build** - בונה את האפליקציה עם Vite
+2. **Upload** - מעלה את תיקיית `dist` כ-artifact
+3. **Deploy** - מפרסת ל-GitHub Pages
+
+### הערות חשובות
+
+- האפליקציה תרוץ במצב web (לא Electron/Tauri)
+- תכונות שדורשות גישה למערכת הקבצים לא יעבדו
+- מתאים לתצוגה מקדימה ודמו של האפליקציה
+- ה-base path מוגדר אוטומטית לפי שם הרפוזיטורי

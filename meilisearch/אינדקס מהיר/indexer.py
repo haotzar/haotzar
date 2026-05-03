@@ -6,12 +6,14 @@ Meilisearch Indexer - אינדקס מאוחד לקבצי PDF ומסדי נתונ
 """
 
 import argparse
+import base64
 import hashlib
 import json
 import os
 import sqlite3
 import sys
 import time
+import zlib
 from pathlib import Path
 from multiprocessing import Pool, cpu_count, freeze_support
 from typing import Optional, Dict, Any, List, Iterator
@@ -69,6 +71,43 @@ def sanitize_index_name(name: str) -> str:
         sanitized = 'idx_' + sanitized
     
     return sanitized
+
+
+def compress_text(text: str, level: int = 6) -> str:
+    """
+    דחיסת טקסט עם zlib והמרה ל-base64
+    level: 1-9 (1=מהיר, 9=מקסימלי)
+    """
+    if not text:
+        return ""
+    
+    # דחיסה
+    compressed = zlib.compress(text.encode('utf-8'), level=level)
+    
+    # המרה ל-base64 (כדי לשמור ב-JSON)
+    encoded = base64.b64encode(compressed).decode('ascii')
+    
+    return encoded
+
+
+def decompress_text(encoded: str) -> str:
+    """
+    פענוח טקסט דחוס
+    """
+    if not encoded:
+        return ""
+    
+    try:
+        # המרה מ-base64
+        compressed = base64.b64decode(encoded.encode('ascii'))
+        
+        # פענוח
+        text = zlib.decompress(compressed).decode('utf-8')
+        
+        return text
+    except Exception:
+        # אם נכשל, החזר את המקור (אולי לא דחוס)
+        return encoded
 
 
 class Colors:
@@ -183,7 +222,13 @@ class MeilisearchIndexer:
                 # הגבלת גודל תוצאות
                 "pagination": {
                     "maxTotalHits": 10000
-                }
+                },
+                # אופטימיזציות נוספות לחיסכון במקום
+                "stopWords": [],  # ללא stop words
+                "synonyms": {},   # ללא מילים נרדפות
+                "distinctAttribute": None,  # ללא distinct
+                "filterableAttributes": [],  # ללא filters (אלא אם צריך)
+                "sortableAttributes": []  # ללא sorting (אלא אם צריך)
             }
             
             self.log(f"מגדיר אופטימיזציות לאינדקס '{index_name}'...", 'info')
@@ -283,7 +328,31 @@ class MeilisearchIndexer:
             index_name = sanitize_index_name(index_name)
             r = requests.get(f"{self.meili_url}/indexes/{index_name}/stats", headers=self.headers, timeout=30)
             r.raise_for_status()
-            return r.json()
+            stats = r.json()
+            
+            # הוסף חישוב גודל משוער
+            num_docs = stats.get('numberOfDocuments', 0)
+            if num_docs > 0:
+                # נסה לקבל מסמך לדוגמה לחישוב גודל ממוצע
+                try:
+                    sample_r = requests.get(
+                        f"{self.meili_url}/indexes/{index_name}/documents?limit=10",
+                        headers=self.headers,
+                        timeout=10
+                    )
+                    if sample_r.status_code == 200:
+                        sample_docs = sample_r.json().get('results', [])
+                        if sample_docs:
+                            # חשב גודל ממוצע של content
+                            total_content_size = sum(len(doc.get('content', '')) for doc in sample_docs)
+                            avg_content_size = total_content_size / len(sample_docs)
+                            estimated_total_content = (avg_content_size * num_docs) / (1024**3)  # GB
+                            stats['estimatedContentSizeGB'] = round(estimated_total_content, 2)
+                            stats['avgContentChars'] = int(avg_content_size)
+                except:
+                    pass
+            
+            return stats
         except Exception as e:
             self.log(f"שגיאה בקבלת סטטיסטיקות: {e}", 'error')
             return None
@@ -556,19 +625,26 @@ class PDFIndexer:
             
             documents = []
             source_path = str(pdf_path.resolve())
+            total_chars = 0  # ספירת תווים לסטטיסטיקה
             
             for page_num, text in extractor(pdf_path):
                 if skip_empty and not text.strip():
                     continue
                 
+                total_chars += len(text)
                 doc_id = PDFIndexer.make_document_id(source_path, page_num)
                 documents.append({
                     "id": doc_id,
                     "source_file": pdf_path.name,
-                    "source_path": source_path,
+                    # "source_path": source_path,  # הסרנו - חוסך מקום!
                     "page": page_num,
                     "content": text
                 })
+            
+            # הדפסת סטטיסטיקה
+            if documents:
+                avg_chars = total_chars / len(documents)
+                # print(f"  [{pdf_path.name}] ממוצע: {avg_chars:.0f} תווים/עמוד, סה\"כ: {total_chars:,} תווים")
             
             return pdf_path.name, documents, None
             
