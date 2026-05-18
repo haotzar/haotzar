@@ -109,8 +109,8 @@ const PDFViewer = ({ pdfPath, title, searchContext, isPreviewMode = false, onLoc
       // Build viewer path
       let viewerPath;
       if (isElectron && !isDevelopment) {
-        // Production Electron - use app:// protocol
-        viewerPath = 'app://pdfjs/web/viewer.html';
+        // Production Electron - use app:// protocol with same origin as main window
+        viewerPath = 'app://./pdfjs/web/viewer.html';
       } else if (isDevelopment) {
         // Development mode - use absolute path from dev server
         viewerPath = '/pdfjs/web/viewer.html';

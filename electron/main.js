@@ -200,7 +200,7 @@ function setupCustomProtocol() {
   });
   
   // רשום את app:// protocol לטעינת קבצים מתוך dist
-  protocol.registerFileProtocol('app', (request, callback) => {
+  protocol.registerStreamProtocol('app', (request, callback) => {
     let url = request.url.replace('app://', '');
     
     // הסר query string אם יש (הכל אחרי ?)
@@ -215,8 +215,8 @@ function setupCustomProtocol() {
       url = url.substring(0, hashIndex);
     }
     
-    // הסר slashes מיותרים בהתחלה
-    url = url.replace(/^\/+/, '');
+    // הסר slashes ונקודות מיותרים בהתחלה
+    url = url.replace(/^[./]+/, '');
     
     const decodedPath = decodeURIComponent(url);
     
@@ -232,11 +232,20 @@ function setupCustomProtocol() {
       
       if (fs.existsSync(actualPath)) {
         console.log('✅ Found PDF at:', actualPath);
-        callback({ path: actualPath });
+        // החזר stream במקום path - תומך ב-range requests
+        callback({
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Access-Control-Allow-Origin': '*',
+            'Accept-Ranges': 'bytes'
+          },
+          data: fs.createReadStream(actualPath)
+        });
         return;
       } else {
         console.error('❌ PDF file not found:', actualPath);
-        callback({ error: -6 }); // FILE_NOT_FOUND
+        callback({ statusCode: 404 });
         return;
       }
     }
@@ -248,17 +257,17 @@ function setupCustomProtocol() {
     // בסדר עדיפות: development -> production unpacked -> production asar
     const possiblePaths = [
       // Development paths
-      path.join(__dirname, '../public', decodedPath),
       path.join(__dirname, '../dist', decodedPath),
+      path.join(__dirname, '../public', decodedPath),
       // Production unpacked paths (for files that can't be in asar)
-      path.join(process.resourcesPath, 'app.asar.unpacked', 'public', decodedPath),
       path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', decodedPath),
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'public', decodedPath),
       // Production asar paths
-      path.join(process.resourcesPath, 'app.asar', 'public', decodedPath),
       path.join(process.resourcesPath, 'app.asar', 'dist', decodedPath),
+      path.join(process.resourcesPath, 'app.asar', 'public', decodedPath),
       // Fallback: try in resources directly
-      path.join(process.resourcesPath, 'public', decodedPath),
-      path.join(process.resourcesPath, 'dist', decodedPath)
+      path.join(process.resourcesPath, 'dist', decodedPath),
+      path.join(process.resourcesPath, 'public', decodedPath)
     ];
     
     console.log('📦 Trying paths:');
@@ -266,13 +275,41 @@ function setupCustomProtocol() {
       console.log('  🔍', testPath, '- exists:', fs.existsSync(testPath));
       if (fs.existsSync(testPath)) {
         console.log('✅ Found file at:', testPath);
-        callback({ path: testPath });
+        
+        // קבע Content-Type לפי סוג הקובץ
+        const ext = path.extname(testPath).toLowerCase();
+        const mimeTypes = {
+          '.html': 'text/html',
+          '.js': 'application/javascript',
+          '.mjs': 'application/javascript',
+          '.css': 'text/css',
+          '.json': 'application/json',
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.gif': 'image/gif',
+          '.svg': 'image/svg+xml',
+          '.ico': 'image/x-icon',
+          '.woff': 'font/woff',
+          '.woff2': 'font/woff2',
+          '.ttf': 'font/ttf',
+          '.otf': 'font/otf'
+        };
+        
+        callback({
+          statusCode: 200,
+          headers: {
+            'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+            'Access-Control-Allow-Origin': '*'
+          },
+          data: fs.createReadStream(testPath)
+        });
         return;
       }
     }
     
     console.error('❌ File not found in any location:', decodedPath);
-    callback({ error: -6 }); // FILE_NOT_FOUND
+    callback({ statusCode: 404 });
   });
   
   // הוסף protocol handler לקבצים סטטיים מ-dist
@@ -402,10 +439,21 @@ function createWindow() {
     // פתח DevTools אוטומטית בפיתוח
     mainWindow.webContents.openDevTools();
   } else {
-    // בסביבת ייצור - טען מקבצים סטטיים
-    const distPath = path.join(__dirname, '../dist/index.html');
-    console.log('📂 Loading from:', distPath);
-    mainWindow.loadFile(distPath);
+    // בסביבת ייצור - טען דרך app:// protocol (same origin עם PDF viewer!)
+    mainWindow.loadURL('app://./index.html');
+    console.log('📂 Loading from: app://./index.html');
+    
+    // תקן את ה-base path אחרי הטעינה
+    mainWindow.webContents.once('did-finish-load', () => {
+      mainWindow.webContents.executeJavaScript(`
+        // תקן את ה-base element אם קיים
+        const baseElement = document.querySelector('base');
+        if (baseElement) {
+          baseElement.href = 'app://';
+          console.log('✅ Fixed base href to app://');
+        }
+      `).catch(err => console.error('Failed to fix base href:', err));
+    });
   }
 
   // הוסף קיצור מקלדת לפתיחת DevTools (עובד גם ב-production)
@@ -448,7 +496,8 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, url) => {
     // אם זה לא ה-URL של האפליקציה עצמה, פתח ב-Edge
     if (!url.startsWith('http://localhost:5173') && 
-        !url.startsWith('file://')) {
+        !url.startsWith('file://') &&
+        !url.startsWith('app://')) {
       event.preventDefault();
       openInEdge(url);
     }

@@ -1,7 +1,7 @@
 // PDF.js Worker Loader with Fallback Support
 // מטפל בטעינת worker עם fallback אוטומטי במקרה של כשל
 
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 let workerInitialized = false;
 let workerError = null;

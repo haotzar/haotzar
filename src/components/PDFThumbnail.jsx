@@ -26,7 +26,7 @@ const PDFThumbnail = ({ pdfPath }) => {
           : await fetch(pdfPath).then(r => r.arrayBuffer());
 
         // טען את PDF.js
-        const pdfjsLib = await import('pdfjs-dist');
+        const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
 
         // טען את ה-PDF
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

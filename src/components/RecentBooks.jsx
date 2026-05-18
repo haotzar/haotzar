@@ -1,6 +1,6 @@
 import { DocumentRegular } from '@fluentui/react-icons';
 import { useState, useEffect } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { initializePDFWorker } from '../utils/pdfWorkerLoader';
 import './RecentBooks.css';
 

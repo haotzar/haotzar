@@ -3467,7 +3467,7 @@ const PDFViewerApplication = {
   }
 };
 {
-  const HOSTED_VIEWER_ORIGINS = ["null", "http://mozilla.github.io", "https://mozilla.github.io"];
+  const HOSTED_VIEWER_ORIGINS = ["null", "http://mozilla.github.io", "https://mozilla.github.io", "app://pdfjs", "app://pdf", "app://"];
   var validateFileURL = function (file) {
     if (!file) {
       return;
@@ -3478,10 +3478,15 @@ const PDFViewerApplication = {
         return;
       }
       const fileOrigin = new URL(file, window.location.href).origin;
-      if (fileOrigin !== viewerOrigin) {
+      // אפשר גם app:// protocols
+      if (fileOrigin !== viewerOrigin && !fileOrigin.startsWith('app://') && !viewerOrigin.startsWith('app://')) {
         throw new Error("file origin does not match viewer's");
       }
     } catch (ex) {
+      // אם זה app:// protocol, התעלם מהשגיאה
+      if (ex.message === "file origin does not match viewer's" && (file.startsWith('app://') || window.location.href.startsWith('app://'))) {
+        return;
+      }
       PDFViewerApplication.l10n.get("pdfjs-loading-error").then(msg => {
         PDFViewerApplication._documentError(msg, {
           message: ex?.message

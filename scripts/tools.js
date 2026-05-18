@@ -50,10 +50,12 @@ function ensureDir(dirPath) {
 }
 
 function copyPdfWorker() {
-  const sourceDir = path.join(__dirname, '../node_modules/pdfjs-dist/build');
-  const destDir = path.join(__dirname, '../public/pdfjs/build');
+  const sourceBuildDir = path.join(__dirname, '../node_modules/pdfjs-dist/build');
+  const sourceWebDir = path.join(__dirname, '../node_modules/pdfjs-dist/web');
+  const destBuildDir = path.join(__dirname, '../public/pdfjs/build');
+  const destWebDir = path.join(__dirname, '../public/pdfjs/web');
 
-  const filesToCopy = [
+  const buildFilesToCopy = [
     'pdf.worker.min.mjs',
     'pdf.mjs',
     'pdf.worker.mjs',
@@ -61,13 +63,21 @@ function copyPdfWorker() {
     'pdf.worker.mjs.map'
   ];
 
+  const webFilesToCopy = [
+    'viewer.mjs',
+    'viewer.mjs.map'
+  ];
+
   try {
-    ensureDir(destDir);
+    ensureDir(destBuildDir);
+    ensureDir(destWebDir);
     
     let copiedCount = 0;
-    for (const file of filesToCopy) {
-      const source = path.join(sourceDir, file);
-      const dest = path.join(destDir, file);
+    
+    // Copy build files
+    for (const file of buildFilesToCopy) {
+      const source = path.join(sourceBuildDir, file);
+      const dest = path.join(destBuildDir, file);
       
       if (fs.existsSync(source)) {
         fs.copyFileSync(source, dest);
@@ -77,14 +87,28 @@ function copyPdfWorker() {
       }
     }
     
+    // Copy web files (viewer.mjs)
+    for (const file of webFilesToCopy) {
+      const source = path.join(sourceWebDir, file);
+      const dest = path.join(destWebDir, file);
+      
+      if (fs.existsSync(source)) {
+        fs.copyFileSync(source, dest);
+        copiedCount++;
+        console.log(`✅ הועתק: ${file}`);
+      } else {
+        console.warn(`⚠️  קובץ לא נמצא: ${file}`);
+      }
+    }
+    
     // Also copy to public root for backward compatibility
-    const legacySource = path.join(sourceDir, 'pdf.worker.min.mjs');
+    const legacySource = path.join(sourceBuildDir, 'pdf.worker.min.mjs');
     const legacyDest = path.join(__dirname, '../public/pdf.worker.min.mjs');
     if (fs.existsSync(legacySource)) {
       fs.copyFileSync(legacySource, legacyDest);
     }
     
-    console.log(`✅ ${copiedCount} קבצי PDF.js הועתקו בהצלחה ל-public/pdfjs/build/`);
+    console.log(`✅ ${copiedCount} קבצי PDF.js הועתקו בהצלחה!`);
   } catch (error) {
     console.error('❌ שגיאה בהעתקת קבצי PDF.js:', error);
     process.exit(1);
