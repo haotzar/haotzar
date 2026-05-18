@@ -1409,9 +1409,11 @@ function setupIpcHandlers() {
       // מצא את המקור
       let sourceCli = null;
       const possiblePaths = [
-        path.join(__dirname, '../public/tantivy_cli.exe'),
-        path.join(process.resourcesPath, 'public', 'tantivy_cli.exe'),
-        path.join(process.resourcesPath, 'app.asar.unpacked', 'public', 'tantivy_cli.exe')
+        path.join(__dirname, '../public/tantivy_cli.exe'), // dev mode
+        path.join(process.resourcesPath, 'tantivy_cli.exe'), // production - extraResources
+        path.join(process.resourcesPath, 'resources', 'tantivy_cli.exe'), // production - extraResources alt
+        path.join(process.resourcesPath, 'public', 'tantivy_cli.exe'), // production - files
+        path.join(process.resourcesPath, 'app.asar.unpacked', 'public', 'tantivy_cli.exe') // production - unpacked
       ];
       
       for (const testPath of possiblePaths) {

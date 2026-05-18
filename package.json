@@ -86,11 +86,8 @@
     ],
     "extraResources": [
       {
-        "from": "resources/meilisearch",
-        "to": "resources/meilisearch",
-        "filter": [
-          "**/*"
-        ]
+        "from": "public/tantivy_cli.exe",
+        "to": "resources/tantivy_cli.exe"
       }
     ],
     "win": {
