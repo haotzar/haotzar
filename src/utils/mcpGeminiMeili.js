@@ -1,4 +1,4 @@
-import meilisearchEngine from './meilisearchEngine';
+import tantivyEngine from './tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
 import { getSetting } from './settingsManager';
 
 const DEFAULT_MODEL = 'gemini-1.5-flash';
@@ -102,7 +102,7 @@ export const askWithMcpGeminiMeili = async (
     throw new Error('Missing Gemini API key');
   }
 
-  const meiliResults = await meilisearchEngine.search(question, searchOptions);
+  const meiliResults = await tantivyEngine.search(question, searchOptions);
   const contexts = buildContextsFromResults(meiliResults, topK);
   const prompt = buildPrompt(question, contexts);
 

@@ -336,6 +336,68 @@ contextBridge.exposeInMainWorld('electron', {
     return ipcRenderer.invoke('meilisearch-search', { indexName, query, searchParams });
   },
 
+  // ===== Tantivy Functions =====
+  
+  // העתקת Tantivy CLI לתיקיית userData
+  copyTantivyCli: async () => {
+    return ipcRenderer.invoke('copy-tantivy-cli');
+  },
+  
+  // בדיקה אם קובץ קיים
+  fileExists: async (filePath) => {
+    return ipcRenderer.invoke('file-exists', filePath);
+  },
+  
+  // רשימת אינדקסים זמינים
+  listTantivyIndexes: async (indexesPath) => {
+    return ipcRenderer.invoke('list-tantivy-indexes', indexesPath);
+  },
+  
+  // יצירת אינדקס חדש
+  tantivyCreateIndex: async (options) => {
+    return ipcRenderer.invoke('tantivy-create-index', options);
+  },
+  
+  // אינדוקס קובץ בודד
+  tantivyIndexFile: async (options) => {
+    return ipcRenderer.invoke('tantivy-index-file', options);
+  },
+  
+  // commit אינדקס
+  tantivyCommitIndex: async (options) => {
+    return ipcRenderer.invoke('tantivy-commit-index', options);
+  },
+  
+  // חיפוש באינדקס
+  tantivySearch: async (options) => {
+    return ipcRenderer.invoke('tantivy-search', options);
+  },
+  
+  // סטטיסטיקות אינדקס
+  tantivyStats: async (options) => {
+    return ipcRenderer.invoke('tantivy-stats', options);
+  },
+  
+  // מחיקת אינדקס
+  tantivyDeleteIndex: async (options) => {
+    return ipcRenderer.invoke('tantivy-delete-index', options);
+  },
+  
+  // הרצת Tantivy CLI עם פקודה כללית
+  runTantivyCli: async (command) => {
+    return ipcRenderer.invoke('run-tantivy-cli', command);
+  },
+  
+  // האזנה להודעות התקדמות מ-Tantivy
+  onTantivyProgress: (callback) => {
+    ipcRenderer.on('tantivy-progress', (event, message) => callback(event, message));
+  },
+  
+  // הסרת listener
+  removeTantivyProgressListener: (callback) => {
+    ipcRenderer.removeListener('tantivy-progress', callback);
+  },
+
   // בחירת קובץ
   selectFile: async (filters) => {
     return ipcRenderer.invoke('select-file', filters);

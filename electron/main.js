@@ -1386,6 +1386,540 @@ function setupIpcHandlers() {
     }
   });
   
+  // ===== Tantivy IPC Handlers =====
+  
+  // העתקת Tantivy CLI
+  ipcMain.handle('copy-tantivy-cli', async () => {
+    try {
+      const userDataPath = app.getPath('userData');
+      const tantivyDir = path.join(userDataPath, 'tantivy');
+      const targetCli = path.join(tantivyDir, 'tantivy_cli.exe');
+      
+      // צור תיקייה אם לא קיימת
+      if (!fs.existsSync(tantivyDir)) {
+        fs.mkdirSync(tantivyDir, { recursive: true });
+      }
+      
+      // אם כבר קיים, לא צריך להעתיק
+      if (fs.existsSync(targetCli)) {
+        console.log('✅ Tantivy CLI כבר קיים');
+        return { success: true };
+      }
+      
+      // מצא את המקור
+      let sourceCli = null;
+      const possiblePaths = [
+        path.join(__dirname, '../public/tantivy_cli.exe'),
+        path.join(process.resourcesPath, 'public', 'tantivy_cli.exe'),
+        path.join(process.resourcesPath, 'app.asar.unpacked', 'public', 'tantivy_cli.exe')
+      ];
+      
+      for (const testPath of possiblePaths) {
+        if (fs.existsSync(testPath)) {
+          sourceCli = testPath;
+          break;
+        }
+      }
+      
+      if (!sourceCli) {
+        return { success: false, error: 'Tantivy CLI לא נמצא' };
+      }
+      
+      // העתק
+      fs.copyFileSync(sourceCli, targetCli);
+      console.log('✅ Tantivy CLI הועתק ל:', targetCli);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ שגיאה בהעתקת Tantivy CLI:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // בדיקה אם קובץ קיים
+  ipcMain.handle('file-exists', async (event, filePath) => {
+    return fs.existsSync(filePath);
+  });
+  
+  // רשימת אינדקסים זמינים
+  ipcMain.handle('list-tantivy-indexes', async (event, indexesPath) => {
+    try {
+      // צור תיקייה אם לא קיימת
+      if (!fs.existsSync(indexesPath)) {
+        fs.mkdirSync(indexesPath, { recursive: true });
+        return { success: true, indexes: [] };
+      }
+      
+      // קרא תיקיות
+      const dirs = fs.readdirSync(indexesPath, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => {
+          const indexPath = path.join(indexesPath, dirent.name);
+          const stats = fs.statSync(indexPath);
+          
+          // נסה לקרוא meta.json אם קיים
+          let documentsCount = 0;
+          const metaPath = path.join(indexPath, 'meta.json');
+          if (fs.existsSync(metaPath)) {
+            try {
+              const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+              documentsCount = meta.num_docs || 0;
+            } catch (e) {
+              // ignore
+            }
+          }
+          
+          return {
+            name: dirent.name,
+            path: indexPath,
+            createdAt: stats.birthtime.toISOString(),
+            updatedAt: stats.mtime.toISOString(),
+            documentsCount
+          };
+        });
+      
+      return { success: true, indexes: dirs };
+    } catch (error) {
+      console.error('❌ שגיאה בקריאת אינדקסים:', error);
+      return { success: false, error: error.message, indexes: [] };
+    }
+  });
+  
+  // יצירת אינדקס חדש
+  ipcMain.handle('tantivy-create-index', async (event, { indexPath, indexName }) => {
+    try {
+      // צור תיקייה
+      if (!fs.existsSync(indexPath)) {
+        fs.mkdirSync(indexPath, { recursive: true });
+      }
+      
+      const userDataPath = app.getPath('userData');
+      const cliPath = path.join(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      
+      // הרץ פקודת index עם --create-only
+      const args = [
+        'index',
+        '--index-path', indexPath,
+        '--source', 'json',
+        '--json', '[]', // JSON ריק - רק ליצירת אינדקס
+        '--create-only'
+      ];
+      
+      return new Promise((resolve) => {
+        const { spawn } = require('child_process');
+        const process = spawn(cliPath, args, {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        
+        let output = '';
+        let errorOutput = '';
+        
+        process.stdout.on('data', (data) => {
+          output += data.toString();
+        });
+        
+        process.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+        
+        process.on('close', (code) => {
+          if (code === 0) {
+            console.log(`✅ אינדקס "${indexName}" נוצר`);
+            resolve({ success: true });
+          } else {
+            console.error(`❌ שגיאה ביצירת אינדקס:`, errorOutput);
+            resolve({ success: false, error: errorOutput || 'Unknown error' });
+          }
+        });
+        
+        process.on('error', (error) => {
+          console.error('❌ שגיאה בהרצת Tantivy:', error);
+          resolve({ success: false, error: error.message });
+        });
+      });
+    } catch (error) {
+      console.error('❌ שגיאה ביצירת אינדקס:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // אינדוקס קובץ בודד
+  ipcMain.handle('tantivy-index-file', async (event, { indexPath, filePath, fileId, fileName, fileType }) => {
+    try {
+      const userDataPath = app.getPath('userData');
+      const cliPath = path.join(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      
+      // קרא תוכן הקובץ
+      let content = '';
+      if (fileType === 'text') {
+        content = fs.readFileSync(filePath, 'utf8');
+      } else if (fileType === 'pdf') {
+        // TODO: חילוץ טקסט מ-PDF
+        // כרגע נדלג על PDF
+        return { success: true, skipped: true };
+      }
+      
+      // צור JSON document
+      const document = {
+        id: fileId,
+        source_file: fileName,
+        source_path: filePath,
+        content: content,
+        title: fileName
+      };
+      
+      // שמור ל-temp file
+      const tempFile = path.join(userDataPath, 'tantivy', 'temp_doc.json');
+      fs.writeFileSync(tempFile, JSON.stringify([document]));
+      
+      // הרץ פקודת index
+      const args = [
+        'index',
+        '--index-path', indexPath,
+        '--source', 'json',
+        '--json', tempFile
+      ];
+      
+      return new Promise((resolve) => {
+        const { spawn } = require('child_process');
+        const process = spawn(cliPath, args, {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        
+        let errorOutput = '';
+        
+        process.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+        
+        process.on('close', (code) => {
+          // נקה temp file
+          try {
+            fs.unlinkSync(tempFile);
+          } catch (e) {
+            // ignore
+          }
+          
+          if (code === 0) {
+            resolve({ success: true });
+          } else {
+            console.error(`❌ שגיאה באינדוקס קובץ:`, errorOutput);
+            resolve({ success: false, error: errorOutput || 'Unknown error' });
+          }
+        });
+        
+        process.on('error', (error) => {
+          resolve({ success: false, error: error.message });
+        });
+      });
+    } catch (error) {
+      console.error('❌ שגיאה באינדוקס קובץ:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // commit אינדקס
+  ipcMain.handle('tantivy-commit-index', async (event, { indexPath }) => {
+    try {
+      // Tantivy עושה commit אוטומטי, אבל נוכל להריץ optimize
+      const userDataPath = app.getPath('userData');
+      const cliPath = path.join(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      
+      // אין פקודת commit ספציפית ב-CLI, אז פשוט נחזיר הצלחה
+      console.log('✅ אינדקס נשמר (Tantivy עושה commit אוטומטי)');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ שגיאה ב-commit:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // חיפוש באינדקס
+  ipcMain.handle('tantivy-search', async (event, { indexPath, query, limit = 20, offset = 0, fields = ['content'], fuzzy = false, fuzzyDistance = 1, fuzzyPrefix = false, conjunction = false }) => {
+    try {
+      const userDataPath = app.getPath('userData');
+      const cliPath = path.join(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      
+      console.log('🔍 [SEARCH] Starting search:', { indexPath, query, limit });
+      
+      // בנה פקודת חיפוש
+      const args = [
+        'search',
+        '--index-path', indexPath,
+        '--query', query,
+        '--format', 'json',
+        '--limit', limit.toString()
+      ];
+      
+      // הוסף שדות
+      if (fields && fields.length > 0) {
+        args.push('--fields', ...fields);
+      }
+      
+      // fuzzy search
+      if (fuzzy) {
+        args.push('--fuzzy');
+        if (fuzzyDistance) {
+          args.push('--fuzzy-distance', fuzzyDistance.toString());
+        }
+        if (fuzzyPrefix) {
+          args.push('--fuzzy-prefix');
+        }
+      }
+      
+      // conjunction (AND vs OR)
+      if (conjunction) {
+        args.push('--conjunction');
+      }
+      
+      console.log('🔍 [SEARCH] CLI Path:', cliPath);
+      console.log('🔍 [SEARCH] Args:', args);
+      
+      return new Promise((resolve) => {
+        const { spawn } = require('child_process');
+        const process = spawn(cliPath, args, {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        
+        let output = '';
+        let errorOutput = '';
+        
+        process.stdout.on('data', (data) => {
+          const text = data.toString();
+          output += text;
+          console.log('🔍 [SEARCH OUTPUT]', text.trim());
+        });
+        
+        process.stderr.on('data', (data) => {
+          const text = data.toString();
+          errorOutput += text;
+          console.error('🔍 [SEARCH ERROR]', text.trim());
+        });
+        
+        process.on('close', (code) => {
+          console.log('🔍 [SEARCH] Process closed with code:', code);
+          
+          if (code === 0) {
+            try {
+              console.log('🔍 [SEARCH] Raw output length:', output.length);
+              console.log('🔍 [SEARCH] Raw output preview:', output.substring(0, 500));
+              
+              // חלץ רק את ה-JSON מהפלט (ה-CLI מחזיר גם הודעות בעברית)
+              // חפש את ה-JSON - מתחיל ב-[ או { ומסתיים ב-] או }
+              let jsonStr = output.trim();
+              
+              // אם אין תוצאות, ה-CLI מחזיר "לא נמצאו תוצאות" במקום JSON
+              if (jsonStr.includes('לא נמצאו תוצאות') || jsonStr.includes('אינדקס נפתח') && !jsonStr.includes('[') && !jsonStr.includes('{')) {
+                console.log('✅ [SEARCH] אין תוצאות');
+                resolve({
+                  success: true,
+                  hits: [],
+                  totalHits: 0
+                });
+                return;
+              }
+              
+              // אם יש הודעות לפני ה-JSON, חלץ רק את ה-JSON
+              const arrayStart = jsonStr.indexOf('[');
+              const objectStart = jsonStr.indexOf('{');
+              
+              if (arrayStart !== -1 || objectStart !== -1) {
+                // מצא את ההתחלה של ה-JSON
+                const jsonStart = arrayStart !== -1 && (objectStart === -1 || arrayStart < objectStart) 
+                  ? arrayStart 
+                  : objectStart;
+                
+                jsonStr = jsonStr.substring(jsonStart);
+              }
+              
+              const results = JSON.parse(jsonStr);
+              
+              // הטיפול בפורמטים שונים של תוצאות
+              let hits, totalHits;
+              if (Array.isArray(results)) {
+                // אם התוצאות הן מערך ישיר
+                hits = results;
+                totalHits = results.length;
+              } else if (results.hits) {
+                // אם התוצאות הן אובייקט עם hits
+                hits = results.hits;
+                totalHits = results.total || results.hits.length;
+              } else {
+                // פורמט לא מוכר
+                hits = [];
+                totalHits = 0;
+              }
+              
+              console.log('✅ [SEARCH] Parsed results:', { hitsCount: hits.length, total: totalHits });
+              
+              resolve({
+                success: true,
+                hits: hits,
+                totalHits: totalHits
+              });
+            } catch (parseError) {
+              console.error('❌ [SEARCH] שגיאה בפענוח JSON:', parseError.message);
+              console.error('📄 [SEARCH] Full output:', output);
+              resolve({ success: false, error: 'Failed to parse results', rawOutput: output });
+            }
+          } else {
+            console.error(`❌ [SEARCH] שגיאה בחיפוש:`, errorOutput);
+            resolve({ success: false, error: errorOutput || 'Unknown error' });
+          }
+        });
+        
+        process.on('error', (error) => {
+          resolve({ success: false, error: error.message });
+        });
+      });
+    } catch (error) {
+      console.error('❌ שגיאה בחיפוש:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // סטטיסטיקות אינדקס
+  ipcMain.handle('tantivy-stats', async (event, { indexPath }) => {
+    try {
+      const userDataPath = app.getPath('userData');
+      const cliPath = path.join(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      
+      const args = [
+        'stats',
+        '--index-path', indexPath
+      ];
+      
+      return new Promise((resolve) => {
+        const { spawn } = require('child_process');
+        const process = spawn(cliPath, args, {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        
+        let output = '';
+        let errorOutput = '';
+        
+        process.stdout.on('data', (data) => {
+          output += data.toString();
+        });
+        
+        process.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+        
+        process.on('close', (code) => {
+          if (code === 0) {
+            try {
+              const stats = JSON.parse(output);
+              resolve({ success: true, stats });
+            } catch (parseError) {
+              resolve({ success: false, error: 'Failed to parse stats' });
+            }
+          } else {
+            resolve({ success: false, error: errorOutput || 'Unknown error' });
+          }
+        });
+        
+        process.on('error', (error) => {
+          resolve({ success: false, error: error.message });
+        });
+      });
+    } catch (error) {
+      console.error('❌ שגיאה בקבלת סטטיסטיקות:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // מחיקת אינדקס
+  ipcMain.handle('tantivy-delete-index', async (event, { indexPath }) => {
+    try {
+      if (fs.existsSync(indexPath)) {
+        fs.rmSync(indexPath, { recursive: true, force: true });
+        console.log(`✅ אינדקס נמחק: ${indexPath}`);
+        return { success: true };
+      } else {
+        return { success: false, error: 'Index not found' };
+      }
+    } catch (error) {
+      console.error('❌ שגיאה במחיקת אינדקס:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // הרצת Tantivy CLI עם פקודה כללית
+  ipcMain.handle('run-tantivy-cli', async (event, command) => {
+    try {
+      console.log('🚀 Running Tantivy CLI:', command);
+      
+      return new Promise((resolve) => {
+        const { spawn } = require('child_process');
+        
+        // פצל את הפקודה לחלקים
+        const parts = command.match(/(?:[^\s"]+|"[^"]*")+/g).map(p => p.replace(/^"|"$/g, ''));
+        const cliPath = parts[0];
+        const args = parts.slice(1);
+        
+        console.log('📝 CLI Path:', cliPath);
+        console.log('📝 Args:', args);
+        
+        const child = spawn(cliPath, args, {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        
+        let output = '';
+        let errorOutput = '';
+        
+        child.stdout.on('data', (data) => {
+          const text = data.toString();
+          output += text;
+          console.log('[Tantivy]', text.trim());
+          
+          // שלח עדכון לממשק
+          if (event.sender && !event.sender.isDestroyed()) {
+            event.sender.send('tantivy-progress', text.trim());
+          }
+        });
+        
+        child.stderr.on('data', (data) => {
+          const text = data.toString();
+          errorOutput += text;
+          console.error('[Tantivy Error]', text.trim());
+        });
+        
+        child.on('close', (code) => {
+          if (code === 0) {
+            console.log('✅ Tantivy CLI הסתיים בהצלחה');
+            resolve({ success: true, output, code });
+          } else {
+            console.error('❌ Tantivy CLI נכשל עם קוד:', code);
+            resolve({ success: false, error: errorOutput || output || 'Unknown error', code, output });
+          }
+        });
+        
+        child.on('error', (error) => {
+          console.error('❌ שגיאה בהרצת Tantivy CLI:', error);
+          resolve({ success: false, error: error.message });
+        });
+        
+        // timeout של 5 דקות
+        setTimeout(() => {
+          if (!child.killed) {
+            console.warn('⏱️ Tantivy CLI timeout - killing process');
+            child.kill();
+            resolve({ success: false, error: 'Timeout after 5 minutes' });
+          }
+        }, 5 * 60 * 1000);
+      });
+    } catch (error) {
+      console.error('❌ שגיאה בהרצת Tantivy CLI:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
   // חיפוש גימטריה
   ipcMain.handle('search-gematria', async (event, options) => {
     try {

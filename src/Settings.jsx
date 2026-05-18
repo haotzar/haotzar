@@ -31,7 +31,7 @@ import {
   InfoFilled,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
-import meilisearchEngine from './utils/meilisearchEngine';
+import tantivyEngine from './utils/tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
 import { 
   exportSettingsToFile, 
   importSettingsFromFile, 
@@ -426,6 +426,14 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   };
 
   const handleBuildIndex = async () => {
+    console.log('🔨 handleBuildIndex called', { indexType, indexFolder, indexName, indexBuilding });
+    
+    // מנע הפעלות מרובות
+    if (indexBuilding) {
+      console.warn('⚠️ כבר בתהליך בניית אינדקס');
+      return;
+    }
+    
     if (indexType === 'pdf' && !indexFolder) {
       setIndexStatus('יש לבחור תיקייה תחילה');
       return;
@@ -454,66 +462,123 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
         return;
       }
 
-      setIndexStatus('מוודא ש-Meilisearch רץ...');
+      setIndexStatus('מאתחל Tantivy...');
       setIndexProgress(5);
-      await meilisearchEngine.startServer();
       
-      setIndexStatus('בודק שהשרת מוכן...');
-      let serverReady = false;
-      for (let i = 0; i < 30; i++) {
-        try {
-          // רק בדוק שהשרת מוכן - אל תבקש אינדקסים
-          if (meilisearchEngine.isReady()) {
-            serverReady = true;
-            break;
-          }
-          // אם לא מוכן, המתן קצת
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (e) {
-          console.warn('שגיאה בבדיקת מוכנות שרת:', e);
-        }
-        
-        setIndexProgress(5 + i);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // אתחל את Tantivy אם עדיין לא
+      if (!tantivyEngine.isReady()) {
+        setIndexStatus('מאתחל מנוע חיפוש...');
+        await tantivyEngine.initialize();
       }
       
-      if (!serverReady) {
-        setIndexStatus('שגיאה: שרת Meilisearch לא הגיב');
+      setIndexProgress(10);
+      setIndexStatus('מכין פקודת אינדוקס...');
+      
+      // בנה פקודה ל-Tantivy CLI
+      const userDataPath = window.electron.getUserDataPath();
+      const cliPath = window.electron.joinPath(userDataPath, 'tantivy', 'tantivy_cli.exe');
+      const indexPath = window.electron.joinPath(userDataPath, 'tantivy', 'indexes', indexName.trim());
+      
+      // בדוק אם ה-CLI קיים
+      const cliExists = await window.electron.fileExists(cliPath);
+      if (!cliExists) {
+        setIndexStatus('❌ שגיאה: Tantivy CLI לא נמצא. העתק את tantivy_cli.exe לתיקיית public/');
         setIndexBuilding(false);
         setCanCancelIndex(false);
         return;
       }
       
-      setIndexProgress(35);
-      setIndexStatus('מריץ indexer.exe...');
-      setIndexProgress(40);
-      
-      let command = `resources\\meilisearch\\indexer.exe ${indexType} --index "${indexName.trim()}"`;
+      let command = '';
+      let sourceDescription = '';
       
       if (indexType === 'pdf') {
-        command += ` --input "${indexFolder}"`;
-      } else if (indexType === 'books' || indexType === 'lines') {
-        command += ` --db "${otzariaDbPath}"`;
+        // אינדקס מ-PDF
+        command = `"${cliPath}" index --source pdf --pdf "${indexFolder}" --index-path "${indexPath}"`;
+        sourceDescription = `תיקיית PDF: ${indexFolder}`;
+      } else if (indexType === 'books') {
+        // אינדקס מטבלת books
+        command = `"${cliPath}" index --source db --db "${otzariaDbPath}" --table book --index-path "${indexPath}"`;
+        sourceDescription = `מסד נתונים: ${otzariaDbPath} (טבלת ספרים)`;
+      } else if (indexType === 'lines') {
+        // אינדקס מטבלת lines
+        command = `"${cliPath}" index --source db --db "${otzariaDbPath}" --table line --index-path "${indexPath}"`;
+        sourceDescription = `מסד נתונים: ${otzariaDbPath} (טבלת שורות)`;
       }
-
-      const progressInterval = setInterval(() => {
-        setIndexProgress(prev => {
-          if (prev < 90) return prev + 1;
-          return prev;
-        });
-      }, 2000);
-
-      const result = await window.electron.runIndexer(command);
       
-      clearInterval(progressInterval);
+      setIndexStatus(`מתחיל אינדוקס מ-${sourceDescription}`);
+      setIndexProgress(15);
+      
+      setIndexStatus('מריץ Tantivy CLI...');
+      setIndexProgress(20);
+      
+      console.log('🚀 Running command:', command);
+      
+      // האזן להודעות התקדמות מ-Tantivy
+      const progressHandler = (event, message) => {
+        console.log('📊 Progress:', message);
+        
+        // עדכן סטטוס לפי ההודעה
+        if (message.includes('קורא') || message.includes('נמצאו')) {
+          setIndexStatus(message);
+        } else if (message.includes('יוצר אינדקס')) {
+          setIndexStatus('יוצר אינדקס...');
+          setIndexProgress(30);
+        } else if (message.includes('עובד') || message.includes('מעבד')) {
+          setIndexStatus(message);
+          // נסה לחלץ מספר עמוד/קובץ
+          const match = message.match(/\[(\d+)\/(\d+)\]/);
+          if (match) {
+            const current = parseInt(match[1]);
+            const total = parseInt(match[2]);
+            const progress = 30 + Math.floor((current / total) * 60);
+            setIndexProgress(progress);
+          }
+        } else if (message.includes('הושלם') || message.includes('בהצלחה')) {
+          setIndexStatus(message);
+          setIndexProgress(95);
+        }
+      };
+      
+      // רשום listener
+      if (window.electron && window.electron.onTantivyProgress) {
+        window.electron.onTantivyProgress(progressHandler);
+      }
+      
+      // הרץ את הפקודה
+      const result = await window.electron.runTantivyCli(command);
+      
+      // הסר listener
+      if (window.electron && window.electron.removeTantivyProgressListener) {
+        window.electron.removeTantivyProgressListener(progressHandler);
+      }
       
       if (result.success) {
         setIndexProgress(100);
-        setIndexStatus(`האינדקס "${indexName}" נבנה בהצלחה!`);
+        setIndexStatus(`✅ האינדקס "${indexName}" נבנה בהצלחה!`);
         setIndexDone(true);
+        
+        // רענן את רשימת האינדקסים
+        if (tantivyEngine.isReady()) {
+          await tantivyEngine.loadAvailableIndexes();
+        }
       } else {
         const errorMsg = result.error || result.output || 'תהליך נכשל';
-        setIndexStatus('שגיאה: ' + errorMsg);
+        setIndexProgress(0);
+        
+        // הודעות שגיאה ברורות
+        if (errorMsg.includes('not found') || errorMsg.includes('לא נמצא')) {
+          setIndexStatus('❌ שגיאה: קובץ או תיקייה לא נמצאו. בדוק את הנתיב.');
+        } else if (errorMsg.includes('permission') || errorMsg.includes('הרשאה')) {
+          setIndexStatus('❌ שגיאה: אין הרשאות גישה. הרץ כמנהל.');
+        } else if (errorMsg.includes('timeout')) {
+          setIndexStatus('❌ שגיאה: התהליך ארך יותר מדי זמן (5 דקות).');
+        } else if (errorMsg.includes('argument') || errorMsg.includes('usage')) {
+          setIndexStatus('❌ שגיאה: פקודה לא תקינה. בדוק את הפרמטרים.');
+        } else {
+          setIndexStatus(`❌ שגיאה: ${errorMsg.substring(0, 200)}`);
+        }
+        
+        console.error('❌ Tantivy error:', errorMsg);
       }
     } catch (error) {
       setIndexStatus('שגיאה בבניית האינדקס: ' + error.message);
@@ -811,7 +876,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
                 <div className="setting-item-title">בניית אינדקס</div>
                 <div className="setting-item-description">
-                  בנה אינדקס חיפוש מלא ב-Meilisearch
+                  בנה אינדקס חיפוש מלא ב-Tantivy
                 </div>
               </div>
             </div>
@@ -973,6 +1038,12 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                 disabled={indexBuilding || (indexType === 'pdf' && !indexFolder) || ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath)}
                 style={{ width: '100%', marginTop: '8px', boxSizing: 'border-box' }}
                 size="small"
+                title={
+                  indexBuilding ? 'בונה אינדקס...' :
+                  (indexType === 'pdf' && !indexFolder) ? 'בחר תיקייה תחילה' :
+                  ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath) ? 'בחר קובץ DB תחילה' :
+                  'לחץ לבניית אינדקס'
+                }
               >
                 {indexBuilding ? 'בונה אינדקס...' : indexDone ? 'בנה מחדש' : 'בנה אינדקס'}
               </Button>

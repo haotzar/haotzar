@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FilterRegular, CheckmarkRegular } from '@fluentui/react-icons';
 import './IndexSelector.css';
 
-const IndexSelector = ({ selectedIndexes, onIndexesChange, meilisearchEngine }) => {
+const IndexSelector = ({ selectedIndexes, onIndexesChange, searchEngine }) => {
   const [availableIndexes, setAvailableIndexes] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,10 +48,10 @@ const IndexSelector = ({ selectedIndexes, onIndexesChange, meilisearchEngine }) 
     setError(null);
     
     try {
-      const indexes = await meilisearchEngine.getAvailableIndexes();
+      const indexes = await searchEngine.getAvailableIndexes();
       
       if (indexes.length === 0) {
-        setError('לא נמצאו אינדקסים. ודא ששרת Meilisearch רץ ושיש אינדקסים זמינים.');
+        setError('לא נמצאו אינדקסים. ודא שיש אינדקסים זמינים או בנה אינדקס חדש.');
       } else {
         setAvailableIndexes(indexes);
         setRetryCount(0); // איפוס מונה ניסיונות
@@ -68,25 +68,22 @@ const IndexSelector = ({ selectedIndexes, onIndexesChange, meilisearchEngine }) 
     } catch (error) {
       console.error('❌ שגיאה בטעינת אינדקסים:', error);
       
-      // אם השרת עדיין עולה, נסה שוב אוטומטית
-      if ((error.message === 'Server starting' || error.message === 'Server not running') && retryCount < 15) {
+      // אם המנוע עדיין מאתחל, נסה שוב אוטומטית
+      if ((error.message === 'Engine initializing' || error.message === 'Not ready') && retryCount < 10) {
         const nextRetry = retryCount + 1;
         setRetryCount(nextRetry);
-        setError(`השרת עולה... ניסיון ${nextRetry}/15`);
+        setError(`מאתחל... ניסיון ${nextRetry}/10`);
         
         // בטל timeout קודם אם קיים
         if (retryTimeoutRef.current) {
           clearTimeout(retryTimeoutRef.current);
         }
         
-        // נסה שוב אחרי 2 שניות
+        // נסה שוב אחרי 1 שנייה
         retryTimeoutRef.current = setTimeout(() => {
-          console.log(`🔄 ניסיון חוזר ${nextRetry}/15 לטעינת אינדקסים...`);
+          console.log(`🔄 ניסיון חוזר ${nextRetry}/10 לטעינת אינדקסים...`);
           loadIndexes(true);
-        }, 2000);
-      } else if (error.message === 'Server not available') {
-        setError('שרת Meilisearch לא זמין. ודא שהשרת רץ.');
-        setIsLoading(false);
+        }, 1000);
       } else {
         setError('שגיאה בטעינת אינדקסים. נסה שוב מאוחר יותר.');
         setIsLoading(false);

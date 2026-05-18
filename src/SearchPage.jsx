@@ -6,7 +6,7 @@ import CategoryFilter from './components/CategoryFilter';
 import IndexSelector from './components/IndexSelector';
 import PDFViewer from './PDFViewer';
 import TextViewer from './TextViewer';
-import meilisearchEngine from './utils/meilisearchEngine';
+import tantivyEngine from './utils/tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
 import booksMetadata from './utils/booksMetadata';
 import { autoConvertSearch } from './utils/hebrewConverter';
 import './SearchPage.css';
@@ -206,16 +206,21 @@ const SearchPage = ({
       
       // בצע חיפוש בתוכן עם אופציות מתקדמות
       console.log('🔍 SearchPage: שולח חיפוש עם אינדקסים:', selectedIndexes);
+      
+      // Fuzzy search מופעל תמיד כברירת מחדל לתיקון שגיאות כתיב
+      // מרחק של 2 מאפשר תיקון שגיאות כתיב מורכבות יותר
+      const baseFuzzyDistance = 2; // הגדלנו ל-2 לתיקון שגיאות כמו "ירושלאים"
+      const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
+      const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
+      
       onSearch(finalQuery, {
-        fullSpelling,
-        partialWord,
-        suffixes,
-        prefixes,
-        matchingStrategy, // אסטרטגיית התאמה (last/all)
+        matchingStrategy, // אסטרטגיית התאמה (last=OR, all=AND)
         cropLength, // אורך הקשר
         specificBook, // חיפוש בספר ספציפי
         accuracy: searchAccuracy, // רמת הדיוק
-        selectedIndexes // אינדקסים נבחרים
+        selectedIndexes, // אינדקסים נבחרים
+        fuzzy: true, // תמיד מופעל לתיקון שגיאות כתיב
+        fuzzyDistance: totalFuzzyDistance // מרחק דינמי
       });
     }
   };
@@ -307,7 +312,7 @@ const SearchPage = ({
                     setSelectedIndexes(indexes);
                     setShowAutocomplete(false);
                   }}
-                  meilisearchEngine={meilisearchEngine}
+                  searchEngine={tantivyEngine}
                 />
                 
                 <SearchRegular className="search-icon-main" />
@@ -364,15 +369,20 @@ const SearchPage = ({
                           setSearchQuery(search);
                           setShowAutocomplete(false);
                           setHasSearched(true);
+                          
+                          // Fuzzy search תמיד מופעל עם מרחק 2
+                          const baseFuzzyDistance = 2;
+                          const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
+                          const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
+                          
                           onSearch(search, {
-                            fullSpelling,
-                            partialWord,
-                            suffixes,
-                            prefixes,
                             matchingStrategy,
                             cropLength,
                             specificBook,
-                            accuracy: searchAccuracy
+                            accuracy: searchAccuracy,
+                            selectedIndexes,
+                            fuzzy: true,
+                            fuzzyDistance: totalFuzzyDistance
                           });
                         }}
                       >
@@ -460,7 +470,10 @@ const SearchPage = ({
                   </div>
                   
                   <div className="advanced-options-section">
-                    <label className="advanced-section-label">אופציות עברית</label>
+                    <label className="advanced-section-label">חיפוש גמיש (Fuzzy Search)</label>
+                    <div className="advanced-section-description" style={{ fontSize: '0.85em', color: '#666', marginBottom: '8px' }}>
+                      אפשרויות אלו מאפשרות חיפוש גמיש שמוצא גם ווריאציות של המילים
+                    </div>
                     <div className="advanced-options-row">
                       <div className="advanced-option-compact">
                         <label className="option-label-compact">
@@ -642,19 +655,22 @@ const SearchPage = ({
                 setPreviewSearchQuery(searchQuery); // שמור את ה-query הנוכחי
               }}
               onLoadMore={async (offset, limit) => {
-                // טען עוד תוצאות מ-Meilisearch
+                // טען עוד תוצאות
                 console.log(`🔄 טוען עוד תוצאות: offset=${offset}, limit=${limit}`);
                 try {
+                  // Fuzzy search תמיד מופעל עם מרחק 2
+                  const baseFuzzyDistance = 2;
+                  const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
+                  const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
+                  
                   const newResults = await onSearch(searchQuery, {
-                    fullSpelling,
-                    partialWord,
-                    suffixes,
-                    prefixes,
                     matchingStrategy,
                     cropLength,
                     specificBook,
                     accuracy: searchAccuracy,
                     selectedIndexes,
+                    fuzzy: true,
+                    fuzzyDistance: totalFuzzyDistance,
                     offset,
                     limit, // העבר את ה-limit
                     append: true // סימן שזה הוספה ולא החלפה

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import searchEngine from '../utils/searchEngine';
-import meilisearchEngine from '../utils/meilisearchEngine';
+import tantivyEngine from '../utils/tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
 import { autoConvertSearch } from '../utils/hebrewConverter';
 
 /**
@@ -32,13 +32,13 @@ export function useSearch(allFiles) {
       
       // בחר מנוע חיפוש
       const isElectron = window.electron !== undefined;
-      console.log('🔧 Environment:', { isElectron, meilisearchReady: meilisearchEngine.isReady() });
+      console.log('🔧 Environment:', { isElectron, tantivyReady: tantivyEngine.isReady() });
       
-      const activeEngine = isElectron && meilisearchEngine.isReady() 
-        ? meilisearchEngine 
+      const activeEngine = isElectron && tantivyEngine.isReady() 
+        ? tantivyEngine 
         : searchEngine;
       
-      console.log('🔧 Using engine:', activeEngine === meilisearchEngine ? 'Meilisearch' : 'FlexSearch');
+      console.log('🔧 Using engine:', activeEngine === tantivyEngine ? 'Tantivy' : 'FlexSearch');
       
       // טען אינדקס אם צריך (טעינה עצלה)
       if (activeEngine === searchEngine && !searchEngine.isReady()) {

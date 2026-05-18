@@ -62,11 +62,10 @@ import { loadSettings, saveSettings, updateSetting, getSetting } from './utils/s
 import otzariaDB from './utils/otzariaDB';
 import { buildOtzariaVirtualTree, searchOtzariaBooks, clearOtzariaTreeCache } from './utils/otzariaIntegration';
 import searchEngine from './utils/searchEngine';
-import meilisearchEngine from './utils/meilisearchEngine';
+import tantivyEngine from './utils/tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
 import booksMetadata from './utils/booksMetadata';
 import { autoConvertSearch } from './utils/hebrewConverter';
 import searchIndex from './utils/searchIndex';
-import './utils/meilisearchTest'; // טוען פונקציות בדיקה ל-window.testMeilisearch
 import './utils/devtools'; // טוען כלי דיבוג ל-window.devtools
 import CustomAlert from './components/CustomAlert';
 import CustomConfirm from './components/CustomConfirm';
@@ -561,33 +560,31 @@ function App() {
         }
         
         // בחר מנוע חיפוש
-        const activeEngine = isDesktop ? meilisearchEngine : searchEngine;
+        const activeEngine = isDesktop ? tantivyEngine : searchEngine;
         
         console.log('🔍 מזהה סביבה:', isElectron ? 'Electron' : isTauri ? 'Tauri' : 'Browser');
-        console.log('🔧 מנוע חיפוש:', isDesktop ? 'Meilisearch' : 'FlexSearch');
+        console.log('🔧 מנוע חיפוש:', isDesktop ? 'Tantivy' : 'FlexSearch');
         
-        // הפעל Meilisearch באפליקציה דסקטופ - במקביל ללא המתנה!
-        // הגדרה: שנה ל-false כדי להשבית Meilisearch לחלוטין
-        const ENABLE_MEILISEARCH = true; // 🔧 true = מופעל ברקע, false = מושבת
+        // הפעל Tantivy באפליקציה דסקטופ - אתחול מהיר!
+        // הגדרה: שנה ל-false כדי להשבית Tantivy לחלוטין
+        const ENABLE_TANTIVY = true; // 🔧 true = מופעל, false = מושבת
         
-        if (isDesktop && ENABLE_MEILISEARCH) {
-          // הפעל ברקע ללא המתנה - לא חוסם את הטעינה!
-          console.log('🚀 מפעיל Meilisearch ברקע (לא חוסם)...');
+        if (isDesktop && ENABLE_TANTIVY) {
+          // אתחל Tantivy (לא דורש שרת נפרד!)
+          console.log('🚀 מאתחל Tantivy...');
           
-          // הפעל במקביל ללא await
-          meilisearchEngine.startServer().then(started => {
-            if (started) {
-              console.log('✅ Meilisearch הופעל בהצלחה ברקע!');
+          tantivyEngine.initialize().then(initialized => {
+            if (initialized) {
+              console.log('✅ Tantivy מוכן לשימוש!');
             } else {
-              console.warn('⚠️ Meilisearch לא הופעל - ממשיך עם FlexSearch');
+              console.warn('⚠️ Tantivy לא הופעל - ממשיך עם FlexSearch');
             }
           }).catch(error => {
-            console.error('❌ שגיאה בהפעלת Meilisearch ברקע:', error);
+            console.error('❌ שגיאה באתחול Tantivy:', error);
           });
           
-          // ממשיך מיד לטעינת קבצים - לא ממתין!
-        } else if (isDesktop && !ENABLE_MEILISEARCH) {
-          console.log('ℹ️ Meilisearch מושבת - משתמש ב-FlexSearch');
+        } else if (isDesktop && !ENABLE_TANTIVY) {
+          console.log('ℹ️ Tantivy מושבת - משתמש ב-FlexSearch');
         }
         
         // טעינת קבצים דרך Tauri או Electron
@@ -701,12 +698,12 @@ function App() {
               
               // טעינת אינדקס קיים (האינדקס נבנה מראש) - רק אם צריך
               console.log('📋 בודק אם יש אינדקס חיפוש...');
-              const activeEngine = isElectron && meilisearchEngine.isReady() 
-                ? meilisearchEngine 
+              const activeEngine = isElectron && tantivyEngine.isReady() 
+                ? tantivyEngine 
                 : searchEngine;
               
-              if (isElectron && meilisearchEngine.isReady()) {
-                console.log('✅ Meilisearch מוכן לשימוש');
+              if (isElectron && tantivyEngine.isReady()) {
+                console.log('✅ Tantivy מוכן לשימוש');
               } else {
                 // טען אינדקס רק אם המשתמש מחפש
                 console.log('ℹ️ אינדקס חיפוש יטען בעת הצורך');
@@ -947,8 +944,8 @@ function App() {
             
             // טעינת אינדקס קיים - רק אם צריך
             console.log('📋 בודק אם יש אינדקס חיפוש...');
-            if (meilisearchEngine.isReady()) {
-              console.log('✅ Meilisearch מוכן לשימוש');
+            if (tantivyEngine.isReady()) {
+              console.log('✅ Tantivy מוכן לשימוש');
             } else {
               // טען אינדקס רק אם המשתמש מחפש
               console.log('ℹ️ אינדקס חיפוש יטען בעת הצורך');
@@ -1033,12 +1030,12 @@ function App() {
 
           // טעינת אינדקס קיים (האינדקס נבנה מראש) - רק אם צריך
           console.log('📋 בודק אם יש אינדקס חיפוש...');
-          const activeEngine = isElectron && meilisearchEngine.isReady() 
-            ? meilisearchEngine 
+          const activeEngine = isElectron && tantivyEngine.isReady() 
+            ? tantivyEngine 
             : searchEngine;
           
-          if (isElectron && meilisearchEngine.isReady()) {
-            console.log('✅ Meilisearch מוכן לשימוש');
+          if (isElectron && tantivyEngine.isReady()) {
+            console.log('✅ Tantivy מוכן לשימוש');
           } else {
             // טען אינדקס רק אם המשתמש מחפש
             console.log('ℹ️ אינדקס חיפוש יטען בעת הצורך');
@@ -2216,13 +2213,13 @@ function App() {
     try {
       // בחר מנוע חיפוש
       const isElectron = window.electron !== undefined;
-      console.log('🔧 Environment:', { isElectron, meilisearchReady: meilisearchEngine.isReady() });
+      console.log('🔧 Environment:', { isElectron, tantivyReady: tantivyEngine.isReady() });
       
-      const activeEngine = isElectron && meilisearchEngine.isReady() 
-        ? meilisearchEngine 
+      const activeEngine = isElectron && tantivyEngine.isReady() 
+        ? tantivyEngine 
         : searchEngine;
       
-      console.log('🔧 Using engine:', activeEngine === meilisearchEngine ? 'Meilisearch' : 'FlexSearch');
+      console.log('🔧 Using engine:', activeEngine === tantivyEngine ? 'Tantivy' : 'FlexSearch');
       
       // טען אינדקס אם צריך (טעינה עצלה)
       if (activeEngine === searchEngine && !searchEngine.isReady()) {
