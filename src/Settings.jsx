@@ -31,6 +31,11 @@ import {
   InfoFilled,
   FolderFilled,
   SearchFilled,
+  ArrowSyncRegular,
+  ArrowSyncFilled,
+  PauseRegular,
+  PlayRegular,
+  StopRegular,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
 import tantivyEngine from './utils/tantivyEngine';
@@ -62,6 +67,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const [indexDone, setIndexDone] = useState(false);
   const [indexLogs, setIndexLogs] = useState([]);
   const [canCancelIndex, setCanCancelIndex] = useState(false);
+  const [indexPaused, setIndexPaused] = useState(false);
 
   const colorOptions = [
     { name: 'חום קלאסי', value: '#5c3d2e' },
@@ -468,43 +474,69 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       
       console.log('Running command:', command);
       
-      // הגדר מאזינים להתקדמות מ-Tantivy
+      // הגדר מאזין להתקדמות מ-Tantivy
       const progressHandler = (event, message) => {
         console.log('Progress:', message);
         
-        // עדכן סטטוס לפי ההודעה
-        if (message.includes('קורא') || message.includes('נמצאו')) {
+        // עדכן סטטוס לפי ההודעה - רק ההודעה האחרונה תוצג
+        // Tantivy CLI מדווח בפורמט: "Indexed X documents" או "Processing file Y/Z"
+        if (message.includes('Indexed') || message.includes('indexed')) {
           setIndexStatus(message);
-        } else if (message.includes('יוצר אינדקס')) {
-          setIndexStatus('יוצר אינדקס...');
-          setIndexProgress(30);
-        } else if (message.includes('עובד') || message.includes('מעבד')) {
+          // נסה לחלץ מספר מסמכים
+          const match = message.match(/(\d+)\s+documents?/i);
+          if (match) {
+            const count = parseInt(match[1]);
+            // עדכן התקדמות לפי מספר המסמכים (נניח מקסימום 10000)
+            const progress = 30 + Math.min(Math.floor((count / 10000) * 60), 60);
+            setIndexProgress(progress);
+          }
+        } else if (message.includes('Processing') || message.includes('processing') || message.includes('מעבד')) {
           setIndexStatus(message);
-          // נסה לחלץ אחוז מסטר עובד/קובץ
-          const match = message.match(/\[(\d+)\/(\d+)\]/);
+          // נסה לחלץ אחוז מפורמט "Processing X/Y"
+          const match = message.match(/(\d+)\/(\d+)/);
           if (match) {
             const current = parseInt(match[1]);
             const total = parseInt(match[2]);
             const progress = 30 + Math.floor((current / total) * 60);
             setIndexProgress(progress);
+          } else {
+            // אם אין מספרים, עדכן התקדמות בהדרגה
+            setIndexProgress(prev => Math.min(prev + 5, 90));
           }
-        } else if (message.includes('הושלם') || message.includes('בהצלחה')) {
+        } else if (message.includes('Reading') || message.includes('reading') || message.includes('נמצאו')) {
+          setIndexStatus(message);
+          setIndexProgress(25);
+        } else if (message.includes('Creating') || message.includes('creating') || message.includes('יוצר')) {
+          setIndexStatus(message);
+          setIndexProgress(30);
+        } else if (message.includes('Writing') || message.includes('writing') || message.includes('שומר')) {
+          setIndexStatus(message);
+          setIndexProgress(85);
+        } else if (message.includes('Done') || message.includes('done') || message.includes('Complete') || message.includes('complete') || message.includes('הושלם')) {
           setIndexStatus(message);
           setIndexProgress(95);
+        } else if (message.trim()) {
+          // כל הודעה אחרת - הצג אותה והגדל התקדמות מעט
+          setIndexStatus(message);
+          setIndexProgress(prev => Math.min(prev + 2, 90));
         }
       };
       
-      // רשום listener
-      if (window.electron && window.electron.onTantivyProgress) {
-        window.electron.onTantivyProgress(progressHandler);
+      // רשום listener דרך window.electron
+      let removeListener = null;
+      if (window.electron && window.electron.ipcRenderer) {
+        window.electron.ipcRenderer.on('tantivy-progress', progressHandler);
+        removeListener = () => {
+          window.electron.ipcRenderer.removeListener('tantivy-progress', progressHandler);
+        };
       }
       
       // הרץ את הפקודה
       const result = await window.electron.runTantivyCli(command);
       
       // הסר listener
-      if (window.electron && window.electron.removeTantivyProgressListener) {
-        window.electron.removeTantivyProgressListener(progressHandler);
+      if (removeListener) {
+        removeListener();
       }
       
       if (result.success) {
@@ -540,6 +572,75 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
     } finally {
       setIndexBuilding(false);
       setCanCancelIndex(false);
+      setIndexPaused(false);
+    }
+  };
+
+  const handleCancelIndex = async () => {
+    if (!canCancelIndex) return;
+    
+    // בדיקה אם הפונקציה קיימת
+    if (!window.electron || !window.electron.cancelTantivyProcess) {
+      customAlert('פונקציית ביטול לא זמינה. אנא טען מחדש את האפליקציה.', { type: 'error', title: 'שגיאה' });
+      return;
+    }
+    
+    const shouldCancel = await customConfirm(
+      'האם אתה בטוח שברצונך לבטל את בניית האינדקס?',
+      { type: 'warning', title: 'אישור ביטול' }
+    );
+    
+    if (shouldCancel) {
+      setIndexStatus('מבטל תהליך...');
+      const result = await window.electron.cancelTantivyProcess();
+      
+      if (result.success) {
+        setIndexStatus('התהליך בוטל על ידי המשתמש');
+        setIndexProgress(0);
+        setIndexBuilding(false);
+        setCanCancelIndex(false);
+        setIndexPaused(false);
+      } else {
+        setIndexStatus('שגיאה בביטול התהליך: ' + (result.error || result.message));
+      }
+    }
+  };
+
+  const handlePauseResumeIndex = async () => {
+    if (!canCancelIndex) return;
+    
+    // בדיקה אם הפונקציות קיימות
+    if (!window.electron || !window.electron.pauseTantivyProcess || !window.electron.resumeTantivyProcess) {
+      customAlert('פונקציות השהיה/המשך לא זמינות. אנא טען מחדש את האפליקציה.', { type: 'error', title: 'שגיאה' });
+      return;
+    }
+    
+    if (indexPaused) {
+      // המשך
+      setIndexStatus('ממשיך תהליך...');
+      const result = await window.electron.resumeTantivyProcess();
+      
+      if (result.success) {
+        setIndexPaused(false);
+        setIndexStatus('התהליך הומשך');
+      } else {
+        setIndexStatus('שגיאה בהמשך התהליך: ' + (result.error || result.message));
+      }
+    } else {
+      // השהה
+      setIndexStatus('משהה תהליך...');
+      const result = await window.electron.pauseTantivyProcess();
+      
+      if (result.success) {
+        setIndexPaused(true);
+        setIndexStatus('התהליך הושהה - לחץ המשך להמשיך');
+        
+        if (result.limited) {
+          customAlert('השהיה ב-Windows מוגבלת ועשויה לא לעבוד בכל המקרים', { type: 'info', title: 'שים לב' });
+        }
+      } else {
+        setIndexStatus('שגיאה בהשהיית התהליך: ' + (result.error || result.message));
+      }
     }
   };
 
@@ -895,28 +996,184 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                     }} />
                   </div>
                   {indexStatus && (
-                    <Text size={200} style={{ opacity: 0.7, wordBreak: 'break-word' }}>{indexStatus}</Text>
+                    <Text 
+                      size={200} 
+                      style={{ 
+                        opacity: 0.7, 
+                        wordBreak: 'break-word',
+                        maxHeight: '60px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}
+                    >
+                      {indexStatus}
+                    </Text>
                   )}
                 </div>
               )}
 
               {/* Build Button */}
+              <div style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '8px', boxSizing: 'border-box' }}>
+                <Button
+                  appearance="primary"
+                  icon={<SearchRegular />}
+                  onClick={handleBuildIndex}
+                  disabled={indexBuilding || (indexType === 'pdf' && !indexFolder) || ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath)}
+                  style={{ flex: 1, boxSizing: 'border-box' }}
+                  size="small"
+                  title={
+                    indexBuilding ? 'בונה אינדקס...' :
+                    (indexType === 'pdf' && !indexFolder) ? 'בחר תיקייה תחילה' :
+                    ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath) ? 'בחר קובץ DB תחילה' :
+                    'לחץ לבניית אינדקס'
+                  }
+                >
+                  {indexBuilding ? 'בונה אינדקס...' : indexDone ? 'בנה מחדש' : 'בנה אינדקס'}
+                </Button>
+                
+                {/* Control Buttons - shown only when building */}
+                {canCancelIndex && window.electron && window.electron.cancelTantivyProcess && (
+                  <>
+                    <Button
+                      appearance="secondary"
+                      icon={indexPaused ? <PlayRegular /> : <PauseRegular />}
+                      onClick={handlePauseResumeIndex}
+                      size="small"
+                      title={indexPaused ? 'המשך' : 'השהה'}
+                      style={{ flexShrink: 0 }}
+                    >
+                      {indexPaused ? 'המשך' : 'השהה'}
+                    </Button>
+                    <Button
+                      appearance="secondary"
+                      icon={<StopRegular />}
+                      onClick={handleCancelIndex}
+                      size="small"
+                      title="עצור"
+                      style={{ flexShrink: 0, color: '#d13438' }}
+                    >
+                      עצור
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render Updates Section
+  const renderUpdatesSection = () => (
+    <div className="settings-container-win11">
+      <div className="settings-header-win11">
+        <h1 className="settings-title-win11">עדכונים</h1>
+        <p className="settings-subtitle-win11">עדכוני תוכנה וספרים</p>
+      </div>
+
+      <div className="settings-section-win11">
+        <h2 className="settings-section-title">עדכוני תוכנה</h2>
+        
+        <div className="settings-group-win11">
+          <div className="setting-item-win11">
+            <div className="setting-item-left">
+              <AppsRegular className="setting-item-icon" />
+              <div className="setting-item-content">
+                <div className="setting-item-title">גרסה נוכחית</div>
+                <div className="setting-item-description">
+                  1.0.0
+                </div>
+              </div>
+            </div>
+            <div className="setting-item-right">
               <Button
                 appearance="primary"
-                icon={<SearchRegular />}
-                onClick={handleBuildIndex}
-                disabled={indexBuilding || (indexType === 'pdf' && !indexFolder) || ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath)}
-                style={{ width: '100%', marginTop: '8px', boxSizing: 'border-box' }}
+                icon={<ArrowSyncRegular />}
                 size="small"
-                title={
-                  indexBuilding ? 'בונה אינדקס...' :
-                  (indexType === 'pdf' && !indexFolder) ? 'בחר תיקייה תחילה' :
-                  ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath) ? 'בחר קובץ DB תחילה' :
-                  'לחץ לבניית אינדקס'
-                }
               >
-                {indexBuilding ? 'בונה אינדקס...' : indexDone ? 'בנה מחדש' : 'בנה אינדקס'}
+                בדוק עדכונים
               </Button>
+            </div>
+          </div>
+
+          <div className="setting-item-win11">
+            <div className="setting-item-left">
+              <ArrowDownloadRegular className="setting-item-icon" />
+              <div className="setting-item-content">
+                <div className="setting-item-title">עדכון אוטומטי</div>
+                <div className="setting-item-description">
+                  הורד והתקן עדכונים באופן אוטומטי
+                </div>
+              </div>
+            </div>
+            <div className="setting-item-right">
+              <Switch />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-section-win11">
+        <h2 className="settings-section-title">עדכוני ספרים</h2>
+        
+        <div className="settings-group-win11">
+          <div className="setting-item-win11">
+            <div className="setting-item-left">
+              <DatabaseRegular className="setting-item-icon" />
+              <div className="setting-item-content">
+                <div className="setting-item-title">סנכרון ספרייה</div>
+                <div className="setting-item-description">
+                  סנכרן עם מאגר הספרים המרכזי
+                </div>
+              </div>
+            </div>
+            <div className="setting-item-right">
+              <Button
+                appearance="primary"
+                icon={<ArrowSyncRegular />}
+                size="small"
+              >
+                סנכרן עכשיו
+              </Button>
+            </div>
+          </div>
+
+          <div className="setting-item-win11">
+            <div className="setting-item-left">
+              <ArrowDownloadRegular className="setting-item-icon" />
+              <div className="setting-item-content">
+                <div className="setting-item-title">הורד ספרים חדשים</div>
+                <div className="setting-item-description">
+                  הורד ספרים שנוספו למאגר
+                </div>
+              </div>
+            </div>
+            <div className="setting-item-right">
+              <Button
+                appearance="secondary"
+                size="small"
+              >
+                עיין בספרים זמינים
+              </Button>
+            </div>
+          </div>
+
+          <div className="setting-item-win11">
+            <div className="setting-item-left">
+              <ArrowSyncRegular className="setting-item-icon" />
+              <div className="setting-item-content">
+                <div className="setting-item-title">סנכרון אוטומטי</div>
+                <div className="setting-item-description">
+                  בדוק עדכוני ספרים באופן אוטומטי
+                </div>
+              </div>
+            </div>
+            <div className="setting-item-right">
+              <Switch />
             </div>
           </div>
         </div>
@@ -1029,6 +1286,18 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           </button>
           
           <button
+            className={`settings-nav-item ${activeSection === 'updates' ? 'active' : ''}`}
+            onClick={() => setActiveSection('updates')}
+          >
+            {activeSection === 'updates' ? (
+              <ArrowSyncFilled className="settings-nav-icon" />
+            ) : (
+              <ArrowSyncRegular className="settings-nav-icon" />
+            )}
+            <span>עדכונים</span>
+          </button>
+          
+          <button
             className={`settings-nav-item ${activeSection === 'about' ? 'active' : ''}`}
             onClick={() => setActiveSection('about')}
           >
@@ -1047,6 +1316,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
         {activeSection === 'personalization' && renderPersonalizationSection()}
         {activeSection === 'libraries' && renderDataSection()}
         {activeSection === 'indexes' && renderIndexesSection()}
+        {activeSection === 'updates' && renderUpdatesSection()}
         {activeSection === 'about' && renderAboutSection()}
       </div>
     </div>

@@ -388,6 +388,26 @@ contextBridge.exposeInMainWorld('electron', {
     return ipcRenderer.invoke('run-tantivy-cli', command);
   },
   
+  // ביטול תהליך Tantivy
+  cancelTantivyProcess: async () => {
+    return ipcRenderer.invoke('cancel-tantivy-process');
+  },
+  
+  // השהיית תהליך Tantivy
+  pauseTantivyProcess: async () => {
+    return ipcRenderer.invoke('pause-tantivy-process');
+  },
+  
+  // המשך תהליך Tantivy
+  resumeTantivyProcess: async () => {
+    return ipcRenderer.invoke('resume-tantivy-process');
+  },
+  
+  // בדיקת סטטוס תהליך Tantivy
+  tantivyProcessStatus: async () => {
+    return ipcRenderer.invoke('tantivy-process-status');
+  },
+  
   // האזנה להודעות התקדמות מ-Tantivy
   onTantivyProgress: (callback) => {
     ipcRenderer.on('tantivy-progress', (event, message) => callback(event, message));
@@ -407,4 +427,11 @@ contextBridge.exposeInMainWorld('electron', {
   runIndexer: async (command) => {
     return ipcRenderer.invoke('run-indexer', command);
   },
+  
+  // חשיפת ipcRenderer לשימוש ישיר (למקרים מיוחדים)
+  ipcRenderer: {
+    on: (channel, callback) => ipcRenderer.on(channel, callback),
+    removeListener: (channel, callback) => ipcRenderer.removeListener(channel, callback),
+    removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
+  }
 });

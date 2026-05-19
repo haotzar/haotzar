@@ -1852,6 +1852,10 @@ function setupIpcHandlers() {
   });
   
   // הרצת Tantivy CLI עם פקודה כללית
+  // משתנה גלובלי לשמירת תהליך Tantivy הפעיל
+  let activeTantivyProcess = null;
+  let tantivyProcessPaused = false;
+
   ipcMain.handle('run-tantivy-cli', async (event, command) => {
     try {
       console.log('🚀 Running Tantivy CLI:', command);
@@ -1869,20 +1873,50 @@ function setupIpcHandlers() {
         
         const child = spawn(cliPath, args, {
           windowsHide: true,
-          stdio: ['ignore', 'pipe', 'pipe']
+          stdio: ['ignore', 'pipe', 'pipe'],
+          shell: false
         });
+        
+        // שמור את התהליך הפעיל
+        activeTantivyProcess = child;
+        tantivyProcessPaused = false;
         
         let output = '';
         let errorOutput = '';
+        let buffer = '';
         
+        // טיפול ב-stdout עם באפר לשורות
         child.stdout.on('data', (data) => {
           const text = data.toString();
           output += text;
-          console.log('[Tantivy]', text.trim());
+          buffer += text;
           
-          // שלח עדכון לממשק
-          if (event.sender && !event.sender.isDestroyed()) {
-            event.sender.send('tantivy-progress', text.trim());
+          // פצל לשורות ושלח כל שורה בנפרד
+          const lines = buffer.split('\n');
+          // שמור את השורה האחרונה (שאולי לא הושלמה) בבאפר
+          buffer = lines.pop() || '';
+          
+          // שלח כל שורה שהושלמה
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine) {
+              console.log('[Tantivy]', trimmedLine);
+              
+              // שלח עדכון לממשק
+              if (event.sender && !event.sender.isDestroyed()) {
+                event.sender.send('tantivy-progress', trimmedLine);
+              }
+            }
+          });
+        });
+        
+        // שלח גם את השורה האחרונה כשהתהליך מסתיים
+        child.stdout.on('end', () => {
+          if (buffer.trim()) {
+            console.log('[Tantivy]', buffer.trim());
+            if (event.sender && !event.sender.isDestroyed()) {
+              event.sender.send('tantivy-progress', buffer.trim());
+            }
           }
         });
         
@@ -1890,12 +1924,23 @@ function setupIpcHandlers() {
           const text = data.toString();
           errorOutput += text;
           console.error('[Tantivy Error]', text.trim());
+          
+          // שלח גם שגיאות כהתקדמות (לפעמים Tantivy כותב לוגים ל-stderr)
+          if (event.sender && !event.sender.isDestroyed()) {
+            event.sender.send('tantivy-progress', text.trim());
+          }
         });
         
         child.on('close', (code) => {
+          activeTantivyProcess = null;
+          tantivyProcessPaused = false;
+          
           if (code === 0) {
             console.log('✅ Tantivy CLI הסתיים בהצלחה');
             resolve({ success: true, output, code });
+          } else if (code === null) {
+            console.log('⚠️ Tantivy CLI בוטל על ידי המשתמש');
+            resolve({ success: false, error: 'Process cancelled by user', cancelled: true, code, output });
           } else {
             console.error('❌ Tantivy CLI נכשל עם קוד:', code);
             resolve({ success: false, error: errorOutput || output || 'Unknown error', code, output });
@@ -1903,23 +1948,118 @@ function setupIpcHandlers() {
         });
         
         child.on('error', (error) => {
+          activeTantivyProcess = null;
+          tantivyProcessPaused = false;
           console.error('❌ שגיאה בהרצת Tantivy CLI:', error);
           resolve({ success: false, error: error.message });
         });
         
-        // timeout של 5 דקות
-        setTimeout(() => {
-          if (!child.killed) {
+        // timeout של 30 דקות (הגדלתי מ-5 דקות)
+        const timeout = setTimeout(() => {
+          if (activeTantivyProcess && !activeTantivyProcess.killed) {
             console.warn('⏱️ Tantivy CLI timeout - killing process');
-            child.kill();
-            resolve({ success: false, error: 'Timeout after 5 minutes' });
+            activeTantivyProcess.kill();
+            resolve({ success: false, error: 'Timeout after 30 minutes' });
           }
-        }, 5 * 60 * 1000);
+        }, 30 * 60 * 1000);
+        
+        // נקה timeout כשהתהליך מסתיים
+        child.on('close', () => clearTimeout(timeout));
       });
     } catch (error) {
+      activeTantivyProcess = null;
+      tantivyProcessPaused = false;
       console.error('❌ שגיאה בהרצת Tantivy CLI:', error);
       return { success: false, error: error.message };
     }
+  });
+  
+  // עצירת תהליך Tantivy
+  ipcMain.handle('cancel-tantivy-process', async () => {
+    try {
+      if (activeTantivyProcess && !activeTantivyProcess.killed) {
+        console.log('🛑 מבטל תהליך Tantivy...');
+        activeTantivyProcess.kill('SIGTERM');
+        activeTantivyProcess = null;
+        tantivyProcessPaused = false;
+        return { success: true, message: 'Process cancelled' };
+      }
+      return { success: false, message: 'No active process' };
+    } catch (error) {
+      console.error('❌ שגיאה בביטול תהליך:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // השהיית תהליך Tantivy (Windows: SIGSTOP לא נתמך, נשתמש ב-suspend)
+  ipcMain.handle('pause-tantivy-process', async () => {
+    try {
+      if (activeTantivyProcess && !activeTantivyProcess.killed && !tantivyProcessPaused) {
+        console.log('⏸️ משהה תהליך Tantivy...');
+        
+        if (process.platform === 'win32') {
+          // ב-Windows נשתמש ב-ntsuspend או pssuspend אם זמין, אחרת נציג הודעה
+          const { exec } = require('child_process');
+          exec(`powershell -Command "Get-Process -Id ${activeTantivyProcess.pid} | Suspend-Process"`, (error) => {
+            if (error) {
+              console.warn('⚠️ לא ניתן להשהות תהליך ב-Windows:', error.message);
+            } else {
+              tantivyProcessPaused = true;
+              console.log('✅ תהליך הושהה');
+            }
+          });
+          return { success: true, message: 'Attempting to pause (Windows)', limited: true };
+        } else {
+          // ב-Linux/Mac
+          activeTantivyProcess.kill('SIGSTOP');
+          tantivyProcessPaused = true;
+          return { success: true, message: 'Process paused' };
+        }
+      }
+      return { success: false, message: 'No active process or already paused' };
+    } catch (error) {
+      console.error('❌ שגיאה בהשהיית תהליך:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // המשך תהליך Tantivy
+  ipcMain.handle('resume-tantivy-process', async () => {
+    try {
+      if (activeTantivyProcess && !activeTantivyProcess.killed && tantivyProcessPaused) {
+        console.log('▶️ ממשיך תהליך Tantivy...');
+        
+        if (process.platform === 'win32') {
+          const { exec } = require('child_process');
+          exec(`powershell -Command "Get-Process -Id ${activeTantivyProcess.pid} | Resume-Process"`, (error) => {
+            if (error) {
+              console.warn('⚠️ לא ניתן להמשיך תהליך ב-Windows:', error.message);
+            } else {
+              tantivyProcessPaused = false;
+              console.log('✅ תהליך הומשך');
+            }
+          });
+          return { success: true, message: 'Attempting to resume (Windows)', limited: true };
+        } else {
+          activeTantivyProcess.kill('SIGCONT');
+          tantivyProcessPaused = false;
+          return { success: true, message: 'Process resumed' };
+        }
+      }
+      return { success: false, message: 'No paused process' };
+    } catch (error) {
+      console.error('❌ שגיאה בהמשך תהליך:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // בדיקת סטטוס תהליך Tantivy
+  ipcMain.handle('tantivy-process-status', async () => {
+    return {
+      active: activeTantivyProcess !== null && !activeTantivyProcess.killed,
+      paused: tantivyProcessPaused,
+      pid: activeTantivyProcess ? activeTantivyProcess.pid : null
+    };
   });
   
   // חיפוש גימטריה
