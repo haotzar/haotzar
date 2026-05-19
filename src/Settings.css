@@ -3,7 +3,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: #f3f3f3;
+  background-color: transparent;
   display: flex;
   flex-direction: row-reverse;
   overflow: hidden;
@@ -12,12 +12,11 @@
 
 /* Sidebar Navigation - Windows 11 Style */
 .settings-sidebar-win11 {
-  width: 280px;
-  min-width: 280px;
-  max-width: 280px;
-  background: rgba(243, 243, 243, 0.7);
-  backdrop-filter: blur(40px);
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  background: transparent;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -33,8 +32,8 @@
 }
 
 .settings-sidebar-header {
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 32px 24px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   direction: rtl;
 }
 
@@ -50,10 +49,10 @@
 }
 
 .settings-nav-items {
-  padding: 8px 12px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   direction: rtl; /* RTL לרשימת הפריטים */
 }
 
@@ -61,46 +60,45 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-align: right;
   width: 100%;
-  color: #1f1f1f;
+  color: #424242;
   font-size: 14px;
   position: relative;
   direction: rtl;
   justify-content: flex-start;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-weight: 400;
 }
 
 .settings-nav-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
+  color: #1f1f1f;
 }
 
 .settings-nav-item.active {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(212, 175, 55, 0.15);
+  color: #1f1f1f;
+  font-weight: 500;
+  border: 1px solid #d4af37;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
 }
 
-.settings-nav-item.active::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 16px;
-  background: #0067c0;
-  border-radius: 2px;
+.settings-nav-item.active .settings-nav-icon {
+  color: #1f1f1f;
 }
 
 .settings-nav-icon {
-  font-size: 16px;
+  font-size: 18px;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  opacity: 0.9;
 }
 
 /* Main Content Area */
@@ -114,7 +112,7 @@
   -ms-overflow-style: none;
   display: flex;
   justify-content: center;
-  padding: 32px 40px 120px 40px;
+  padding: 40px 60px 40px 60px;
   box-sizing: border-box;
 }
 
@@ -203,7 +201,7 @@
 }
 
 .settings-section-win11:last-child {
-  margin-bottom: 80px;
+  margin-bottom: 150px;
 }
 
 .settings-section-title {
@@ -219,13 +217,18 @@
 /* Settings Group - Windows 11 Style */
 .settings-group-win11 {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-bottom: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 12px;
   box-sizing: border-box;
   width: 100%;
+  transition: box-shadow 0.2s ease;
+}
+
+.settings-group-win11:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .settings-group-win11:last-child {
@@ -237,11 +240,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  transition: background 0.1s ease;
+  transition: background 0.2s ease;
   cursor: default;
-  min-height: 64px;
+  min-height: 68px;
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
@@ -261,11 +264,12 @@
 }
 
 .setting-item-win11.clickable:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .setting-item-win11.clickable:active {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(0.995);
 }
 
 .setting-item-left {
@@ -325,11 +329,20 @@
   flex-shrink: 0;
 }
 
-
+.setting-item-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  color: var(--colorBrandForeground1, #5c3d2e);
+  opacity: 0.9;
+}
 
 /* Dark Theme */
 [data-theme="dark"] .settings-page-win11 {
-  background-color: #202020;
+  background-color: transparent;
+}
+
+[data-theme="dark"] .settings-sidebar-win11 {
+  border-right-color: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] .settings-sidebar-title,
@@ -344,22 +357,35 @@
 }
 
 [data-theme="dark"] .settings-nav-item {
-  color: #ffffff;
+  color: #e0e0e0;
 }
 
 [data-theme="dark"] .settings-nav-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 [data-theme="dark"] .settings-nav-item.active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(196, 165, 116, 0.15);
+  color: #ffffff;
+  border: 1px solid #c4a574;
+  box-shadow: 0 2px 8px rgba(196, 165, 116, 0.3);
+}
+
+[data-theme="dark"] .settings-nav-item.active .settings-nav-icon {
+  color: #ffffff;
 }
 
 
 
 [data-theme="dark"] .settings-group-win11 {
   background: #2d2d2d;
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .settings-group-win11:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .setting-item-win11 {
@@ -374,7 +400,11 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="dark"] .setting-item-icon,
+[data-theme="dark"] .setting-item-icon {
+  color: var(--colorBrandForeground1, #d4a574);
+  opacity: 1;
+}
+
 [data-theme="dark"] .setting-item-title {
   color: #ffffff;
 }
@@ -495,4 +525,39 @@
   50% {
     opacity: 0.7;
   }
+}
+
+/* Color Picker Buttons */
+.color-picker-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  padding: 0;
+  outline: none;
+  position: relative;
+}
+
+.color-picker-button:hover {
+  transform: scale(1.05);
+}
+
+.color-picker-button:active {
+  transform: scale(0.95);
+}
+
+.color-picker-button.selected {
+  border-width: 3px;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px rgba(255,255,255,1);
+}
+
+[data-theme="dark"] .color-picker-button {
+  border-color: rgba(255,255,255,0.2);
+}
+
+[data-theme="dark"] .color-picker-button.selected {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.8);
 }

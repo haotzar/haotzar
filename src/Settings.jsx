@@ -1,4 +1,4 @@
-import {
+﻿import {
   Button,
   Switch,
   Text,
@@ -29,9 +29,11 @@ import {
   ColorFilled,
   DatabaseFilled,
   InfoFilled,
+  FolderFilled,
+  SearchFilled,
 } from '@fluentui/react-icons';
 import { useState, useEffect, useRef } from 'react';
-import tantivyEngine from './utils/tantivyEngine'; // 🔥 החלפנו ל-Tantivy!
+import tantivyEngine from './utils/tantivyEngine';
 import { 
   exportSettingsToFile, 
   importSettingsFromFile, 
@@ -49,7 +51,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const [libraryFolders, setLibraryFolders] = useState(() => getSetting('libraryFolders', ['books']));
   const [backgroundMode, setBackgroundMode] = useState(() => getSetting('backgroundMode', 'none'));
 
-  // state לבניית אינדקס
+  // state עבור בניית אינדקס
   const [indexFolder, setIndexFolder] = useState('');
   const [indexName, setIndexName] = useState('books');
   const [indexType, setIndexType] = useState('pdf');
@@ -122,7 +124,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           const selectedPath = await open({
             directory: true,
             multiple: false,
-            title: 'בחר תיקיית ספרים'
+            title: 'בחר תיקיית ספרייה'
           });
         
           if (selectedPath && typeof selectedPath === 'string') {
@@ -135,27 +137,27 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               
               // בדוק אם זו תיקיית HebrewBooks
               const isHebrewBooks = selectedPath.toLowerCase().includes('hebrewbooks') || 
-                                    selectedPath.includes('האוצר');
+                                    selectedPath.includes('אוצר');
               
               if (isHebrewBooks) {
-                console.log('💾 זיהיתי תיקיית HebrewBooks:', selectedPath);
+                console.log('זוהתה תיקיית HebrewBooks:', selectedPath);
                 localStorage.setItem('hebrewBooksPath', selectedPath);
                 localStorage.setItem('openHebrewBooksAfterReload', 'true');
-                console.log('✅ דגל HebrewBooks נשמר');
+                console.log('נתיב HebrewBooks נשמר');
               }
               
-              customAlert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.`, { type: 'success', title: 'הצלחה' });
+              customAlert(`התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תטען מחדש כדי לטעון את הספרייה החדשה.`, { type: 'success', title: 'הצלחה' });
               
-              // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
+              // המתן קצת ואז טען מחדש כדי לוודא שהכל נשמר
               setTimeout(() => {
                 window.location.reload();
               }, 100);
             } else {
-              customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
+              customAlert(`התיקייה "${folderName}" כבר קיימת ברשימה.`, { type: 'warning', title: 'שים לב' });
             }
           }
         } catch (error) {
-          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          console.error('שגיאה בפתיחת דיאלוג Tauri:', error);
           customAlert('שגיאה בבחירת תיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
         }
       } else if (isElectron) {
@@ -172,75 +174,28 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             
             // בדוק אם זו תיקיית HebrewBooks
             const isHebrewBooks = selectedPath.toLowerCase().includes('hebrewbooks') || 
-                                  selectedPath.includes('האוצר');
+                                  selectedPath.includes('אוצר');
             
             if (isHebrewBooks) {
-              console.log('💾 זיהיתי תיקיית HebrewBooks:', selectedPath);
+              console.log('זוהתה תיקיית HebrewBooks:', selectedPath);
               localStorage.setItem('hebrewBooksPath', selectedPath);
               localStorage.setItem('openHebrewBooksAfterReload', 'true');
-              console.log('✅ דגל HebrewBooks נשמר');
+              console.log('נתיב HebrewBooks נשמר');
             }
             
             const shouldReload = await customConfirm(
-              `התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
+              `התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תטען מחדש כדי לטעון את הספרייה החדשה.\n\nלחץ לישור להמשך.`,
               { type: 'question', title: 'הצלחה' }
             );
             if (shouldReload) {
-              // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
+              // המתן קצת ואז טען מחדש כדי לוודא שהכל נשמר
               setTimeout(() => {
                 window.location.reload();
               }, 100);
             }
           } else {
-            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
+            customAlert(`התיקייה "${folderName}" כבר קיימת ברשימה.`, { type: 'warning', title: 'שים לב' });
           }
-        }
-      } else if (isTauri) {
-        // שימוש ב-Tauri dialog API עם dynamic import
-        try {
-          const { open } = await import('@tauri-apps/plugin-dialog');
-          const selectedPath = await open({
-            directory: true,
-            multiple: false,
-            title: 'בחר תיקיית ספרים'
-          });
-          
-          if (selectedPath && typeof selectedPath === 'string') {
-            const folderName = selectedPath.split(/[/\\]/).pop();
-            
-            if (!libraryFolders.includes(selectedPath)) {
-              const updatedFolders = [...libraryFolders, selectedPath];
-              setLibraryFolders(updatedFolders);
-              updateSetting('libraryFolders', updatedFolders);
-              
-              // בדוק אם זו תיקיית HebrewBooks
-              const isHebrewBooks = selectedPath.toLowerCase().includes('hebrewbooks') || 
-                                    selectedPath.includes('האוצר');
-              
-              if (isHebrewBooks) {
-                console.log('💾 זיהיתי תיקיית HebrewBooks:', selectedPath);
-                localStorage.setItem('hebrewBooksPath', selectedPath);
-                localStorage.setItem('openHebrewBooksAfterReload', 'true');
-                console.log('✅ דגל HebrewBooks נשמר');
-              }
-              
-              const shouldReload = await customConfirm(
-                `התיקייה "${folderName}" נוספה בהצלחה!\n\nנתיב: ${selectedPath}\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
-                { type: 'question', title: 'הצלחה' }
-              );
-              if (shouldReload) {
-                // המתן קצת לפני הרענון כדי לוודא שהכל נשמר
-                setTimeout(() => {
-                  window.location.reload();
-                }, 100);
-            }
-          } else {
-            customAlert(`התיקייה "${folderName}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
-            }
-          }
-        } catch (error) {
-          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
-          customAlert('שגיאה בבחירת תיקייה: ' + error.message, { type: 'error', title: 'שגיאה' });
         }
       } else {
         const input = document.createElement('input');
@@ -259,14 +214,14 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               updateSetting('libraryFolders', updatedFolders);
               
               const shouldReload = await customConfirm(
-                `התיקייה "${folderPath}" נוספה בהצלחה!\n\nהאפליקציה תתרענן כעת כדי לטעון את הספרים החדשים.\n\nלחץ אישור להמשך.`,
+                `התיקייה "${folderPath}" נוספה בהצלחה!\n\nהאפליקציה תטען מחדש כדי לטעון את הספרייה החדשה.\n\nלחץ לישור להמשך.`,
                 { type: 'question', title: 'הצלחה' }
               );
               if (shouldReload) {
                 window.location.reload();
-            }
-          } else {
-            customAlert(`התיקייה "${folderPath}" כבר קיימת בספרייה.`, { type: 'warning', title: 'שים לב' });
+              }
+            } else {
+              customAlert(`התיקייה "${folderPath}" כבר קיימת ברשימה.`, { type: 'warning', title: 'שים לב' });
             }
           }
         };
@@ -286,7 +241,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
     }
     
     const shouldRemove = await customConfirm(
-      `האם אתה בטוח שברצונך להסיר את התיקייה "${folderName}" מהספרייה?\n\nהאפליקציה תתרענן אחרי ההסרה.`,
+      `האם אתה בטוח שברצונך להסיר את התיקייה "${folderName}" מהרשימה?\n\nהאפליקציה תטען מחדש אחרי ההסרה.`,
       { type: 'warning', title: 'אישור הסרה' }
     );
     if (shouldRemove) {
@@ -294,7 +249,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       setLibraryFolders(updatedFolders);
       updateSetting('libraryFolders', updatedFolders);
       
-      customAlert(`התיקייה "${folderName}" הוסרה מהספרייה`, { type: 'success', title: 'הצלחה' });
+      customAlert(`התיקייה "${folderName}" הוסרה מהרשימה`, { type: 'success', title: 'הצלחה' });
       window.location.reload();
     }
   };
@@ -304,7 +259,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
     if (success) {
       customAlert('ההגדרות יוצאו בהצלחה לקובץ JSON', { type: 'success', title: 'הצלחה' });
     } else {
-      customAlert('שגיאה בייצוא ההגדרות', { type: 'error', title: 'שגיאה' });
+      customAlert('שגיאה ביצוא ההגדרות', { type: 'error', title: 'שגיאה' });
     }
   };
 
@@ -318,7 +273,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       
       customAlert('ההגדרות יובאו בהצלחה! רענן את הדף כדי לראות את השינויים.', { type: 'success', title: 'הצלחה' });
     } catch (error) {
-      customAlert('שגיאה בייבוא ההגדרות: ' + error.message, { type: 'error', title: 'שגיאה' });
+      customAlert('שגיאה ביבוא ההגדרות: ' + error.message, { type: 'error', title: 'שגיאה' });
     }
   };
 
@@ -349,7 +304,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           const selectedPath = await open({
             directory: true,
             multiple: false,
-            title: 'בחר תיקייה לאינדקס'
+            title: 'בחר תיקייה לבניית אינדקס'
           });
           
           if (selectedPath && typeof selectedPath === 'string') {
@@ -360,7 +315,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             setIndexStatus('');
           }
         } catch (error) {
-          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          console.error('שגיאה בפתיחת דיאלוג Tauri:', error);
           setIndexStatus('שגיאה בבחירת תיקייה: ' + error.message);
         }
       } else if (isElectron) {
@@ -373,7 +328,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           setIndexStatus('');
         }
       } else {
-        setIndexStatus('בחירת תיקיות זמינה רק בגרסת Tauri או Electron');
+        setIndexStatus('בחירת תיקיות זמין רק בגרסת Tauri או Electron');
       }
     } catch (error) {
       setIndexStatus('שגיאה בבחירת תיקייה: ' + error.message);
@@ -392,7 +347,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           const selectedPath = await open({
             directory: false,
             multiple: false,
-            title: 'בחר קובץ מסד נתונים של אוצריא',
+            title: 'בחר קובץ מסד נתונים של אוצריה',
             filters: [{
               name: 'Otzaria Database',
               extensions: ['db']
@@ -405,7 +360,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             setIndexStatus('');
           }
         } catch (error) {
-          console.error('❌ שגיאה בפתיחת דיאלוג Tauri:', error);
+          console.error('שגיאה בפתיחת דיאלוג Tauri:', error);
           setIndexStatus('שגיאה בבחירת קובץ: ' + error.message);
         }
       } else if (isElectron) {
@@ -418,7 +373,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           setIndexStatus('');
         }
       } else {
-        setIndexStatus('בחירת קבצים זמינה רק בגרסת Tauri או Electron');
+        setIndexStatus('בחירת קבצים זמין רק בגרסת Tauri או Electron');
       }
     } catch (error) {
       setIndexStatus('שגיאה בבחירת קובץ: ' + error.message);
@@ -426,11 +381,11 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   };
 
   const handleBuildIndex = async () => {
-    console.log('🔨 handleBuildIndex called', { indexType, indexFolder, indexName, indexBuilding });
+    console.log('handleBuildIndex called', { indexType, indexFolder, indexName, indexBuilding });
     
     // מנע הפעלות מרובות
     if (indexBuilding) {
-      console.warn('⚠️ כבר בתהליך בניית אינדקס');
+      console.warn('כבר בתהליך בניית אינדקס');
       return;
     }
     
@@ -439,7 +394,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       return;
     }
     if ((indexType === 'books' || indexType === 'lines') && !otzariaDbPath) {
-      setIndexStatus('יש לבחור קובץ מסד נתונים של אוצריא');
+      setIndexStatus('יש לבחור קובץ מסד נתונים של אוצריה');
       return;
     }
     if (!indexName.trim()) {
@@ -482,7 +437,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       // בדוק אם ה-CLI קיים
       const cliExists = await window.electron.fileExists(cliPath);
       if (!cliExists) {
-        setIndexStatus('❌ שגיאה: Tantivy CLI לא נמצא. העתק את tantivy_cli.exe לתיקיית public/');
+        setIndexStatus('שגיאה: Tantivy CLI לא נמצא. העתק את tantivy_cli.exe לתיקיית public/');
         setIndexBuilding(false);
         setCanCancelIndex(false);
         return;
@@ -492,30 +447,30 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       let sourceDescription = '';
       
       if (indexType === 'pdf') {
-        // אינדקס מ-PDF
+        // בניית אינדקס ל-PDF
         command = `"${cliPath}" index --source pdf --pdf "${indexFolder}" --index-path "${indexPath}"`;
         sourceDescription = `תיקיית PDF: ${indexFolder}`;
       } else if (indexType === 'books') {
-        // אינדקס מטבלת books
+        // בניית אינדקס מטבלת books
         command = `"${cliPath}" index --source db --db "${otzariaDbPath}" --table book --index-path "${indexPath}"`;
-        sourceDescription = `מסד נתונים: ${otzariaDbPath} (טבלת ספרים)`;
+        sourceDescription = `מסד נתונים: ${otzariaDbPath} (טבלת ספרייה)`;
       } else if (indexType === 'lines') {
-        // אינדקס מטבלת lines
+        // בניית אינדקס מטבלת lines
         command = `"${cliPath}" index --source db --db "${otzariaDbPath}" --table line --index-path "${indexPath}"`;
         sourceDescription = `מסד נתונים: ${otzariaDbPath} (טבלת שורות)`;
       }
       
-      setIndexStatus(`מתחיל אינדוקס מ-${sourceDescription}`);
+      setIndexStatus(`מתחיל אינדוקס ל-${sourceDescription}`);
       setIndexProgress(15);
       
       setIndexStatus('מריץ Tantivy CLI...');
       setIndexProgress(20);
       
-      console.log('🚀 Running command:', command);
+      console.log('Running command:', command);
       
-      // האזן להודעות התקדמות מ-Tantivy
+      // הגדר מאזינים להתקדמות מ-Tantivy
       const progressHandler = (event, message) => {
-        console.log('📊 Progress:', message);
+        console.log('Progress:', message);
         
         // עדכן סטטוס לפי ההודעה
         if (message.includes('קורא') || message.includes('נמצאו')) {
@@ -525,7 +480,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           setIndexProgress(30);
         } else if (message.includes('עובד') || message.includes('מעבד')) {
           setIndexStatus(message);
-          // נסה לחלץ מספר עמוד/קובץ
+          // נסה לחלץ אחוז מסטר עובד/קובץ
           const match = message.match(/\[(\d+)\/(\d+)\]/);
           if (match) {
             const current = parseInt(match[1]);
@@ -554,7 +509,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       
       if (result.success) {
         setIndexProgress(100);
-        setIndexStatus(`✅ האינדקס "${indexName}" נבנה בהצלחה!`);
+        setIndexStatus(`בניית אינדקס "${indexName}" הושלמה בהצלחה!`);
         setIndexDone(true);
         
         // רענן את רשימת האינדקסים
@@ -567,18 +522,18 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
         
         // הודעות שגיאה ברורות
         if (errorMsg.includes('not found') || errorMsg.includes('לא נמצא')) {
-          setIndexStatus('❌ שגיאה: קובץ או תיקייה לא נמצאו. בדוק את הנתיב.');
+          setIndexStatus('שגיאה: קובץ או תיקייה לא נמצאו. בדוק את הנתיב.');
         } else if (errorMsg.includes('permission') || errorMsg.includes('הרשאה')) {
-          setIndexStatus('❌ שגיאה: אין הרשאות גישה. הרץ כמנהל.');
+          setIndexStatus('שגיאה: אין הרשאות גישה. הרץ כמנהל.');
         } else if (errorMsg.includes('timeout')) {
-          setIndexStatus('❌ שגיאה: התהליך ארך יותר מדי זמן (5 דקות).');
+          setIndexStatus('שגיאה: התהליך ארך יותר מדי זמן (5 דקות).');
         } else if (errorMsg.includes('argument') || errorMsg.includes('usage')) {
-          setIndexStatus('❌ שגיאה: פקודה לא תקינה. בדוק את הפרמטרים.');
+          setIndexStatus('שגיאה: פקודה לא תקינה. בדוק את הפרמטרים.');
         } else {
-          setIndexStatus(`❌ שגיאה: ${errorMsg.substring(0, 200)}`);
+          setIndexStatus(`שגיאה: ${errorMsg.substring(0, 200)}`);
         }
         
-        console.error('❌ Tantivy error:', errorMsg);
+        console.error('Tantivy error:', errorMsg);
       }
     } catch (error) {
       setIndexStatus('שגיאה בבניית האינדקס: ' + error.message);
@@ -631,7 +586,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       </div>
 
       <div className="settings-section-win11">
-        <h2 className="settings-section-title">מראה</h2>
+        <h2 className="settings-section-title">ערכה</h2>
         
         {/* Theme Toggle */}
         <div className="settings-group-win11">
@@ -639,7 +594,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             <div className="setting-item-left">
               <DarkThemeRegular className="setting-item-icon" />
               <div className="setting-item-content">
-                <div className="setting-item-title">מצב תצוגה</div>
+                <div className="setting-item-title">מצב לצפייה</div>
                 <div className="setting-item-description">
                   {isDark ? 'מצב כהה' : 'מצב בהיר'}
                 </div>
@@ -650,45 +605,6 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                 checked={isDark}
                 onChange={(e, data) => setIsDark(data.checked)}
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Color Picker */}
-        <div className="settings-group-win11">
-          <div className="setting-item-win11">
-            <div className="setting-item-left">
-              <ColorRegular className="setting-item-icon" />
-              <div className="setting-item-content">
-                <div className="setting-item-title">צבע בסיס</div>
-                <div className="setting-item-description">
-                  {colorOptions.find(c => c.value === selectedColor)?.name || 'מותאם אישית'}
-                </div>
-              </div>
-            </div>
-            <div className="setting-item-right">
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                {colorOptions.map((color) => (
-                  <div
-                    key={color.value}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleColorChange(color);
-                    }}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      backgroundColor: color.value,
-                      cursor: 'pointer',
-                      border: selectedColor === color.value ? '2px solid #0067c0' : '1px solid rgba(0,0,0,0.15)',
-                      transition: 'all 0.1s ease',
-                      boxShadow: selectedColor === color.value ? '0 0 0 1px rgba(0,103,192,0.3)' : 'none'
-                    }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -708,9 +624,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             <div className="setting-item-right">
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Button
-                  appearance={backgroundMode === 'none' ? 'primary' : 'secondary'}
+                  appearance={backgroundMode === 'none' ? 'primary' : 'outline'}
                   size="small"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     handleBackgroundModeChange('none');
                   }}
@@ -718,9 +635,10 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                   ללא
                 </Button>
                 <Button
-                  appearance={backgroundMode === 'with-image' ? 'primary' : 'secondary'}
+                  appearance={backgroundMode === 'with-image' ? 'primary' : 'outline'}
                   size="small"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     handleBackgroundModeChange('with-image');
                   }}
@@ -739,12 +657,12 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
   const renderDataSection = () => (
     <div className="settings-container-win11">
       <div className="settings-header-win11">
-        <h1 className="settings-title-win11">ניהול נתונים</h1>
-        <p className="settings-subtitle-win11">נהל את הספרייה, הגדרות והאינדקס שלך</p>
+        <h1 className="settings-title-win11">ספריות</h1>
+        <p className="settings-subtitle-win11">נהל את תיקיות הספרייה שלך</p>
       </div>
 
       <div className="settings-section-win11">
-        <h2 className="settings-section-title">ספרייה</h2>
+        <h2 className="settings-section-title">תיקיות ספרייה</h2>
         
         <div className="settings-group-win11">
           {/* Library Folders */}
@@ -754,7 +672,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
                 <div className="setting-item-title">תיקיות ספרייה</div>
                 <div className="setting-item-description">
-                  נהל את התיקיות שמכילות את הספרים שלך
+                  נהל את התיקיות שמכילות את הספרייה שלך
                 </div>
               </div>
             </div>
@@ -796,7 +714,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               <div className="setting-item-content">
                 <div className="setting-item-title">עורך מטא-דאטה</div>
                 <div className="setting-item-description">
-                  ערוך את המטא-דאטה של הספרים
+                  ערוך את המטא-דאטה של הספרייה
                 </div>
               </div>
             </div>
@@ -806,67 +724,19 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      <div className="settings-section-win11">
-        <h2 className="settings-section-title">גיבוי</h2>
-        
-        {/* Export Settings */}
-        <div className="settings-group-win11">
-          <div className="setting-item-win11 clickable" onClick={handleExportSettings}>
-            <div className="setting-item-left">
-              <ArrowDownloadRegular className="setting-item-icon" />
-              <div className="setting-item-content">
-                <div className="setting-item-title">ייצא הגדרות</div>
-                <div className="setting-item-description">
-                  שמור את כל ההגדרות לקובץ JSON
-                </div>
-              </div>
-            </div>
-            <div className="setting-item-right">
-              <ChevronRightRegular className="setting-item-arrow" />
-            </div>
-          </div>
-        </div>
-
-        {/* Import Settings */}
-        <div className="settings-group-win11">
-          <div className="setting-item-win11 clickable" onClick={handleImportSettings}>
-            <div className="setting-item-left">
-              <ArrowUploadRegular className="setting-item-icon" />
-              <div className="setting-item-content">
-                <div className="setting-item-title">ייבא הגדרות</div>
-                <div className="setting-item-description">
-                  טען הגדרות מקובץ JSON
-                </div>
-              </div>
-            </div>
-            <div className="setting-item-right">
-              <ChevronRightRegular className="setting-item-arrow" />
-            </div>
-          </div>
-        </div>
-
-        {/* Clear Settings */}
-        <div className="settings-group-win11">
-          <div className="setting-item-win11 clickable" onClick={handleClearSettings}>
-            <div className="setting-item-left">
-              <DeleteRegular className="setting-item-icon" style={{ color: '#d13438' }} />
-              <div className="setting-item-content">
-                <div className="setting-item-title" style={{ color: '#d13438' }}>מחק הגדרות</div>
-                <div className="setting-item-description">
-                  מחק את כל ההגדרות והכרטיסיות השמורות
-                </div>
-              </div>
-            </div>
-            <div className="setting-item-right">
-              <ChevronRightRegular className="setting-item-arrow" style={{ color: '#d13438' }} />
-            </div>
-          </div>
-        </div>
+  // Render Indexes Section
+  const renderIndexesSection = () => (
+    <div className="settings-container-win11">
+      <div className="settings-header-win11">
+        <h1 className="settings-title-win11">אינדקסים</h1>
+        <p className="settings-subtitle-win11">בנה אינדקס חיפוש מהיר עם Tantivy</p>
       </div>
 
       <div className="settings-section-win11">
-        <h2 className="settings-section-title">אינדקס חיפוש</h2>
+        <h2 className="settings-section-title">בניית אינדקס</h2>
         
         {/* Build Index */}
         <div className="settings-group-win11">
@@ -876,7 +746,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
                 <div className="setting-item-title">בניית אינדקס</div>
                 <div className="setting-item-description">
-                  בנה אינדקס חיפוש מלא ב-Tantivy
+                  בנה אינדקס חיפוש מהיר עם Tantivy
                 </div>
               </div>
             </div>
@@ -900,7 +770,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
                     disabled={indexBuilding}
                     size="small"
                   >
-                    ספרים
+                    ספרייה
                   </Button>
                   <Button 
                     appearance={indexType === 'lines' ? 'primary' : 'secondary'} 
@@ -1072,7 +942,7 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
               <div className="setting-item-content">
                 <div className="setting-item-title">גרסה</div>
                 <div className="setting-item-description">
-                  מאגר ספרים תורני מתקדם
+                  מאגר ספרייה תורנית מתקדם
                 </div>
               </div>
             </div>
@@ -1101,9 +971,9 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             <div className="setting-item-left">
               <InfoRegular className="setting-item-icon" />
               <div className="setting-item-content">
-                <div className="setting-item-title">תודות</div>
+                <div className="setting-item-title">אודות</div>
                 <div className="setting-item-description">
-                  לפרוייקט אוצריא ול-Hebrew Books
+                  פרויקט אוצריה ו-Hebrew Books
                 </div>
               </div>
             </div>
@@ -1126,23 +996,47 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
             className={`settings-nav-item ${activeSection === 'personalization' ? 'active' : ''}`}
             onClick={() => setActiveSection('personalization')}
           >
-            <ColorFilled className="settings-nav-icon" primaryFill="#667eea" />
+            {activeSection === 'personalization' ? (
+              <ColorFilled className="settings-nav-icon" />
+            ) : (
+              <ColorRegular className="settings-nav-icon" />
+            )}
             <span>התאמה אישית</span>
           </button>
           
           <button
-            className={`settings-nav-item ${activeSection === 'data' ? 'active' : ''}`}
-            onClick={() => setActiveSection('data')}
+            className={`settings-nav-item ${activeSection === 'libraries' ? 'active' : ''}`}
+            onClick={() => setActiveSection('libraries')}
           >
-            <DatabaseFilled className="settings-nav-icon" primaryFill="#f5576c" />
-            <span>ניהול נתונים</span>
+            {activeSection === 'libraries' ? (
+              <FolderFilled className="settings-nav-icon" />
+            ) : (
+              <FolderRegular className="settings-nav-icon" />
+            )}
+            <span>ספריות</span>
+          </button>
+          
+          <button
+            className={`settings-nav-item ${activeSection === 'indexes' ? 'active' : ''}`}
+            onClick={() => setActiveSection('indexes')}
+          >
+            {activeSection === 'indexes' ? (
+              <SearchFilled className="settings-nav-icon" />
+            ) : (
+              <SearchRegular className="settings-nav-icon" />
+            )}
+            <span>אינדקסים</span>
           </button>
           
           <button
             className={`settings-nav-item ${activeSection === 'about' ? 'active' : ''}`}
             onClick={() => setActiveSection('about')}
           >
-            <InfoFilled className="settings-nav-icon" primaryFill="#00f2fe" />
+            {activeSection === 'about' ? (
+              <InfoFilled className="settings-nav-icon" />
+            ) : (
+              <InfoRegular className="settings-nav-icon" />
+            )}
             <span>אודות</span>
           </button>
         </div>
@@ -1151,7 +1045,8 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
       {/* Main Content */}
       <div className="settings-main-content">
         {activeSection === 'personalization' && renderPersonalizationSection()}
-        {activeSection === 'data' && renderDataSection()}
+        {activeSection === 'libraries' && renderDataSection()}
+        {activeSection === 'indexes' && renderIndexesSection()}
         {activeSection === 'about' && renderAboutSection()}
       </div>
     </div>
@@ -1159,4 +1054,3 @@ const Settings = ({ isDark, setIsDark, onNavigateToMetadata }) => {
 };
 
 export default Settings;
-
