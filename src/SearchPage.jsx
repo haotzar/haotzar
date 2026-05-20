@@ -1,4 +1,4 @@
-import { SearchRegular, DocumentRegular, DocumentTextRegular, SettingsRegular, EyeRegular, TextAlignJustifyRegular, BookRegular } from '@fluentui/react-icons';
+import { SearchRegular, DocumentRegular, DocumentTextRegular, SettingsRegular, EyeRegular, EyeOffRegular, TextAlignJustifyRegular, BookRegular } from '@fluentui/react-icons';
 import { useState, useEffect, useMemo } from 'react';
 import TooltipWrapper from './components/TooltipWrapper';
 import SearchResultsNew from './components/SearchResultsNew';
@@ -32,6 +32,7 @@ const SearchPage = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchAccuracy, setSearchAccuracy] = useState(50); // רמת דיוק החיפוש
   const [hasSearched, setHasSearched] = useState(false); // האם בוצע חיפוש
+  const [showPreviewPanel, setShowPreviewPanel] = useState(true); // הצגת פאנל תצוגה מקדימה
   
   // פילטרים לתוצאות
   const [bookNameFilter, setBookNameFilter] = useState(''); // סינון לפי שם ספר
@@ -207,20 +208,15 @@ const SearchPage = ({
       // בצע חיפוש בתוכן עם אופציות מתקדמות
       console.log('🔍 SearchPage: שולח חיפוש עם אינדקסים:', selectedIndexes);
       
-      // Fuzzy search מופעל תמיד כברירת מחדל לתיקון שגיאות כתיב
-      // מרחק של 2 מאפשר תיקון שגיאות כתיב מורכבות יותר
-      const baseFuzzyDistance = 2; // הגדלנו ל-2 לתיקון שגיאות כמו "ירושלאים"
-      const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
-      const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
-      
+      // חיפוש מדויק - ללא סליחה על שגיאות כתיב
       onSearch(finalQuery, {
         matchingStrategy, // אסטרטגיית התאמה (last=OR, all=AND)
         cropLength, // אורך הקשר
         specificBook, // חיפוש בספר ספציפי
         accuracy: searchAccuracy, // רמת הדיוק
         selectedIndexes, // אינדקסים נבחרים
-        fuzzy: true, // תמיד מופעל לתיקון שגיאות כתיב
-        fuzzyDistance: totalFuzzyDistance // מרחק דינמי
+        fuzzy: false, // כבוי - חיפוש מדויק בלבד
+        fuzzyDistance: 0 // אפס - ללא סליחה על שגיאות
       });
     }
   };
@@ -352,6 +348,10 @@ const SearchPage = ({
                   onClick={() => setShowAdvanced(!showAdvanced)}
                 >
                   <SettingsRegular />
+                  {/* אינדיקטור שההגדרות שונו */}
+                  {(matchingStrategy !== 'last' || specificBook || cropLength !== 300 || fullSpelling || partialWord || prefixes || suffixes) && (
+                    <span className="settings-indicator" title="הגדרות מתקדמות פעילות">●</span>
+                  )}
                 </button>
               </TooltipWrapper>
             </div>
@@ -370,19 +370,15 @@ const SearchPage = ({
                           setShowAutocomplete(false);
                           setHasSearched(true);
                           
-                          // Fuzzy search תמיד מופעל עם מרחק 2
-                          const baseFuzzyDistance = 2;
-                          const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
-                          const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
-                          
+                          // חיפוש מדויק - ללא סליחה על שגיאות כתיב
                           onSearch(search, {
                             matchingStrategy,
                             cropLength,
                             specificBook,
                             accuracy: searchAccuracy,
                             selectedIndexes,
-                            fuzzy: true,
-                            fuzzyDistance: totalFuzzyDistance
+                            fuzzy: false,
+                            fuzzyDistance: 0
                           });
                         }}
                       >
@@ -561,61 +557,13 @@ const SearchPage = ({
           </div>
           </div>
         </div>
-
-        {/* סינון קטגוריות */}
+      {/* סינון קטגוריות */}
         <CategoryFilter
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
         categories={categories}
         moreCategories={moreCategories}
       />
-
-      {/* מספר תוצאות ופילטרים */}
-      {hasSearched && filteredResults.length > 0 && !isSearching && (
-        <div className="results-count-header">
-          <div className="results-filters">
-            {/* חיפוש בשם ספר עם כפתור toggle בתוכו */}
-            <div className="book-filter-container">
-              <input
-                type="text"
-                className="book-name-filter"
-                placeholder="סנן לפי שם ספר..."
-                value={bookNameFilter}
-                onChange={(e) => setBookNameFilter(e.target.value)}
-              />
-              
-              {/* כפתור toggle תצוגה */}
-              <button
-                className={`compact-view-toggle ${compactView ? 'active' : ''}`}
-                onClick={() => setCompactView(!compactView)}
-                title={compactView ? 'הצג תוכן' : 'הסתר תוכן'}
-              >
-                {compactView ? <BookRegular /> : <TextAlignJustifyRegular />}
-              </button>
-            </div>
-          </div>
-          
-          <div className="results-info">
-            {(() => {
-              // חישוב מספר ספרים ייחודיים ומספר hits
-              const uniqueBooks = new Set();
-              
-              filteredResults.forEach(result => {
-                uniqueBooks.add(result.file.id);
-              });
-              
-              const bookCount = uniqueBooks.size;
-              const hitsCount = filteredResults.length; // מספר ה-hits שמוצגים
-              
-              return (
-                <>
-                  מציג {hitsCount.toLocaleString('he-IL')} {hitsCount === 1 ? 'תוצאה' : 'תוצאות'} מ-{bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'}
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
 
       {/* הודעה כשאין תוצאות בכלל */}
       {hasSearched && searchResults.length === 0 && !isSearching && (
@@ -649,6 +597,8 @@ const SearchPage = ({
               searchQuery={searchQuery}
               bookNameFilter={bookNameFilter}
               compactView={compactView}
+              setBookNameFilter={setBookNameFilter}
+              setCompactView={setCompactView}
               onPreviewChange={(book, context) => {
                 setPreviewBook(book);
                 setPreviewContext(context);
@@ -658,19 +608,15 @@ const SearchPage = ({
                 // טען עוד תוצאות
                 console.log(`🔄 טוען עוד תוצאות: offset=${offset}, limit=${limit}`);
                 try {
-                  // Fuzzy search תמיד מופעל עם מרחק 2
-                  const baseFuzzyDistance = 2;
-                  const additionalDistance = (fullSpelling ? 1 : 0) + (partialWord ? 1 : 0) + (prefixes || suffixes ? 1 : 0);
-                  const totalFuzzyDistance = Math.min(baseFuzzyDistance + additionalDistance, 2);
-                  
+                  // חיפוש מדויק - ללא סליחה על שגיאות כתיב
                   const newResults = await onSearch(searchQuery, {
                     matchingStrategy,
                     cropLength,
                     specificBook,
                     accuracy: searchAccuracy,
                     selectedIndexes,
-                    fuzzy: true,
-                    fuzzyDistance: totalFuzzyDistance,
+                    fuzzy: false,
+                    fuzzyDistance: 0,
                     offset,
                     limit, // העבר את ה-limit
                     append: true // סימן שזה הוספה ולא החלפה
@@ -687,36 +633,62 @@ const SearchPage = ({
         </div>
 
         {/* פאנל צד שמאלי - תצוגה מקדימה */}
-        <div className="search-side-panel">
-          {previewBook ? (
-            <div className="preview-sidebar-content">
-              {previewBook.type === 'pdf' ? (
-                <PDFViewer 
-                  key={`preview-${previewBook.id}-${previewContext?.pageNum || previewContext?.chunkId || 0}`}
-                  pdfPath={previewBook.path} 
-                  title={previewBook.name}
-                  searchContext={memoizedSearchContext}
-                  isPreviewMode={true}
-                />
-              ) : (
-                <TextViewer 
-                  key={`preview-${previewBook.id}-${previewContext?.pageNum || previewContext?.chunkId || 0}`}
-                  textPath={previewBook.path} 
-                  title={previewBook.name}
-                  searchContext={memoizedSearchContext}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="side-panel-content">
-              <div className="side-panel-icon">
-                <EyeRegular />
+        {showPreviewPanel && (
+          <div className="search-side-panel">
+            {/* כפתור סגירה */}
+            <TooltipWrapper content="הסתר תצוגה מקדימה">
+              <button 
+                className="preview-panel-toggle"
+                onClick={() => setShowPreviewPanel(false)}
+              >
+                <EyeOffRegular />
+              </button>
+            </TooltipWrapper>
+            
+            {previewBook ? (
+              <div className="preview-sidebar-content">
+                {previewBook.type === 'pdf' ? (
+                  <PDFViewer 
+                    key={`preview-${previewBook.id}-${previewContext?.pageNum || previewContext?.chunkId || 0}`}
+                    pdfPath={previewBook.path} 
+                    title={previewBook.name}
+                    searchContext={memoizedSearchContext}
+                    isPreviewMode={true}
+                  />
+                ) : (
+                  <TextViewer 
+                    key={`preview-${previewBook.id}-${previewContext?.pageNum || previewContext?.chunkId || 0}`}
+                    textPath={previewBook.path} 
+                    title={previewBook.name}
+                    searchContext={memoizedSearchContext}
+                  />
+                )}
               </div>
-              <h3>תצוגה מקדימה</h3>
-              <p>לחץ על תוצאת חיפוש כדי לראות תצוגה מקדימה כאן</p>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="side-panel-content">
+                <div className="side-panel-icon">
+                  <EyeRegular />
+                </div>
+                <h3>תצוגה מקדימה</h3>
+                <p>לחץ על תוצאת חיפוש כדי לראות תצוגה מקדימה כאן</p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* כפתור פתיחה כשהפאנל סגור - באותו מיקום */}
+        {!showPreviewPanel && (
+          <div className="search-side-panel-placeholder">
+            <TooltipWrapper content="הצג תצוגה מקדימה">
+              <button 
+                className="preview-panel-open-btn"
+                onClick={() => setShowPreviewPanel(true)}
+              >
+                <EyeRegular />
+              </button>
+            </TooltipWrapper>
+          </div>
+        )}
       </div>
     </div>
   );

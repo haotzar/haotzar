@@ -1,9 +1,60 @@
 import { useState, useMemo, useEffect, memo, useCallback, useRef } from 'react';
-import { DocumentRegular, DocumentTextRegular, ChevronDownRegular, ChevronUpRegular, DismissRegular, EyeRegular } from '@fluentui/react-icons';
+import { DocumentRegular, DocumentTextRegular, ChevronDownRegular, ChevronUpRegular, DismissRegular, EyeRegular, BookRegular, TextAlignJustifyRegular } from '@fluentui/react-icons';
 import { Spinner } from '@fluentui/react-components';
 import PDFViewer from '../PDFViewer';
 import TextViewer from '../TextViewer';
 import './SearchResultsNew.css';
+
+// זיהוי מקור הספר
+const getBookSource = (file) => {
+  // ספרי אוצריא
+  if (file.type === 'otzaria') {
+    return 'otzaria';
+  }
+  
+  // בדוק לפי נתיב הקובץ
+  if (file.path) {
+    const pathLower = file.path.toLowerCase();
+    if (pathLower.includes('hebrewbooks') || pathLower.includes('hebrew-books')) {
+      return 'hebrewbooks';
+    }
+    if (pathLower.includes('אוצריא') || pathLower.includes('otzaria')) {
+      return 'otzaria';
+    }
+    if (pathLower.includes('עוז והדר') || pathLower.includes('oz vehadar') || pathLower.includes('ozvehadar')) {
+      return 'ozvehadar';
+    }
+    if (pathLower.includes('מוסד הרב קוק') || pathLower.includes('kook')) {
+      return 'kook';
+    }
+    if (pathLower.includes('האוצר') || pathLower.includes('ozer')) {
+      return 'ozer';
+    }
+  }
+  
+  // ברירת מחדל - ספר מקומי
+  return 'local';
+};
+
+// קבלת אייקון לפי מקור הספר
+const getBookIcon = (book) => {
+  const source = getBookSource(book);
+  
+  switch (source) {
+    case 'otzaria':
+      return <img src="/otzaria-icon.png" alt="אוצריא" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />;
+    case 'hebrewbooks':
+      return <img src="/hebrew_books.png" alt="HebrewBooks" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />;
+    case 'ozvehadar':
+      return <img src="/Logo-ozveadar.png" alt="עוז והדר" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />;
+    case 'kook':
+      return <img src="/logo-kook.png" alt="מוסד הרב קוק" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />;
+    case 'ozer':
+      return <img src="/icon.png" alt="האוצר" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />;
+    default:
+      return book.type === 'pdf' ? <DocumentRegular /> : <DocumentTextRegular />;
+  }
+};
 
 // קומפוננטה ממוזערת לתוצאה בודדת - תמנע רינדור מחדש מיותר
 const BookResult = memo(({ 
@@ -23,11 +74,7 @@ const BookResult = memo(({
       {/* כותרת הספר */}
       <div className="result-header-new">
         <div className="result-icon-small">
-          {bookGroup.file.type === 'pdf' ? (
-            <DocumentRegular />
-          ) : (
-            <DocumentTextRegular />
-          )}
+          {getBookIcon(bookGroup.file)}
         </div>
         <div 
           className="result-title-new" 
@@ -102,7 +149,7 @@ const BookResult = memo(({
 
 BookResult.displayName = 'BookResult';
 
-const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, bookNameFilter = '', compactView = false, onPreviewChange, onLoadMore }) => {
+const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, bookNameFilter = '', compactView = false, setBookNameFilter, setCompactView, onPreviewChange, onLoadMore }) => {
   const [expandedBooks, setExpandedBooks] = useState(new Set());
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
@@ -491,6 +538,53 @@ const SearchResultsNew = ({ results, onFileClick, isSearching, searchQuery, book
   return (
     <>
       <div className="search-results-container">
+        {/* כותרת תוצאות ופילטרים */}
+        {displayedResults && displayedResults.length > 0 && !isSearching && (
+          <div className="results-count-header">
+            <div className="results-filters">
+              {/* חיפוש בשם ספר עם כפתור toggle בתוכו */}
+              <div className="book-filter-container">
+                <input
+                  type="text"
+                  className="book-name-filter"
+                  placeholder="סנן לפי שם ספר..."
+                  value={bookNameFilter}
+                  onChange={(e) => setBookNameFilter(e.target.value)}
+                />
+                
+                {/* כפתור toggle תצוגה */}
+                <button
+                  className={`compact-view-toggle ${compactView ? 'active' : ''}`}
+                  onClick={() => setCompactView(!compactView)}
+                  title={compactView ? 'הצג תוכן' : 'הסתר תוכן'}
+                >
+                  {compactView ? <BookRegular /> : <TextAlignJustifyRegular />}
+                </button>
+              </div>
+            </div>
+            
+            <div className="results-info">
+              {(() => {
+                // חישוב מספר ספרים ייחודיים ומספר hits
+                const uniqueBooks = new Set();
+                
+                results.forEach(result => {
+                  uniqueBooks.add(result.file.id);
+                });
+                
+                const bookCount = uniqueBooks.size;
+                const hitsCount = results.length; // מספר ה-hits שמוצגים
+                
+                return (
+                  <>
+                    מציג {hitsCount.toLocaleString('he-IL')} {hitsCount === 1 ? 'תוצאה' : 'תוצאות'} מ-{bookCount} {bookCount === 1 ? 'ספר' : 'ספרים'}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+        
         {/* רשימת תוצאות */}
         <div className="results-list-new">
           {currentResults.map((bookGroup) => (

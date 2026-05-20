@@ -236,8 +236,8 @@ class TantivyEngine {
       cropLength = 200,
       selectedIndexes = [],
       offset = 0,
-      fuzzy = false,
-      fuzzyDistance = 1,
+      fuzzy = false, // ברירת מחדל: כבוי
+      fuzzyDistance = 0, // ברירת מחדל: אפס
       fields = ['content', 'title']
     } = options;
     
@@ -288,7 +288,7 @@ class TantivyEngine {
         try {
           const indexPath = window.electron.joinPath(this.indexPath, indexName);
           
-          console.log(`🔍 מחפש באינדקס "${indexName}"...`);
+          console.log(`🔍 מחפש באינדקס "${indexName}" עם matchingStrategy="${matchingStrategy}" (conjunction=${matchingStrategy === 'all'})`);
           const searchStart = performance.now();
 
           const searchResult = await window.electron.tantivySearch({
@@ -297,10 +297,10 @@ class TantivyEngine {
             limit: resultLimit,
             offset: offset,
             fields: fields,
-            fuzzy: true, // תמיד מופעל
-            fuzzyDistance: 1, // מרחק 1 - מאוזן יותר
+            fuzzy: fuzzy, // משתמש בפרמטר שהועבר
+            fuzzyDistance: fuzzyDistance, // משתמש בפרמטר שהועבר
             fuzzyPrefix: true, // דרוש התאמת תחילית
-            conjunction: matchingStrategy === 'all'
+            conjunction: matchingStrategy === 'all' // true = AND, false = OR
           });
 
           const searchTime = (performance.now() - searchStart).toFixed(0);
@@ -343,16 +343,27 @@ class TantivyEngine {
       }
 
       // סינון לפי רמת דיוק (score)
-      // אם אין score בתוצאות, לא נסנן לפי score
       const minScore = 0.1 + (accuracy / 100) * 0.6; // 0.1-0.7
+      
+      console.log(`🎯 סינון לפי accuracy=${accuracy}%, minScore=${(minScore * 100).toFixed(0)}%`);
+      
       const relevantHits = filteredHits.filter(hit => {
         const score = hit.score;
-        // אם אין score, נכלול את התוצאה
-        if (score === undefined || score === null) return true;
-        return score >= minScore;
+        
+        // אם אין score, הדפס אזהרה ונכלול את התוצאה
+        if (score === undefined || score === null) {
+          console.warn('⚠️ תוצאה ללא score:', hit.source_file || hit.title);
+          return true; // כלול תוצאות ללא score
+        }
+        
+        const included = score >= minScore;
+        if (!included) {
+          console.log(`❌ מסנן תוצאה עם score=${(score * 100).toFixed(0)}% (מתחת ל-${(minScore * 100).toFixed(0)}%)`);
+        }
+        return included;
       });
 
-      console.log(`🎯 ${relevantHits.length} תוצאות רלוונטיות (ציון מעל ${(minScore * 100).toFixed(0)}%)`);
+      console.log(`🎯 ${relevantHits.length}/${filteredHits.length} תוצאות רלוונטיות (ציון מעל ${(minScore * 100).toFixed(0)}%)`);
 
       // המרה לפורמט של האפליקציה
       const results = relevantHits.map(hit => {
